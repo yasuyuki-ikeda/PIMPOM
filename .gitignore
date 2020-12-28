@@ -1,0 +1,17 @@
+.vs/
+bin/
+ipch/
+PIMPOM_Core/x64/
+PIMPOM_EXE/x64/
+external_data_transfer_sample/data_transfer_spl/x64/
+Tool/CloneUserDlg/CloneUserDlg/x64/
+Tool/PimpomPlotPy/PimpomCommandExtract/x64/
+Tool/PimpomPlotPy/PimpomPlotPy/x64/
+CustomFunc/
+!CustomFunc/UserDlgTemplate/
+*.db
+*.opendb
+*.pch
+*.obj
+*.aps
+OpenCV/x64/vc14bin/Debug/
