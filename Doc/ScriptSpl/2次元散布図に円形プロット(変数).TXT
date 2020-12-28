@@ -1,0 +1,23 @@
+//PIMPOMコマンドプロンプト　サンプルスクリプト
+//2次元散布図に図形をプロット
+
+var cnt//カウンタ
+var x,y
+
+
+ClearChart(0)//グラフをクリア
+
+
+cnt=0
+
+while(cnt<360)
+
+	x = 100*cos( cnt/180*PI()) + 100//x座標
+
+ 	y = 100*sin( cnt/180*PI()) + 100//y座標
+
+	AddDataToChart2(0, x, y)//2次元散布図にプロット
+
+	cnt=cnt+1//カウンタインクリメント
+
+endwhile

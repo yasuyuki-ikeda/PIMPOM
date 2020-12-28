@@ -1,0 +1,491 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F980530E-C68B-4E76-8C5B-F244F057F6C4}</ProjectGuid>
+    <RootNamespace>PIMPOM_Core</RootNamespace>
+    <Keyword>MFCDLLProj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <PreBuildEvent>
+      <Command>Copy $(ProjectDir)resource_core.h $(ProjectDir)include\resource_core.h
+Copy $(SolutionDir)OpenCV\win32\vc12bin\Debug\*.* $(TargetDir)*.*
+</Command>
+    </PreBuildEvent>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>include;..\OpenCV\include;..\Eigen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_AFXEXT;_PIMPOM_CORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0411</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>vfw32.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>..\OpenCV\win32\vc12lib;..\bin\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\PIMPOM_Core.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>Copy $(ProjectDir)macro_help.txt $(OutDir)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PreBuildEvent>
+      <Command>Copy $(ProjectDir)resource_core.h $(ProjectDir)include\resource_core.h
+Copy $(SolutionDir)OpenCV\x64\vc14bin\Debug\*.* $(TargetDir)*.*
+</Command>
+    </PreBuildEvent>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>include;..\OpenCV\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>X64;_WINDOWS;_DEBUG;_AFXEXT;_PIMPOM_CORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4244;4800;4819;4996;4305</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0411</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>vfw32.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>..\OpenCV\x64\vc14lib;..\bin\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\PIMPOM_Core.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <PreBuildEvent>
+      <Command>Copy $(ProjectDir)resource_core.h $(ProjectDir)include\resource_core.h
+Copy $(SolutionDir)OpenCV\win32\vc12bin\Release\*.* $(TargetDir)*.*
+</Command>
+    </PreBuildEvent>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>include;..\OpenCV\include;..\Eigen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_AFXEXT;_PIMPOM_CORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0411</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>vfw32.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>..\OpenCV\win32\vc12lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\PIMPOM_Core.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>Copy $(ProjectDir)macro_help.txt $(OutDir)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PreBuildEvent>
+      <Command>Copy $(ProjectDir)resource_core.h $(ProjectDir)include\resource_core.h
+Copy $(SolutionDir)OpenCV\x64\vc14bin\Release\*.* $(TargetDir)*.*
+</Command>
+    </PreBuildEvent>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>include;..\OpenCV\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>X64;_WINDOWS;NDEBUG;_AFXEXT;_PIMPOM_CORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4244;4800;4819;4996;4305</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0411</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>vfw32.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>..\OpenCV\x64\vc14lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>.\PIMPOM_Core.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+    </Link>
+    <PostBuildEvent>
+      <Command>Mkdir ..\bin\$(Platform)\$(Configuration)
+Copy $(Platform)\$(Configuration)\*.lib  ..\bin\$(Platform)\$(Configuration)\
+Copy $(Platform)\$(Configuration)\*.dll  ..\bin\$(Platform)\$(Configuration)\</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="API\api_binalize.cpp" />
+    <ClCompile Include="API\api_binalize_nick.cpp" />
+    <ClCompile Include="API\api_blend.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="API\api_convert_image_format.cpp" />
+    <ClCompile Include="API\api_func.cpp" />
+    <ClCompile Include="API\api_giometric_transform.cpp" />
+    <ClCompile Include="API\api_graphic.cpp" />
+    <ClCompile Include="API\api_graphic_on_image.cpp" />
+    <ClCompile Include="API\api_hough.cpp" />
+    <ClCompile Include="API\api_manage_data.cpp" />
+    <ClCompile Include="API\api_manage_dialog.cpp" />
+    <ClCompile Include="API\api_math.cpp" />
+    <ClCompile Include="API\api_network.cpp" />
+    <ClCompile Include="API\api_pixwise_calc.cpp" />
+    <ClCompile Include="API\api_support_opencv.cpp" />
+    <ClCompile Include="API\api_video_capture.cpp" />
+    <ClCompile Include="API\file_io\api_file_io.cpp" />
+    <ClCompile Include="API\file_io\api_file_io_archived.cpp" />
+    <ClCompile Include="API\file_io\api_file_io_avi.cpp" />
+    <ClCompile Include="API\file_io\api_file_io_bmp.cpp" />
+    <ClCompile Include="API\file_io\api_file_io_ifz.cpp" />
+    <ClCompile Include="API\filter\api_filter_bilateral.cpp" />
+    <ClCompile Include="API\filter\api_filter_dft.cpp" />
+    <ClCompile Include="API\filter\api_filter_edge_canny.cpp" />
+    <ClCompile Include="API\filter\api_filter_edge_sigmoid.cpp" />
+    <ClCompile Include="API\filter\api_filter_edge_sobel.cpp" />
+    <ClCompile Include="API\filter\api_filter_gabor.cpp" />
+    <ClCompile Include="API\filter\api_filter_gauss.cpp" />
+    <ClCompile Include="API\filter\api_filter_histgram.cpp" />
+    <ClCompile Include="API\filter\api_filter_local_contrast.cpp" />
+    <ClCompile Include="API\filter\api_filter_log.cpp" />
+    <ClCompile Include="API\filter\api_filter_median.cpp" />
+    <ClCompile Include="API\filter\api_filter_misc.cpp" />
+    <ClCompile Include="API\filter\api_filter_morph.cpp" />
+    <ClCompile Include="API\filter\api_filter_smooth.cpp" />
+    <ClCompile Include="DataWrapper\Calculate.cpp" />
+    <ClCompile Include="DataWrapper\CalculateMacro.cpp" />
+    <ClCompile Include="DataWrapper\DataUnit.cpp" />
+    <ClCompile Include="DataWrapper\DataUnitConvert.cpp" />
+    <ClCompile Include="DataWrapper\ImageField.cpp" />
+    <ClCompile Include="DataWrapper\SerialCtrl.cpp" />
+    <ClCompile Include="DataWrapper\SocketCtrl.cpp" />
+    <ClCompile Include="DataWrapper\WorkArea.cpp" />
+    <ClCompile Include="dllmain.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
+    </ClCompile>
+    <ClCompile Include="PIMPOM_Core.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\BatchDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\BinalizeDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\C3DImgDispDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\CalcDlg1.cpp" />
+    <ClCompile Include="WindowCtrlFiles\ChartDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\CommandPromptDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\ConfirmDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\ConvertDataDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\DataDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\DataPickDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\FilterCtrlDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\HistgramDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\IO3DDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\MainManuProc.cpp" />
+    <ClCompile Include="WindowCtrlFiles\MarkDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\MultiImageDispDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\PIMPOMDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\PointCloudDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\PythonBatchDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\ResizeDataDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\SocketCtrlDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\TransformDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\WorkAreaDlg.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Windows\Cursors\aero_pen_l.cur" />
+    <None Include="..\..\windows\cursors\cursor2.cur" />
+    <None Include="PIMPOM_Core.def" />
+    <None Include="POINTER_COPY.cur" />
+    <None Include="res\aero_pen_l.cur" />
+    <None Include="res\cursor1.cur" />
+    <None Include="res\cursor_p.cur" />
+    <None Include="res\fill.cur" />
+    <None Include="res\move_i.cur" />
+    <None Include="res\pointer_.cur" />
+    <None Include="res\POINTER_COPY.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="API\filter\template\filter_local_contrast.h" />
+    <ClInclude Include="API\filter\template\filter_convolution.h" />
+    <ClInclude Include="API\filter\template\filter_erosion_dilation.h" />
+    <ClInclude Include="API\filter\template\filter_gabor.h" />
+    <ClInclude Include="API\filter\template\filter_gauss.h" />
+    <ClInclude Include="API\filter\template\filter_log.h" />
+    <ClInclude Include="API\filter\template\filter_ma.h" />
+    <ClInclude Include="API\filter\template\filter_median.h" />
+    <ClInclude Include="API\filter\template\filter_misc.h" />
+    <ClInclude Include="API\filter\template\filter_sigmoid.h" />
+    <ClInclude Include="API\filter\template\filter_sobel.h" />
+    <ClInclude Include="API\resize_data.h" />
+    <ClInclude Include="include\BatchDlg.h" />
+    <ClInclude Include="include\BinalizeDlg.h" />
+    <ClInclude Include="include\C3DImgDispDlg.h" />
+    <ClInclude Include="include\CalcDlg1.h" />
+    <ClInclude Include="include\Calculate.h" />
+    <ClInclude Include="include\ChartDlg.h" />
+    <ClInclude Include="include\CommandPromptDlg.h" />
+    <ClInclude Include="include\ConfirmDlg.h" />
+    <ClInclude Include="include\ConvertDataDlg.h" />
+    <ClInclude Include="include\DataDlg.h" />
+    <ClInclude Include="include\DataPickDlg.h" />
+    <ClInclude Include="include\DataUnit.h" />
+    <ClInclude Include="include\FilterCtrlDlg.h" />
+    <ClInclude Include="include\global_define.h" />
+    <ClInclude Include="include\global_typedef.h" />
+    <ClInclude Include="include\HistgramDlg.h" />
+    <ClInclude Include="include\ImageField.h" />
+    <ClInclude Include="include\IO3DDlg.h" />
+    <ClInclude Include="include\MarkDlg.h" />
+    <ClInclude Include="include\MultiImageDispDlg.h" />
+    <ClInclude Include="include\opencv_headers.h" />
+    <ClInclude Include="include\PIMPOMDlg.h" />
+    <ClInclude Include="include\PIMPOM_API.h" />
+    <ClInclude Include="include\pimpom_plot.h" />
+    <ClInclude Include="include\PointCloudDlg.h" />
+    <ClInclude Include="include\PythonBatchDlg.h" />
+    <ClInclude Include="include\ResizeDataDlg.h" />
+    <ClInclude Include="include\resource_core.h" />
+    <ClInclude Include="include\SerialCtrl.h" />
+    <ClInclude Include="include\SocketCtrl.h" />
+    <ClInclude Include="include\SocketCtrlDlg.h" />
+    <ClInclude Include="include\TransformDlg.h" />
+    <ClInclude Include="include\WorkAreaDlg.h" />
+    <ClInclude Include="resource_core.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\b.bmp" />
+    <Image Include="res\bitmap1.bmp" />
+    <Image Include="res\bitmap2.bmp" />
+    <Image Include="res\bmp00001.bmp" />
+    <Image Include="res\bmp00002.bmp" />
+    <Image Include="res\button_3d0.bmp" />
+    <Image Include="res\button_3d1.bmp" />
+    <Image Include="res\button_3d2.bmp" />
+    <Image Include="res\button_3d3.bmp" />
+    <Image Include="res\button_calc_distance.bmp" />
+    <Image Include="res\button_calc_distance2.bmp" />
+    <Image Include="res\button_clear_mask.bmp" />
+    <Image Include="res\button_complex0.bmp" />
+    <Image Include="res\button_complex1.bmp" />
+    <Image Include="res\button_complex2.bmp" />
+    <Image Include="res\button_complex3.bmp" />
+    <Image Include="res\button_datapick.bmp" />
+    <Image Include="res\button_decliment.bmp" />
+    <Image Include="res\button_del_all.bmp" />
+    <Image Include="res\button_edit.bmp" />
+    <Image Include="res\button_fill.bmp" />
+    <Image Include="res\button_graph_h.bmp" />
+    <Image Include="res\button_graph_v.bmp" />
+    <Image Include="res\button_histgram.bmp" />
+    <Image Include="res\button_incliment.bmp" />
+    <Image Include="res\button_mark.bmp" />
+    <Image Include="res\button_mark_edit.bmp" />
+    <Image Include="res\button_mark_edit_line.bmp" />
+    <Image Include="res\button_mark_id.bmp" />
+    <Image Include="res\button_mask.bmp" />
+    <Image Include="res\button_rgb0.bmp" />
+    <Image Include="res\button_rgb1.bmp" />
+    <Image Include="res\button_rgb2.bmp" />
+    <Image Include="res\button_rgb3.bmp" />
+    <Image Include="res\button_scale_adjust_field.bmp" />
+    <Image Include="res\button_scale_no_scale.bmp" />
+    <Image Include="res\button_v.bmp" />
+    <Image Include="res\button_video.bmp" />
+    <Image Include="res\button_workarea_add.bmp" />
+    <Image Include="res\button_workarea_clip.bmp" />
+    <Image Include="res\button_workarea_del.bmp" />
+    <Image Include="res\button_workarea_full.bmp" />
+    <Image Include="res\button_workarea_maskcreate.bmp" />
+    <Image Include="res\button_workarea_whole.bmp" />
+    <Image Include="res\button_workarea_zoom.bmp" />
+    <Image Include="res\button_work_area.bmp" />
+    <Image Include="res\button_work_area_edit.bmp" />
+    <Image Include="res\button_xy0.bmp" />
+    <Image Include="res\button_xy1.bmp" />
+    <Image Include="res\button_xyz0.bmp" />
+    <Image Include="res\button_xyz1.bmp" />
+    <Image Include="res\button_xyz2.bmp" />
+    <Image Include="res\button_xyz3.bmp" />
+    <Image Include="res\calc.bmp" />
+    <Image Include="res\fill.ico" />
+    <Image Include="res\g.bmp" />
+    <Image Include="res\graph.ico" />
+    <Image Include="res\ico00001.ico" />
+    <Image Include="res\icon1.ico" />
+    <Image Include="res\icon2.ico" />
+    <Image Include="res\idr_main.ico" />
+    <Image Include="res\paint.bmp" />
+    <Image Include="res\paint.ico" />
+    <Image Include="res\PIMPOM.ico" />
+    <Image Include="res\PIMPOM15.ico" />
+    <Image Include="res\r.bmp" />
+    <Image Include="res\resize1.bmp" />
+    <Image Include="res\resize2.bmp" />
+    <Image Include="res\rgb.bmp" />
+    <Image Include="res\run.ico" />
+    <Image Include="res\trans.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PIMPOM.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="macro_help.txt" />
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="PIMPOM.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

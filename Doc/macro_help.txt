@@ -1,0 +1,25 @@
+数値演算機能　マクロ一覧
+
+I(<画像番号>)       <画像番号>の画素値取得]
+I(<画像番号>,x,y)   <画像番号>の座標(x,y)における画素値
+sin(x)              xのsin
+cos(x)              xのcos
+tan(x)              xのtan
+asin(x)             xのarc sin
+acos(x)             xのarc cos
+atan(x)             xのarc tangent
+atan2(x,y)          x/yのarc tangent
+log(x)　　          xの対数
+sqrt(x)             xの平方根
+exp(x)              e（自然対数の底）のx乗
+abs(x)              xの絶対値
+ceil(x)             xの少数点以下切り下げ
+floor(x)            xの少数点以下切り上げ
+pow(x,y)            xのy乗
+sign(x,y)           x>yのとき1、それ以外0
+PI()                円周率  
+random()            0～1の一様分布で乱数発生
+rand()              ANSI-Cの乱数発生
+gaus()              標準偏差1のガウス分布で乱数発生
+max(x,y)            x,yのおおきいほう
+min(x,y)            x,yのちいさいほう

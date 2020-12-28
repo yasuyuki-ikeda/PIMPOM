@@ -1,0 +1,6 @@
+; PIMPOM_Core.def : DLL のモジュール パラメータを宣言します。
+
+LIBRARY      "PIMPOM_Core"
+
+EXPORTS
+    ; 明示的なエクスポートはここへ記述できます

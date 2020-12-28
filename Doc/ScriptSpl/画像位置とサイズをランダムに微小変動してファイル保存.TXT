@@ -1,0 +1,23 @@
+var tx,ty,tr,tm
+var cnt//カウンタ
+var filename, dirname
+
+cnt=0//カウンタリセット
+while(cnt<10)	
+	//移動量計算
+	tx = 10*random()-5
+	tx = 10*random()-5
+	tr = 10*random()-5
+	tm=1 + 0.2*random()-0.1
+
+	IsoTransDataUnit(0,1,tx,ty,tr,tm,1)//画像を微小移動
+
+	dirname = GetSrcFilePath(0) + "resized"//保存先ディレクトリ名
+	CreateDirectory(dirname )//ディレクトリ作成
+
+	filename = dirname + "\" + ToString(cnt,0) +".bmp"//保存先ファイル名
+	SaveViewAsBitmap(1,filename )//ファイル保存
+
+	cnt=cnt+1//カウンタインクリメント
+
+endwhile

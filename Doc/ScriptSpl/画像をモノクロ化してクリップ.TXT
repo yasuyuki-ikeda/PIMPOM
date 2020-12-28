@@ -1,0 +1,19 @@
+var w_src,h_src
+var w_dst, h_dst,x,y
+var dstFolder ,dstpath 
+
+
+w_src = GetDataTypeSize(0,1)
+h_src = GetDataTypeSize(0,2)
+w_dst = 227
+h_dst = 227
+x = (w_src - w_dst)/2
+y = (h_src - h_dst)/2
+ClipDataUnit(0,1, x, y ,x+  w_dst, y+  h_dst)
+ConvertDispToByte(1)
+
+dstFolder = GetSrcFilePath(0) + "\Clip"
+CreateDirectory(dstFolder )
+
+dstpath = dstFolder  + "\" + GetSrcFileTitle(0) + ".bmp"
+SaveViewAsBitmap(1, dstpath )

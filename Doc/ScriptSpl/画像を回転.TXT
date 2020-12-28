@@ -1,0 +1,6 @@
+FilterMirror(0,1,0,1)
+FilterMirror(0,2,1,1)
+FilterMirror(0,3,2,1)
+SaveViewAsBitmap(1, GetSrcFilePath(0) + GetSrcFileTitle(0) + "_1.bmp")
+SaveViewAsBitmap(2, GetSrcFilePath(0) + GetSrcFileTitle(0) + "_2.bmp")
+SaveViewAsBitmap(3, GetSrcFilePath(0) + GetSrcFileTitle(0) + "_3.bmp")

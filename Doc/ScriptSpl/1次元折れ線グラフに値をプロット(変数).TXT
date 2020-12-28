@@ -1,0 +1,27 @@
+//PIMPOMコマンドプロンプト　サンプルスクリプト
+//1次元折れ線グラフにラプラシアンオブガウシアンをプロット
+
+var sigma,cnt,x,y
+cnt=0
+
+//グラフをクリア
+ClearChart(0)
+
+
+while(cnt<=200)
+	//σ (100/(2√2))
+	sigma=100/(2*sqrt(2))
+
+	//x (-100～100)
+	x=cnt-100
+
+	//ラプラシアンオブガウシアン関数 (x^2 - 2*σ^2)/(2*pi*σ^6)*exp(-x^2/(2*σ^2) )
+	y=(x*x-2*sigma*sigma) / (2*PI()*pow(sigma,6)) * exp(-x*x/(2*sigma*sigma)) 
+
+	//折れ線グラフにプロット(値がちいさすぎるので10000培値)
+	AddDataToChart(0, y*10000)
+
+	//カウンタインクリメント
+	cnt=cnt+2
+
+endwhile

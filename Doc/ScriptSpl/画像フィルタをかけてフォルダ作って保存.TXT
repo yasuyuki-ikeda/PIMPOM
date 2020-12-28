@@ -1,0 +1,11 @@
+//PIMPOMコマンドプロンプト　サンプルプログラム
+//画像データ0にシェーディング除去フィルタをかけて、フォルダ作って保存
+
+//画像データ0にシェーディング補正フィルタをかける
+FilterGaussUnshade(0,1,61,128,1,0,0,1)
+
+//結果を格納するディレクトリを作成する
+CreateDirectory( GetSrcFilePath(0) + "unshade" )
+
+//表示画像をディレクトリに格納する
+SaveViewAsBitmap(1, GetSrcFilePath(0) + "unshade\" + GetSrcFileName(0))

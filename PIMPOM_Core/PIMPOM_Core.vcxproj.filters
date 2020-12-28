@@ -1,0 +1,658 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ソース ファイル\WindowCtrlFiles">
+      <UniqueIdentifier>{302cb913-8284-4d9c-8856-a91f9049c00b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\API">
+      <UniqueIdentifier>{7a890f41-4e70-4b43-8be1-bc1c45008736}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\API\filter">
+      <UniqueIdentifier>{c5d764e8-6bd5-4671-bb32-013911f4d456}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\API\filter\template">
+      <UniqueIdentifier>{8b7a8984-482f-4a26-bb29-20878ace4975}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\API\file_io">
+      <UniqueIdentifier>{1f2b4214-186f-4b23-96cb-848d9b8f1a44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\DataWrapper">
+      <UniqueIdentifier>{a37e5da9-d4a3-4c49-aaa4-a1776843f617}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\include">
+      <UniqueIdentifier>{93c805d1-7635-4931-ab08-63f351421ecb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\include\DataWrapper.h">
+      <UniqueIdentifier>{2cec5b09-6ab9-404d-ae33-633079684876}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\include\WindowCtrlHeaders">
+      <UniqueIdentifier>{0c4fa656-52a5-44d0-a4f7-0c5c80b3f4f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\BatchDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\BinalizeDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\CalcDlg1.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\ChartDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\CommandPromptDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\ConfirmDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\ConvertDataDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\DataDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\DataPickDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\FilterCtrlDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\HistgramDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\IO3DDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\MainManuProc.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\MarkDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\MultiImageDispDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\PIMPOMDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\PointCloudDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\ResizeDataDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\SocketCtrlDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\TransformDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\WorkAreaDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_binalize.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_convert_image_format.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_func.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_giometric_transform.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_graphic.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_graphic_on_image.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_hough.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_manage_data.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_manage_dialog.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_math.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_network.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_support_opencv.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_video_capture.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_bilateral.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_edge_canny.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_edge_sigmoid.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_edge_sobel.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_gabor.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_gauss.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_log.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_median.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_misc.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_morph.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_smooth.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="API\file_io\api_file_io.cpp">
+      <Filter>ソース ファイル\API\file_io</Filter>
+    </ClCompile>
+    <ClCompile Include="API\file_io\api_file_io_archived.cpp">
+      <Filter>ソース ファイル\API\file_io</Filter>
+    </ClCompile>
+    <ClCompile Include="API\file_io\api_file_io_avi.cpp">
+      <Filter>ソース ファイル\API\file_io</Filter>
+    </ClCompile>
+    <ClCompile Include="API\file_io\api_file_io_bmp.cpp">
+      <Filter>ソース ファイル\API\file_io</Filter>
+    </ClCompile>
+    <ClCompile Include="API\file_io\api_file_io_ifz.cpp">
+      <Filter>ソース ファイル\API\file_io</Filter>
+    </ClCompile>
+    <ClCompile Include="DataWrapper\Calculate.cpp">
+      <Filter>ソース ファイル\DataWrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="DataWrapper\CalculateMacro.cpp">
+      <Filter>ソース ファイル\DataWrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="DataWrapper\DataUnit.cpp">
+      <Filter>ソース ファイル\DataWrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="DataWrapper\DataUnitConvert.cpp">
+      <Filter>ソース ファイル\DataWrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="DataWrapper\ImageField.cpp">
+      <Filter>ソース ファイル\DataWrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="DataWrapper\SerialCtrl.cpp">
+      <Filter>ソース ファイル\DataWrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="DataWrapper\SocketCtrl.cpp">
+      <Filter>ソース ファイル\DataWrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="DataWrapper\WorkArea.cpp">
+      <Filter>ソース ファイル\DataWrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_binalize_nick.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\C3DImgDispDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="PIMPOM_Core.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_histgram.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_local_contrast.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_blend.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\api_pixwise_calc.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="API\filter\api_filter_dft.cpp">
+      <Filter>ソース ファイル\API\filter</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\PythonBatchDlg.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PIMPOM_Core.def">
+      <Filter>ソース ファイル</Filter>
+    </None>
+    <None Include="res\aero_pen_l.cur">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\..\Windows\Cursors\aero_pen_l.cur">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="res\cursor1.cur">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\..\windows\cursors\cursor2.cur">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="res\pointer_.cur">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="res\POINTER_COPY.cur">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="POINTER_COPY.cur">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="res\move_i.cur">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="res\cursor_p.cur">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="res\fill.cur">
+      <Filter>リソース ファイル</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="API\filter\template\filter_convolution.h">
+      <Filter>ソース ファイル\API\filter\template</Filter>
+    </ClInclude>
+    <ClInclude Include="API\filter\template\filter_erosion_dilation.h">
+      <Filter>ソース ファイル\API\filter\template</Filter>
+    </ClInclude>
+    <ClInclude Include="API\filter\template\filter_gabor.h">
+      <Filter>ソース ファイル\API\filter\template</Filter>
+    </ClInclude>
+    <ClInclude Include="API\filter\template\filter_gauss.h">
+      <Filter>ソース ファイル\API\filter\template</Filter>
+    </ClInclude>
+    <ClInclude Include="API\filter\template\filter_log.h">
+      <Filter>ソース ファイル\API\filter\template</Filter>
+    </ClInclude>
+    <ClInclude Include="API\filter\template\filter_ma.h">
+      <Filter>ソース ファイル\API\filter\template</Filter>
+    </ClInclude>
+    <ClInclude Include="API\filter\template\filter_median.h">
+      <Filter>ソース ファイル\API\filter\template</Filter>
+    </ClInclude>
+    <ClInclude Include="API\filter\template\filter_misc.h">
+      <Filter>ソース ファイル\API\filter\template</Filter>
+    </ClInclude>
+    <ClInclude Include="API\filter\template\filter_sigmoid.h">
+      <Filter>ソース ファイル\API\filter\template</Filter>
+    </ClInclude>
+    <ClInclude Include="API\filter\template\filter_sobel.h">
+      <Filter>ソース ファイル\API\filter\template</Filter>
+    </ClInclude>
+    <ClInclude Include="resource_core.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="include\global_define.h">
+      <Filter>ヘッダー ファイル\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\global_typedef.h">
+      <Filter>ヘッダー ファイル\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\opencv_headers.h">
+      <Filter>ヘッダー ファイル\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PIMPOM_API.h">
+      <Filter>ヘッダー ファイル\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\pimpom_plot.h">
+      <Filter>ヘッダー ファイル\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\resource_core.h">
+      <Filter>ヘッダー ファイル\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Calculate.h">
+      <Filter>ヘッダー ファイル\include\DataWrapper.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DataUnit.h">
+      <Filter>ヘッダー ファイル\include\DataWrapper.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ImageField.h">
+      <Filter>ヘッダー ファイル\include\DataWrapper.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SerialCtrl.h">
+      <Filter>ヘッダー ファイル\include\DataWrapper.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SocketCtrl.h">
+      <Filter>ヘッダー ファイル\include\DataWrapper.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\BatchDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\BinalizeDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CalcDlg1.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ChartDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CommandPromptDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ConfirmDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ConvertDataDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DataDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DataPickDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\FilterCtrlDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\HistgramDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\IO3DDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MarkDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MultiImageDispDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PIMPOMDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PointCloudDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ResizeDataDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SocketCtrlDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TransformDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WorkAreaDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\C3DImgDispDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="API\filter\template\filter_local_contrast.h">
+      <Filter>ソース ファイル\API\filter\template</Filter>
+    </ClInclude>
+    <ClInclude Include="API\resize_data.h">
+      <Filter>ソース ファイル\API</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PythonBatchDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\bitmap1.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\bmp00001.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_3d0.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_3d1.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_3d2.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_3d3.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_calc_distance.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_calc_distance2.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_complex0.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_complex1.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_complex2.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_complex3.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_decliment.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_graph_h.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_graph_v.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_histgram.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_incliment.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_mark.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_mark_edit.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_mask.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_rgb0.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_rgb1.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_rgb2.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_rgb3.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_scale_adjust_field.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_scale_no_scale.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_v.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_video.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_work_area.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_work_area_edit.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_workarea_add.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_workarea_del.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_workarea_full.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_workarea_whole.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_xy0.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_xy1.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_xyz0.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_xyz1.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_xyz2.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_xyz3.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\PIMPOM.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\resize1.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\resize2.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\trans.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\bmp00002.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\b.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\r.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\g.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\rgb.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icon1.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icon2.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\idr_main.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\ico00001.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\run.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\graph.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\paint.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\calc.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\fill.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\paint.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_mark_edit_line.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_del_all.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\bitmap2.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_edit.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_mark_id.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_workarea_maskcreate.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_clear_mask.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_workarea_clip.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_workarea_zoom.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_datapick.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_fill.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\PIMPOM15.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PIMPOM.rc">
+      <Filter>リソース ファイル</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="macro_help.txt" />
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+</Project>
