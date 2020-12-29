@@ -75,6 +75,10 @@ CDataPickDlg::CDataPickDlg(CWnd* pParent /*=NULL*/)
 
 CDataPickDlg::~CDataPickDlg()
 {
+	paintbmp.DeleteObject(); 
+	pickbmp.DeleteObject();
+	fillbm.DeleteObject();
+	undobmp.DeleteObject();
 }
 
 void CDataPickDlg::DoDataExchange(CDataExchange* pDX)
@@ -465,16 +469,18 @@ BOOL CDataPickDlg::OnInitDialog()
 	pickbmp.LoadBitmap(IDB_BUTTON_PICK);
 	paintbmp.LoadBitmap(IDB_BUTTON_PAINT);
 	fillbm.LoadBitmap(IDB_BUTTON_FILL);
-
+	undobmp.LoadBitmap(IDB_BUTTON_UNDO);
 	((CButton*)GetDlgItem(IDC_RADIO_DATAPICK))->SetBitmap((HBITMAP)pickbmp);
 	((CButton*)GetDlgItem(IDC_RADIO_DATAPICK_PAINT_DOT))->SetBitmap((HBITMAP)paintbmp);
 	((CButton*)GetDlgItem(IDC_RADIO_DATAPICK_PAINT_FILL))->SetBitmap((HBITMAP)fillbm);
+	((CButton*)GetDlgItem(IDC_BUTTON_DATAPICK_UNDO))->SetBitmap((HBITMAP)undobmp);
 
 	//ツールチップ
 	m_toolTip.Create(this, TTS_ALWAYSTIP);
 	m_toolTip.AddTool(GetDlgItem(IDC_RADIO_DATAPICK), "ピック");
 	m_toolTip.AddTool(GetDlgItem(IDC_RADIO_DATAPICK_PAINT_DOT), "ペイント");
 	m_toolTip.AddTool(GetDlgItem(IDC_RADIO_DATAPICK_PAINT_FILL), "塗りつぶし");
+	m_toolTip.AddTool(GetDlgItem(IDC_BUTTON_DATAPICK_UNDO), "元に戻す");
 
 	//値の初期化
 	API.SetCheck(m_hWnd,IDC_CHECK_DATAPICK_MASK,false);
@@ -566,6 +572,7 @@ BOOL CDataPickDlg::PreTranslateMessage(MSG* pMsg)
 		//ツールチップ表示
 		if (pMsg->hwnd == GetDlgItem(IDC_RADIO_DATAPICK)->m_hWnd ||
 			pMsg->hwnd == GetDlgItem(IDC_RADIO_DATAPICK_PAINT_DOT)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_BUTTON_DATAPICK_UNDO)->m_hWnd ||
 			pMsg->hwnd == GetDlgItem(IDC_RADIO_DATAPICK_PAINT_FILL)->m_hWnd
 			)
 		{

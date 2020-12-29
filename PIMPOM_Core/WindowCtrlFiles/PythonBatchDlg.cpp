@@ -237,10 +237,10 @@ void CPythonBatchDlg::arrange_dlg_item()
 
 	::MoveWindow(::GetDlgItem(m_hWnd, IDC_EDIT_PYTHON_BATCH_DLG_FILEPATH), 120, 0, clientRct.right - clientRct.left - 170, 20, true);
 	::MoveWindow(::GetDlgItem(m_hWnd, IDC_PYTHON_BATCH_DLG_BROWSE_FILE), clientRct.right - clientRct.left - 60, 0, 50, 20, true);
-	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_EDIT), 0, 22, 100, 20, true);
-	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_TRIAL), 102, 22, 100, 20, true); 
-	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_VERCHK), 202, 22, 150, 20, true);
-	::MoveWindow(::GetDlgItem(m_hWnd, IDC_EDIT_YTHON_BATCH_DLG_OUTPUT), 0, 44, clientRct.right - clientRct.left - 4, clientRct.bottom - clientRct.top - 50, true);
+	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_EDIT), 0, 22, 100, 30, true);
+	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_TRIAL), 102, 22, 100, 30, true); 
+	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_VERCHK), 202, 22, 150, 30, true);
+	::MoveWindow(::GetDlgItem(m_hWnd, IDC_EDIT_YTHON_BATCH_DLG_OUTPUT), 0, 54, clientRct.right - clientRct.left - 4, clientRct.bottom - clientRct.top - 60, true);
 	
 }
 
@@ -257,6 +257,8 @@ CPythonBatchDlg::CPythonBatchDlg(CWnd* pParent /*=NULL*/)
 
 CPythonBatchDlg::~CPythonBatchDlg()
 {
+	execbmp.DeleteObject();
+	editbmp.DeleteObject();
 }
 
 void CPythonBatchDlg::DoDataExchange(CDataExchange* pDX)
@@ -290,6 +292,17 @@ BOOL CPythonBatchDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	SetIcon(AfxGetApp()->LoadIcon(IDI_RUN), TRUE);			// アイコンを設定
+
+	//ビットマップボタン
+	execbmp.LoadBitmap(IDB_BUTTON_3D_0);
+	editbmp.LoadBitmap(IDB_BUTTON_EDIT);
+	((CButton*)GetDlgItem(IDC_BUTTON_IDC_PYTHON_BATCH_DLG_TRIAL))->SetBitmap((HBITMAP)execbmp);
+	((CButton*)GetDlgItem(IDC_BUTTON_IDC_PYTHON_BATCH_DLG_EDIT))->SetBitmap((HBITMAP)editbmp);
+
+	//ツールチップ
+	m_toolTip.Create(this, TTS_ALWAYSTIP);
+	m_toolTip.AddTool(GetDlgItem(IDC_BUTTON_IDC_PYTHON_BATCH_DLG_TRIAL), "実行");
+	m_toolTip.AddTool(GetDlgItem(IDC_BUTTON_IDC_PYTHON_BATCH_DLG_EDIT), "編集");
 										
 	DragAcceptFiles();//ドラッグ＆ドロップ対応
 
@@ -317,7 +330,35 @@ void CPythonBatchDlg::OnSize(UINT nType, int cx, int cy)
 	arrange_dlg_item();
 }
 
+/********************************************************************
+機  能  名  称 :キーボードからの入力
+関    数    名 : PreTranslateMessage
+引          数 :
+戻    り    値 :
+機          能 :
+日付         作成者          内容
+------------ --------------- ---------------------------------------
+Y.Ikeda         新規作成
+********************************************************************/
+BOOL CPythonBatchDlg::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_MOUSEMOVE)
+	{
+		//ツールチップ表示
+		if (pMsg->hwnd == GetDlgItem(IDC_BUTTON_IDC_PYTHON_BATCH_DLG_TRIAL)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_BUTTON_IDC_PYTHON_BATCH_DLG_EDIT)->m_hWnd
+			)
+		{
+			m_toolTip.RelayEvent(pMsg);
+		}
+		else
+		{
+			m_toolTip.Pop();
+		}
+	}
 
+	return CDialog::PreTranslateMessage(pMsg);
+}
 
 /********************************************************************
 機  能  名  称 : pyファイルのブラウズ

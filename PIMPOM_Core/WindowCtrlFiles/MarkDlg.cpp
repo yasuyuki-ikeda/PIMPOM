@@ -75,9 +75,17 @@ extern	CPimpomAPI	API;
 CMarkDlg::CMarkDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CMarkDlg::IDD, pParent)
 {
-	//{{AFX_DATA_INIT(CMarkDlg)
-		// メモ - ClassWizard はこの位置にマッピング用のマクロを追加または削除します。
-	//}}AFX_DATA_INIT
+
+}
+
+CMarkDlg::~CMarkDlg()
+{
+	delbmp.DeleteObject(); 
+	editbmp0.DeleteObject();
+	editbmp1.DeleteObject();
+	clearbmp.DeleteObject();
+	editbmp.DeleteObject();
+	idbmp.DeleteObject();
 }
 
 

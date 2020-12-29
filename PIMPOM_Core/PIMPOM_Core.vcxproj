@@ -431,12 +431,17 @@ Copy $(ProjectDir)*.py ..\bin\$(Platform)\$(Configuration)\</Command>
     <Image Include="res\button_mark_edit_line.bmp" />
     <Image Include="res\button_mark_id.bmp" />
     <Image Include="res\button_mask.bmp" />
+    <Image Include="res\button_redo.bmp" />
+    <Image Include="res\button_return.bmp" />
     <Image Include="res\button_rgb0.bmp" />
     <Image Include="res\button_rgb1.bmp" />
     <Image Include="res\button_rgb2.bmp" />
     <Image Include="res\button_rgb3.bmp" />
     <Image Include="res\button_scale_adjust_field.bmp" />
     <Image Include="res\button_scale_no_scale.bmp" />
+    <Image Include="res\button_sec_exec.bmp" />
+    <Image Include="res\button_step_exec.bmp" />
+    <Image Include="res\button_undo.bmp" />
     <Image Include="res\button_v.bmp" />
     <Image Include="res\button_video.bmp" />
     <Image Include="res\button_workarea_add.bmp" />

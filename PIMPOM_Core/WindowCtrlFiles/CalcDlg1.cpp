@@ -74,11 +74,13 @@ extern	CPimpomAPI	API;
 CCalcDlg::CCalcDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CCalcDlg::IDD, pParent)
 {
-	//{{AFX_DATA_INIT(CCalcDlg)
 
-	//}}AFX_DATA_INIT
 }
 
+CCalcDlg::~CCalcDlg()
+{
+	execbmp.DeleteObject();
+}
 
 void CCalcDlg::DoDataExchange(CDataExchange* pDX)
 {

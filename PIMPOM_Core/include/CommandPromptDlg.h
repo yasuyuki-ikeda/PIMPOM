@@ -85,7 +85,8 @@ protected:
 	CRichEditCtrl m_rich_edit4;//行番号を表示するエディットボックス
 	CListBox m_list_macro;
 	CListCtrl m_var_list;
-	CBitmap m_bmp_find;
+	CBitmap m_bmp_find, step_exec_bmp, exec_bmp, ret_bmp, undo_bmp, redo_bmp;
+	CToolTipCtrl	m_toolTip;
 	BATCH_INPUT			batchInBuffer;//バッチ実行パラメタ保存先(BatchExecuteから実行すると、上書きされる)
 	BATCH_OUTPUT		batchOutBuffer;//バッチ実行パラメタ保存先(BatchExecuteから実行すると、上書きされる)
 	CCalculate	m_calclate;//コマンドライン実行のクラス

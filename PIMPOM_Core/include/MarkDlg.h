@@ -41,6 +41,7 @@ class CMarkDlg : public CDialog
 // コンストラクション
 public:
 	CMarkDlg(CWnd* pParent = NULL);   // 標準のコンストラクタ
+	virtual ~CMarkDlg();
 	int  GetMarkEditType();
 	void SetMarkEditType(int type);
 	void OnMouseDownOnImage(float point_x, float point_y);

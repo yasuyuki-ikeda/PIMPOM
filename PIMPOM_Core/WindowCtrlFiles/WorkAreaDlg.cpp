@@ -74,6 +74,14 @@ CWorkAreaDlg::CWorkAreaDlg(CWnd* pParent /*=NULL*/)
 
 CWorkAreaDlg::~CWorkAreaDlg()
 {
+	addbmp.DeleteObject(); 
+	delbmp.DeleteObject(); 
+	fullbmp.DeleteObject();
+	editbmp.DeleteObject();
+	maskcreatebmp.DeleteObject();
+	maskdeletebmp.DeleteObject();
+	clipbmp.DeleteObject();
+	zoombmp.DeleteObject();
 }
 
 

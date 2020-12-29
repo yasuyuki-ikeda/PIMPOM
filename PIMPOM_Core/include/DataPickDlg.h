@@ -67,7 +67,7 @@ public:
 	void SetDataPickMode(int mode);
 
 protected:
-	CBitmap  paintbmp, pickbmp, fillbm;
+	CBitmap  paintbmp, pickbmp, fillbm, undobmp;
 	CToolTipCtrl	m_toolTip;
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート

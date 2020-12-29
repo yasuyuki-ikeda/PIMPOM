@@ -716,12 +716,11 @@ void CCommandPromptDlg::arrange_dlg_item()
 
 	::MoveWindow( ::GetDlgItem(m_hWnd,IDC_STATIC_COMMAND_PROMPT_PROGRAM_COUNTER),	offsetx,	offsety+clientHeight*95/100, 80, 20, true);//プログラムカウンタのキャプション
 	::MoveWindow( ::GetDlgItem(m_hWnd,IDC_EDIT_COMMAND_PROMPT_PROGRAM_COUNTER),	offsetx + 80,   offsety+clientHeight*95/100, 40, 20, true);//プログラムカウンタの値
-	::MoveWindow( ::GetDlgItem(m_hWnd,IDC_BUTTON_COMMAND_PROMPT_DO),	offsetx + 120,   offsety+clientHeight*95/100, 80, 20, true);//ステップ実行」ボタン
-	::MoveWindow( ::GetDlgItem(m_hWnd,IDC_CHECK_COMMAND_PROMPT_DO),	offsetx + 200,   offsety+clientHeight*95/100, 80, 20, true);//「連続実行」チェックボックス
-	::MoveWindow( ::GetDlgItem(m_hWnd,IDC_BUTTON_COMMAND_PROMPT_RESULT_CLEAR),	offsetx + 280,   offsety+clientHeight*95/100, 80, 20, true);//「結果クリア」ボタン
-	//::MoveWindow(::GetDlgItem(m_hWnd, IDC_CHECK_COMMAND_PROMPT_AUTO_DRAWIMAGE), offsetx + 360, offsety + clientHeight * 95 / 100, 200, 20, true);//自動再描画ボタン
-	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_COMMAND_PROMPT_UNDO), offsetx + 360, offsety + clientHeight * 95 / 100, 60, 20, true);
-	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_COMMAND_PROMPT_REDO), offsetx + 360 + 60, offsety + clientHeight * 95 / 100, 60, 20, true);
+	::MoveWindow( ::GetDlgItem(m_hWnd,IDC_BUTTON_COMMAND_PROMPT_DO),	offsetx + 120,   offsety+clientHeight*95/100, 80, 30, true);//ステップ実行」ボタン
+	::MoveWindow( ::GetDlgItem(m_hWnd,IDC_CHECK_COMMAND_PROMPT_DO),	offsetx + 200,   offsety+clientHeight*95/100, 80, 30, true);//「連続実行」チェックボックス
+	::MoveWindow( ::GetDlgItem(m_hWnd,IDC_BUTTON_COMMAND_PROMPT_RESULT_CLEAR),	offsetx + 280,   offsety+clientHeight*95/100, 80, 30, true);//「結果クリア」ボタン
+	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_COMMAND_PROMPT_UNDO), offsetx + 360, offsety + clientHeight * 95 / 100, 60, 30, true);
+	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_COMMAND_PROMPT_REDO), offsetx + 360 + 60, offsety + clientHeight * 95 / 100, 60, 30, true);
 	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_COMMAND_PROMPT_TEST_DO), offsetx + 560, offsety + clientHeight * 95 / 100, 60, 20, true);//テスト実行ボタン
 	::MoveWindow(::GetDlgItem(m_hWnd, IDC_EDIT_COMMAND_PROMPT_TEST), offsetx + 620, offsety + clientHeight * 95 / 100, 500, 20, true);//テスト実行用コマンドプロンプト
 
@@ -1026,6 +1025,11 @@ CCommandPromptDlg::~CCommandPromptDlg()
 	}
 
 	m_bmp_find.DeleteObject();
+	step_exec_bmp.DeleteObject();
+	exec_bmp.DeleteObject();
+	ret_bmp.DeleteObject();
+	undo_bmp.DeleteObject();
+	redo_bmp.DeleteObject();
 }
 
 void CCommandPromptDlg::DoDataExchange(CDataExchange* pDX)
@@ -1090,10 +1094,28 @@ BOOL CCommandPromptDlg::OnInitDialog()
 
 	DragAcceptFiles();//ドラッグ＆ドロップ対応
 	
+	//ビットマップボタン
 	m_bmp_find.LoadBitmap(IDB_FIND);
-	CButton	*p_button = (CButton*)GetDlgItem(IDC_CHECK_COMMAND_PROMPT_FIND);
-	p_button->SetBitmap((HBITMAP)m_bmp_find);
+	step_exec_bmp.LoadBitmap(IDB_BUTTON_STEP_EXEC);
+	exec_bmp.LoadBitmap(IDB_BUTTON_SEC_EXEC);
+	ret_bmp.LoadBitmap(IDB_BUTTON_RET_EXEC);
+	undo_bmp.LoadBitmap(IDB_BUTTON_UNDO);
+	redo_bmp.LoadBitmap(IDB_BUTTON_REDO);
+	((CButton*)GetDlgItem(IDC_CHECK_COMMAND_PROMPT_FIND))->SetBitmap((HBITMAP)m_bmp_find);
+	((CButton*)GetDlgItem(IDC_BUTTON_COMMAND_PROMPT_DO))->SetBitmap((HBITMAP)step_exec_bmp);
+	((CButton*)GetDlgItem(IDC_CHECK_COMMAND_PROMPT_DO))->SetBitmap((HBITMAP)exec_bmp);
+	((CButton*)GetDlgItem(IDC_BUTTON_COMMAND_PROMPT_RESULT_CLEAR))->SetBitmap((HBITMAP)ret_bmp);
+	((CButton*)GetDlgItem(IDC_BUTTON_COMMAND_PROMPT_UNDO))->SetBitmap((HBITMAP)undo_bmp);
+	((CButton*)GetDlgItem(IDC_BUTTON_COMMAND_PROMPT_REDO))->SetBitmap((HBITMAP)redo_bmp);
 	
+	//ツールチップ
+	m_toolTip.Create(this, TTS_ALWAYSTIP);
+	m_toolTip.AddTool(GetDlgItem(IDC_CHECK_COMMAND_PROMPT_FIND), "キーワードを探す");
+	m_toolTip.AddTool(GetDlgItem(IDC_BUTTON_COMMAND_PROMPT_DO), "ステップ実行");
+	m_toolTip.AddTool(GetDlgItem(IDC_CHECK_COMMAND_PROMPT_DO), "連続実行");
+	m_toolTip.AddTool(GetDlgItem(IDC_BUTTON_COMMAND_PROMPT_RESULT_CLEAR), "計測結果クリア");
+	m_toolTip.AddTool(GetDlgItem(IDC_BUTTON_COMMAND_PROMPT_UNDO), "もとに戻す");
+	m_toolTip.AddTool(GetDlgItem(IDC_BUTTON_COMMAND_PROMPT_REDO), "やりなおし");
 
 	arrange_dlg_item();
 
@@ -1264,10 +1286,24 @@ BOOL CCommandPromptDlg::PreTranslateMessage(MSG* pMsg)
 			}
 		}
 	}
-
-
-
-
+	else if (pMsg->message == WM_MOUSEMOVE)
+	{
+		//ツールチップ表示
+		if (pMsg->hwnd == GetDlgItem(IDC_CHECK_COMMAND_PROMPT_FIND)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_BUTTON_COMMAND_PROMPT_DO)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_CHECK_COMMAND_PROMPT_DO)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_BUTTON_COMMAND_PROMPT_RESULT_CLEAR)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_BUTTON_COMMAND_PROMPT_UNDO)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_BUTTON_COMMAND_PROMPT_REDO)->m_hWnd
+			)
+		{
+			m_toolTip.RelayEvent(pMsg);
+		}
+		else
+		{
+			m_toolTip.Pop();
+		}
+	}
 
 	return CDialog::PreTranslateMessage(pMsg);
 }

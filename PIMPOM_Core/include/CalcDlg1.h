@@ -40,7 +40,7 @@ class CCalcDlg : public CDialog
 
 public:
 	CCalcDlg(CWnd* pParent = NULL);   // 標準のコンストラクタ
-
+	virtual ~CCalcDlg();
 
 
 protected:

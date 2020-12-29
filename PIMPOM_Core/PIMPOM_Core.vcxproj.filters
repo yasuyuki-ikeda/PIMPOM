@@ -645,6 +645,21 @@
     <Image Include="res\PIMPOM15.ico">
       <Filter>リソース ファイル</Filter>
     </Image>
+    <Image Include="res\button_sec_exec.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_step_exec.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_return.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_undo.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\button_redo.bmp">
+      <Filter>リソース ファイル</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PIMPOM.rc">

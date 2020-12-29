@@ -52,6 +52,8 @@ public:
 protected:
 	CString			message;//メッセージボックスに表示する文字列
 	bool			verCheck = false;//python環境チェックチェックするか
+	CBitmap			execbmp, editbmp;
+	CToolTipCtrl	m_toolTip;
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
 	virtual  BOOL OnInitDialog();
@@ -62,6 +64,7 @@ protected:
 //メッセージハンドラ
 	DECLARE_MESSAGE_MAP()
 public:
+	BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnBnClickedPythonBatchDlgBrowseFile();
 	afx_msg void OnBnClickedButtonIdcPythonBatchDlgTrial();
