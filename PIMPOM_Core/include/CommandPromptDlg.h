@@ -148,4 +148,5 @@ public:
 	afx_msg void OnBnClickedButtonCommandPromptUndo();
 	afx_msg void OnBnClickedButtonCommandPromptRedo();
 	afx_msg void OnDestroy();
+	afx_msg void OnDropFiles(HDROP hDropInfo);
 };

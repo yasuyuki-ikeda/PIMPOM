@@ -1067,6 +1067,7 @@ BEGIN_MESSAGE_MAP(CCommandPromptDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_COMMAND_PROMPT_UNDO, &CCommandPromptDlg::OnBnClickedButtonCommandPromptUndo)
 	ON_BN_CLICKED(IDC_BUTTON_COMMAND_PROMPT_REDO, &CCommandPromptDlg::OnBnClickedButtonCommandPromptRedo)
 	ON_WM_DESTROY()
+	ON_WM_DROPFILES()
 END_MESSAGE_MAP()
 
 
@@ -1086,6 +1087,8 @@ BOOL CCommandPromptDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	SetIcon(AfxGetApp()->LoadIcon(IDI_RUN), TRUE);			// アイコンを設定
+
+	DragAcceptFiles();//ドラッグ＆ドロップ対応
 	
 	m_bmp_find.LoadBitmap(IDB_FIND);
 	CButton	*p_button = (CButton*)GetDlgItem(IDC_CHECK_COMMAND_PROMPT_FIND);
@@ -1269,6 +1272,31 @@ BOOL CCommandPromptDlg::PreTranslateMessage(MSG* pMsg)
 	return CDialog::PreTranslateMessage(pMsg);
 }
 
+
+/********************************************************************
+機  能  名  称 : ドラッグアンドドロップ
+関    数    名 : OnDropFiles
+引          数 :
+戻    り    値 :
+機          能 :
+日付         作成者          内容
+------------ --------------- ---------------------------------------
+Y.Ikeda         新規作成
+********************************************************************/
+void CCommandPromptDlg::OnDropFiles(HDROP hDropInfo)
+{
+	UINT size = DragQueryFile(hDropInfo, 0, NULL, 0) + 1;//ファイル名の長さを取得
+
+	CString filename;
+	DragQueryFile(hDropInfo, 0, filename.GetBuffer(size), size);//ファイル名の取得
+	filename.ReleaseBuffer();
+
+	if (filename.Right(3).MakeLower() == _T("txt"))//txtの場合はファイル展開
+	{
+		open_script_file("", filename.GetBuffer());
+		filename.ReleaseBuffer();
+	}
+}
 
 /********************************************************************
 機  能  名  称 : エディット内容変更に伴うブレークポイント変更

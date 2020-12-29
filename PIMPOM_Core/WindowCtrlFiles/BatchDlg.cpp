@@ -654,7 +654,6 @@ void CBatchDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 ********************************************************************/
 void CBatchDlg::OnDropFiles(HDROP hDropInfo)
 {
-	CString		strFileName;
 	int		file_num = (int)DragQueryFileA( hDropInfo, -1, NULL, 0);//ドロップされたファイル数を取得
 
 	for(int i=0; i<file_num ; i++)

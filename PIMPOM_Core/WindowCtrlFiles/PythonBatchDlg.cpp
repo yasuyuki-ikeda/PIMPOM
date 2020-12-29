@@ -87,7 +87,7 @@ unsigned __stdcall PythonBatchThread(void* pArg)
 ------------ --------------- ---------------------------------------
 Y.Ikeda         新規作成
 ********************************************************************/
-bool CPythonBatchDlg::execCmd(CString cmd)
+bool CPythonBatchDlg::execCmd(CString cmd, CString currentdir)
 {
 	// パイプの作成
 	HANDLE readPipe;
@@ -113,12 +113,15 @@ bool CPythonBatchDlg::execCmd(CString cmd)
 	si.wShowWindow = SW_HIDE;
 
 	//コマンドの実行
-	if (CreateProcess(NULL, cmd.GetBuffer(), NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) == 0) 
+	if (CreateProcess(NULL, cmd.GetBuffer(), NULL, NULL, TRUE, 0, NULL, currentdir.GetBuffer(), &si, &pi) == 0)
 	{
+		cmd.ReleaseBuffer();
+		currentdir.ReleaseBuffer();
 		CloseHandle(readPipe);
 		return false;
 	}
 	cmd.ReleaseBuffer();
+	currentdir.ReleaseBuffer();
 
 	HANDLE childProcess = pi.hProcess;
 	CloseHandle(pi.hThread);
@@ -192,7 +195,7 @@ Y.Ikeda         新規作成
 ********************************************************************/
 bool CPythonBatchDlg::OnBatchExecute()
 {
-	bool ret = false;
+	bool ret = true;
 
 	if (::IsWindowVisible(m_hWnd) == false)	return false;
 
@@ -203,10 +206,21 @@ bool CPythonBatchDlg::OnBatchExecute()
 	{
 		flg = true;
 
-		CString filepath;
-		API.GetEditValue(m_hWnd, IDC_EDIT_PYTHON_BATCH_DLG_FILEPATH, &filepath);
+		if (verCheck)
+		{//python環境チェック
+			ret = execCmd(_T("python vercheck.py"),API.GetDefaultPath());
 
-		ret = execCmd(_T("python ") + filepath);
+			verCheck = false;
+		}
+		else 
+		{//pythonスクリプト実行
+			CString filepath, currentdir;
+			API.GetEditValue(m_hWnd, IDC_EDIT_PYTHON_BATCH_DLG_FILEPATH, &filepath);
+			currentdir = filepath.Left(filepath.ReverseFind('\\'));
+
+			ret = execCmd(_T("python ") + filepath, currentdir);
+		}
+
 
 		flg = false;
 	}
@@ -224,7 +238,8 @@ void CPythonBatchDlg::arrange_dlg_item()
 	::MoveWindow(::GetDlgItem(m_hWnd, IDC_EDIT_PYTHON_BATCH_DLG_FILEPATH), 120, 0, clientRct.right - clientRct.left - 170, 20, true);
 	::MoveWindow(::GetDlgItem(m_hWnd, IDC_PYTHON_BATCH_DLG_BROWSE_FILE), clientRct.right - clientRct.left - 60, 0, 50, 20, true);
 	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_EDIT), 0, 22, 100, 20, true);
-	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_TRIAL), 102, 22, 100, 20, true);
+	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_TRIAL), 102, 22, 100, 20, true); 
+	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_VERCHK), 202, 22, 150, 20, true);
 	::MoveWindow(::GetDlgItem(m_hWnd, IDC_EDIT_YTHON_BATCH_DLG_OUTPUT), 0, 44, clientRct.right - clientRct.left - 4, clientRct.bottom - clientRct.top - 50, true);
 	
 }
@@ -253,8 +268,10 @@ void CPythonBatchDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CPythonBatchDlg, CDialog)
 	ON_BN_CLICKED(IDC_PYTHON_BATCH_DLG_BROWSE_FILE, &CPythonBatchDlg::OnBnClickedPythonBatchDlgBrowseFile)
 	ON_BN_CLICKED(IDC_BUTTON_IDC_PYTHON_BATCH_DLG_TRIAL, &CPythonBatchDlg::OnBnClickedButtonIdcPythonBatchDlgTrial)
+	ON_BN_CLICKED(IDC_BUTTON_IDC_PYTHON_BATCH_DLG_VERCHK, &CPythonBatchDlg::OnBnClickedButtonIdcPythonBatchDlgVerchk)
 	ON_WM_SIZE()
 	ON_BN_CLICKED(IDC_BUTTON_IDC_PYTHON_BATCH_DLG_EDIT, &CPythonBatchDlg::OnBnClickedButtonIdcPythonBatchDlgEdit)
+	ON_WM_DROPFILES()
 END_MESSAGE_MAP()
 
 
@@ -273,6 +290,8 @@ BOOL CPythonBatchDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	SetIcon(AfxGetApp()->LoadIcon(IDI_RUN), TRUE);			// アイコンを設定
+										
+	DragAcceptFiles();//ドラッグ＆ドロップ対応
 
 	arrange_dlg_item();
 
@@ -328,6 +347,34 @@ void CPythonBatchDlg::OnBnClickedPythonBatchDlgBrowseFile()
 	default_file.ReleaseBuffer();
 }
 
+/********************************************************************
+機  能  名  称 : ドラッグアンドドロップ
+関    数    名 : OnDropFiles
+引          数 :
+戻    り    値 :
+機          能 : 
+			日付         作成者          内容
+			------------ --------------- ---------------------------------------
+			Y.Ikeda         新規作成
+********************************************************************/
+void CPythonBatchDlg::OnDropFiles(HDROP hDropInfo)
+{
+	UINT size = DragQueryFile(hDropInfo, 0, NULL, 0) + 1;//ファイル名の長さを取得
+
+	CString filename;
+	DragQueryFile(hDropInfo, 0, filename.GetBuffer(size), size);//ファイル名の取得
+	filename.ReleaseBuffer();
+
+	if (filename.Right(2).MakeLower() == _T("py"))//pyの場合はファイル展開
+	{
+		API.python_batch_file = filename;
+
+		API.SetEditValue(m_hWnd, IDC_EDIT_PYTHON_BATCH_DLG_FILEPATH, API.python_batch_file);
+
+		API.WriteProfile("SETTING", "PYTHON_BATCH_FILE", API.python_batch_file);//PIMPOM.iniに書き込む
+	}
+}
+
 
 /********************************************************************
 機  能  名  称 : 実行ボタン押下
@@ -361,4 +408,23 @@ void CPythonBatchDlg::OnBnClickedButtonIdcPythonBatchDlgEdit()
 	API.GetEditValue(m_hWnd, IDC_EDIT_PYTHON_BATCH_DLG_FILEPATH, &filepath);
 
 	ShellExecute(NULL, "open", filepath, NULL, NULL, SW_SHOWNORMAL);
+}
+
+
+/********************************************************************
+機  能  名  称 : python環境チェック
+関    数    名 : OnBnClickedButtonIdcPythonBatchDlgVerchk
+引          数 :
+戻    り    値 :
+機          能 :
+日付         作成者          内容
+------------ --------------- ---------------------------------------
+Y.Ikeda         新規作成
+********************************************************************/
+void CPythonBatchDlg::OnBnClickedButtonIdcPythonBatchDlgVerchk()
+{
+	verCheck = true;
+
+	UINT thrID = 0;
+	HANDLE hThread = (HANDLE)::_beginthreadex(NULL, 0, &PythonBatchThread, this, 0, &thrID);
 }

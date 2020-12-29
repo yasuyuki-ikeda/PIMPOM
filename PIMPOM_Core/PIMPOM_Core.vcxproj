@@ -160,8 +160,7 @@ Copy $(SolutionDir)OpenCV\x64\vc14bin\Debug\*.* $(TargetDir)*.*
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>Copy $(ProjectDir)*.py ..\bin\$(Platform)\$(Configuration)\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -243,7 +242,8 @@ Copy $(SolutionDir)OpenCV\x64\vc14bin\Release\*.* $(TargetDir)*.*
     <PostBuildEvent>
       <Command>Mkdir ..\bin\$(Platform)\$(Configuration)
 Copy $(Platform)\$(Configuration)\*.lib  ..\bin\$(Platform)\$(Configuration)\
-Copy $(Platform)\$(Configuration)\*.dll  ..\bin\$(Platform)\$(Configuration)\</Command>
+Copy $(Platform)\$(Configuration)\*.dll  ..\bin\$(Platform)\$(Configuration)\
+Copy $(ProjectDir)*.py ..\bin\$(Platform)\$(Configuration)\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

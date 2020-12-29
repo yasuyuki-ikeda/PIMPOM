@@ -51,10 +51,11 @@ public:
 
 protected:
 	CString			message;//メッセージボックスに表示する文字列
+	bool			verCheck = false;//python環境チェックチェックするか
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
 	virtual  BOOL OnInitDialog();
-	bool execCmd(CString cmd);
+	bool execCmd(CString cmd,CString currentdir);
 	void arrange_dlg_item();
 
 
@@ -64,5 +65,7 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnBnClickedPythonBatchDlgBrowseFile();
 	afx_msg void OnBnClickedButtonIdcPythonBatchDlgTrial();
-	afx_msg void OnBnClickedButtonIdcPythonBatchDlgEdit();
+	afx_msg void OnBnClickedButtonIdcPythonBatchDlgEdit(); 
+	afx_msg void OnBnClickedButtonIdcPythonBatchDlgVerchk();
+	afx_msg void OnDropFiles(HDROP hDropInfo);
 };
