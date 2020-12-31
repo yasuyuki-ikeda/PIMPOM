@@ -132,9 +132,15 @@ bool CPythonBatchDlg::execCmd(CString cmd, CString currentdir)
 	while (continue_flg)
 	{
 		DWORD totalLen, len;
-		if (WaitForSingleObject(childProcess, 30) == WAIT_OBJECT_0)
+		if (WaitForSingleObject(childProcess, 10) == WAIT_OBJECT_0)
 		{
 			continue_flg = false;
+		}
+
+		if (killProcessFlg) {//強制終了
+			killProcessFlg = false;
+			continue_flg = false;
+			TerminateProcess(childProcess,0);
 		}
 
 		if (PeekNamedPipe(readPipe, NULL, 0, NULL, &totalLen, NULL) == 0)
@@ -206,11 +212,11 @@ bool CPythonBatchDlg::OnBatchExecute()
 	{
 		flg = true;
 
-		if (verCheck)
+		if (verCheckFlg)
 		{//python環境チェック
 			ret = execCmd(_T("python vercheck.py"),API.GetDefaultPath());
 
-			verCheck = false;
+			verCheckFlg = false;
 		}
 		else 
 		{//pythonスクリプト実行
@@ -240,6 +246,7 @@ void CPythonBatchDlg::arrange_dlg_item()
 	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_EDIT), 0, 22, 100, 30, true);
 	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_TRIAL), 102, 22, 100, 30, true); 
 	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_VERCHK), 202, 22, 150, 30, true);
+	::MoveWindow(::GetDlgItem(m_hWnd, IDC_BUTTON_IDC_PYTHON_BATCH_DLG_KILL), 352, 22, 100, 30, true);
 	::MoveWindow(::GetDlgItem(m_hWnd, IDC_EDIT_YTHON_BATCH_DLG_OUTPUT), 0, 54, clientRct.right - clientRct.left - 4, clientRct.bottom - clientRct.top - 60, true);
 	
 }
@@ -274,6 +281,7 @@ BEGIN_MESSAGE_MAP(CPythonBatchDlg, CDialog)
 	ON_WM_SIZE()
 	ON_BN_CLICKED(IDC_BUTTON_IDC_PYTHON_BATCH_DLG_EDIT, &CPythonBatchDlg::OnBnClickedButtonIdcPythonBatchDlgEdit)
 	ON_WM_DROPFILES()
+	ON_BN_CLICKED(IDC_BUTTON_IDC_PYTHON_BATCH_DLG_KILL, &CPythonBatchDlg::OnBnClickedButtonIdcPythonBatchDlgKill)
 END_MESSAGE_MAP()
 
 
@@ -464,8 +472,23 @@ Y.Ikeda         新規作成
 ********************************************************************/
 void CPythonBatchDlg::OnBnClickedButtonIdcPythonBatchDlgVerchk()
 {
-	verCheck = true;
+	verCheckFlg = true;
 
 	UINT thrID = 0;
 	HANDLE hThread = (HANDLE)::_beginthreadex(NULL, 0, &PythonBatchThread, this, 0, &thrID);
+}
+
+/********************************************************************
+機  能  名  称 : pythonプログラム強制終了
+関    数    名 : OnBnClickedButtonIdcPythonBatchDlgKill
+引          数 :
+戻    り    値 :
+機          能 :
+日付         作成者          内容
+------------ --------------- ---------------------------------------
+Y.Ikeda         新規作成
+********************************************************************/
+void CPythonBatchDlg::OnBnClickedButtonIdcPythonBatchDlgKill()
+{
+	killProcessFlg = true;
 }

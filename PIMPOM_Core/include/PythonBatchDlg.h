@@ -51,7 +51,8 @@ public:
 
 protected:
 	CString			message;//メッセージボックスに表示する文字列
-	bool			verCheck = false;//python環境チェックチェックするか
+	bool			verCheckFlg = false;//python環境チェックするかを表すフラグ
+	bool			killProcessFlg = false;//python強制終了するかどうかを表すフラグ
 	CBitmap			execbmp, editbmp;
 	CToolTipCtrl	m_toolTip;
 
@@ -71,4 +72,5 @@ public:
 	afx_msg void OnBnClickedButtonIdcPythonBatchDlgEdit(); 
 	afx_msg void OnBnClickedButtonIdcPythonBatchDlgVerchk();
 	afx_msg void OnDropFiles(HDROP hDropInfo);
+	afx_msg void OnBnClickedButtonIdcPythonBatchDlgKill();
 };
