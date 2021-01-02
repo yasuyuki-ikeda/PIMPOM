@@ -1,0 +1,6 @@
+; UserDlgTemplate.def : DLL のモジュール パラメータを宣言します。
+
+LIBRARY      "UserDlgTemplate"
+
+EXPORTS
+    ; 明示的なエクスポートはここへ記述できます

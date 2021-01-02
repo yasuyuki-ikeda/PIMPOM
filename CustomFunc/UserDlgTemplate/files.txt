@@ -1,0 +1,17 @@
+dllmain.cpp
+ReadMe.txt
+res
+Resource.h
+stdafx.cpp
+stdafx.h
+targetver.h
+UserDlgEx.cpp
+UserDlgEx.h
+UserDlgTemplate.cpp
+UserDlgTemplate.def
+UserDlgTemplate.h
+UserDlgTemplate.rc
+UserDlgTemplate.vcxproj
+UserDlgTemplate.vcxproj.filters
+UserDlgTemplate2015.sln
+res\UserDlgTemplate.rc2
