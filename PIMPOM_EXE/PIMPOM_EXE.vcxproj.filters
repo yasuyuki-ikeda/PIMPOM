@@ -40,12 +40,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\PIMPOM_Core\res\PIMPOM.ico">
-      <Filter>リソース ファイル</Filter>
-    </Image>
-    <Image Include="..\pimpom_core\res\icon2.ico">
-      <Filter>リソース ファイル</Filter>
-    </Image>
     <Image Include="res\pimpom.ico">
       <Filter>リソース ファイル</Filter>
     </Image>

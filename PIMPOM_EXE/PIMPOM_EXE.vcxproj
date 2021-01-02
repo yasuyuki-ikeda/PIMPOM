@@ -235,8 +235,6 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\pimpom_core\res\icon2.ico" />
-    <Image Include="..\PIMPOM_Core\res\PIMPOM.ico" />
     <Image Include="res\pimpom.ico" />
   </ItemGroup>
   <ItemGroup>
