@@ -1,15 +1,15 @@
 ## PIMPOM
-This program is rapid prototiping tool for image processing.  
+This program is rapid prototyping tool for image processing.  
 
 ![main](https://user-images.githubusercontent.com/61925130/103189487-32789600-4910-11eb-82a0-2136a6ef8d6a.jpg)  
 
 
 **developping environment**  
-- All codes are written with C++  
+- All source codes are written with C++  
 - VisualStudio2015 is used for building.  
 - MFC is used for building HMI.  
-- OpenCV is used.  
-- HMI and comments are Japanese only.  
+- OpenCV and Boost are used internally.  
+- HMI, Documents and comments in source codes are witten in Japanese only.  
  
 
 **requirements**  
