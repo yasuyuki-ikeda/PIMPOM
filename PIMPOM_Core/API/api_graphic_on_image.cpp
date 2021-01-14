@@ -563,7 +563,7 @@ void draw_point_on_image(CPimpomAPI *pAPI, long image_num, CPoint point, int dot
 		g = ((COLORREF)dat / 0x100) % 0x100;
 		b = ((COLORREF)dat / 0x100 / 0x100) % 0x100;
 
-		//グレー画像が存在するメモリに対して、DATA=RGBREFでこの関数を呼んだ場合の対応
+		//RGBに対して、DATA=RGBREFでこの関数を呼んだ場合の対応
 		if (!p_du->DispRGB) {
 			dat = (DATA)r;//rの値をグレー値として使う
 		}
@@ -571,10 +571,10 @@ void draw_point_on_image(CPimpomAPI *pAPI, long image_num, CPoint point, int dot
 
 
 
-	//グレー画像が存在するメモリに対して、この関数を呼んだ場合の対応
-	if( !( ( p_du->DataType == RGB_FORMAT || p_du->DataType == RGB_3D_FORMAT ) && p_du->DispRGB) ){
-		dat = (DATA)r;//rの値をグレー値として使う
-	}
+	////グレー画像が存在するメモリに対して、この関数を呼んだ場合の対応
+	//if( !( ( p_du->DataType == RGB_FORMAT || p_du->DataType == RGB_3D_FORMAT ) && p_du->DispRGB) ){
+	//	dat = (DATA)r;//rの値をグレー値として使う
+	//}
 
 
 	for(int j=-dot_size_half ; j<=dot_size_half ; j++)
