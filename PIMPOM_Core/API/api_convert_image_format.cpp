@@ -420,7 +420,7 @@ bool	data_convert(CPimpomAPI *pAPI, int target_data_number, DATA *p_src , CONVER
 				 int					rgb_to			(in)RGB型に変換する場合の入力先 （1:R成分 2:G成分 3:B成分 0:RGB全成分）
 				 int					comp_to			(in)複素数型の挿入先（0:実部　1:虚部）
 				 bool					satulate		(in)型式の上下限を超える値を変換するとき飽和させるかどうか
-				 bool					byte_from_disp	(in)表示メモリから変換するかどうか（type_toがBYTE型のときのみ有効）
+				 int					byte_from	　　(in)表示メモリまたはマスクから変換するかどうか（type_toがBYTE型のときのみ有効）（0:データから 1:表示画像から 2:マスクから）
 				bool					show_message	(in)変換後にメッセージを表示するか
 戻    り    値 : 成功すれば true
 機          能 : 変換結果は、同画像メモリに上書きされる
@@ -428,14 +428,14 @@ bool	data_convert(CPimpomAPI *pAPI, int target_data_number, DATA *p_src , CONVER
 ------------ --------------- --------------------------------------- 
              Y.Ikeda         新規作成
 ********************************************************************/
-bool	CPimpomAPI::ConvertDataUnit(long number, int type_to, int rgb_to, int comp_to, bool satulate, bool byte_from_disp, int color_gray_method, bool show_message)
+bool	CPimpomAPI::ConvertDataUnit(long number, int type_to, int rgb_to, int comp_to, bool satulate, int byte_from, int color_gray_method, bool show_message)
 {
 	CONVERT_DATA_OPTION option = {0};
 	option.type_to = type_to;
 	option.rgb_to = rgb_to;
 	option.comp_to = comp_to;
 	option.satulate = satulate;
-	option.byte_from_disp = byte_from_disp;
+	option.byte_from = byte_from;
 	option.color_gray_method = color_gray_method;
 
 	return ConvertDataUnit(number,option,show_message );
@@ -484,7 +484,7 @@ bool	CPimpomAPI::ConvertDispToByte(long number)
 {
 	CONVERT_DATA_OPTION option={0};
 	option.type_to = BYTE_FORMAT;
-	option.byte_from_disp = true;
+	option.byte_from = 1;
 
 	return ConvertDataUnit(number, option, false);
 }
@@ -504,7 +504,7 @@ bool	CPimpomAPI::ConvertMaskToByte(long number)
 {
 	CONVERT_DATA_OPTION option = { 0 };
 	option.type_to = BYTE_FORMAT;
-	option.byte_from_mask = true;
+	option.byte_from = 2;
 
 	return ConvertDataUnit(number, option, false);
 }

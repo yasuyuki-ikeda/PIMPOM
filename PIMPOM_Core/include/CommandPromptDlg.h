@@ -98,6 +98,7 @@ protected:
 	char		*pUndoTbl[UNDO_MAX];//スクリプトの編集履歴を退避する場所
 	int			undoID;//undo回数
 	bool		brakePoints[CALC_COMMAND_LINE_MAX];//ブレークポイント
+	bool		stopAtBreakPoint = false;//ブレークポイントで停止していることを表すフラグ
 
 	virtual  void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
 	int		 get_command_lines(CString textBuffer, COMMAND_LINE_STRUCT commandLines[]);//全体を表す文字列から行ごとのインデックスを調べる

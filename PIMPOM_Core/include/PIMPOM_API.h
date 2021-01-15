@@ -189,7 +189,7 @@ public:
 
 	//画像メモリの変換
 	bool			ConvertDataUnit(long number, CONVERT_DATA_OPTION option, bool show_confirm=false);//画像メモリのタイプを変更
-	bool			ConvertDataUnit(long number, int type_to, int rgb_to, int comp_to, bool satulate, bool byte_from_disp, int color_gray_method, bool show_message=false);
+	bool			ConvertDataUnit(long number, int type_to, int rgb_to, int comp_to, bool satulate, int byte_from, int color_gray_method, bool show_message=false);
 	bool			ConvertDispToByte(long number);//画像メモリをBYTE型にコンバート
 	bool			ConvertMaskToByte(long number);//マスクをBYTE型にコンバート
 	bool			ClipDataUnit(long number, CRect clip_rect, bool show_message=false);//画像をクリッピング

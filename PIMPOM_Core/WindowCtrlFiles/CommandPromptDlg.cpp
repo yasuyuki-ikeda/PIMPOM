@@ -1162,7 +1162,7 @@ BOOL CCommandPromptDlg::OnInitDialog()
 	memset(blockMap, 0, sizeof(bool)*CALC_COMMAND_LINE_MAX);//PassedIfIDMapの初期化
 
 	memset(brakePoints, 0, sizeof(bool)*CALC_COMMAND_LINE_MAX);//brakePointsの初期化
-
+	stopAtBreakPoint = false;
 
 	//スクリプトの編集履歴を退避する場所の確保
 	for (int i = 0; i < UNDO_MAX; i++){
@@ -1170,6 +1170,7 @@ BOOL CCommandPromptDlg::OnInitDialog()
 	}
 	undoID = 0;
 	log_text_data();
+	
 
 	API.SetCheck(m_hWnd, IDC_CHECK_COMMAND_PROMPT_AUTO_DRAWIMAGE, true);//自動再描画ON
 
@@ -1485,6 +1486,8 @@ void CCommandPromptDlg::OnTimer(UINT_PTR nIDEvent)
 			show_line_number(program_counter, true);
 
 			API.SetEditValue(m_hWnd, IDC_EDIT_COMMAND_PROMPT_PROGRAM_COUNTER, program_counter+1);//プログラムカウンタをひとつ進めておく	
+
+			stopAtBreakPoint = true;
 			return;
 		}
 
@@ -1592,11 +1595,17 @@ void CCommandPromptDlg::OnBnClickedCheckCommandPromptDo()
 {
 	if(API.GetCheck(m_hWnd,IDC_CHECK_COMMAND_PROMPT_DO))
 	{
+		if (stopAtBreakPoint) {//ブレーク中
+			stopAtBreakPoint = false;
+		}
+		else 
+		{
+			API.SetEditValue(m_hWnd, IDC_EDIT_COMMAND_PROMPT_PROGRAM_COUNTER, 0);//プログラムカウンタ初期化
+		}
+
 		arrange_dlg_item();
 
 		KillTimer(0);//一旦タイマーを切る
-
-		//OnBnClickedButtonCommandPromptResultClear();//結果クリア
 
 		SetTimer(0,10,NULL);//タイマー再開
 	}else{
@@ -1669,6 +1678,8 @@ void CCommandPromptDlg::OnCommandPromptMenuNew()
 	m_rich_edit.SetWindowText(str);//エディットクリア
 
 	memset(brakePoints, 0, sizeof(bool)*CALC_COMMAND_LINE_MAX);//brakePointsの初期化
+	stopAtBreakPoint = false;
+
 	show_line_number();//行番号表示
 }
 

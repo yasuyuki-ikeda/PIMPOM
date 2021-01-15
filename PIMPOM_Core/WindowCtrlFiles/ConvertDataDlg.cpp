@@ -590,10 +590,10 @@ bool CConvertDataDlg::execute(int image_num)
 	option.type_to = type;
 
 	if (m_combo_src_type.GetCurSel() == 0){
-		option.byte_from_disp = true;
+		option.byte_from = 1;
 	}
 	else if (m_combo_src_type.GetCurSel() == 2){
-		option.byte_from_mask = true;
+		option.byte_from = 2;
 	}
 	else{
 		if (type == RGB_FORMAT)

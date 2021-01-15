@@ -61,8 +61,7 @@ typedef struct{
 	int rgb_to;//RGB型に変換する場合の入力先 （1:R成分 2:G成分 3:B成分 1～3以外:RGB全成分） 
 	int comp_to;//複素数型の挿入先（0:実部　0以外:虚部）
 	bool satulate;//型式の上下限を超える値を変換するとき飽和させるかどうか（0以外：飽和させる　0:オーバーフローさせる）
-	bool byte_from_disp;//type_toがBYTE型のとき、表示メモリから変換するかどうか（0以外：表示メモリから　0:データから）
-	bool byte_from_mask;//type_toがBYTE型のとき、マスクメモリから変換するかどうか（0以外：マスクメモリから　0:データから）
+	int byte_from;//type_toがBYTE型のとき、表示メモリorマスクメモリから変換するかどうか（0:データから 1:表示メモリから 1:マスクから）
 	int color_gray_method;//RGB->グレー変換方法 (1:彩度 2:色相  これら以外:明度)
 	int  threeD_page;//3Dに変換するときのページ数
 	int  threeD_offset;//3Dに変換するときのページオフセット

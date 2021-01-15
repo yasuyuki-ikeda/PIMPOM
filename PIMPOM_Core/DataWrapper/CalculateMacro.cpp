@@ -822,7 +822,7 @@ bool CCalculate::execute_macro(
 			(int)params[2].number,	//RGBに変換する場合の挿入先 （1:R成分 2:G成分 3:B成分 1-3以外:RGB全成分）
 			(int)params[3].number,	//複素数に変換する場合の挿入先（0:実部　0以外:虚部）
 			(bool)params[4].number,	//型式の上下限を超える値を変換するとき飽和させるかどうか (0:しない 0以外:する)
-			(bool)params[5].number,	//BYTEに変換する場合、表示メモリから変換するかどうか (0:しない 0以外:する)
+			(int)params[5].number,	//BYTEに変換する場合、表示メモリorマスクから変換するかどうか （0:データから 1:表示画像から 2:マスクから）
 			(bool)params[6].number	//RGBからグレーに変換する方法(1:彩度 2:色相  これら以外:明度)
 		))
 		{

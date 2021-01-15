@@ -285,11 +285,11 @@ bool	data_convert(CDataUnit				*pSrcDU,	//(in)変換前のCDataUnitへのポインタ
 		switch( option.type_to )
 		{
 			case BYTE_FORMAT:
-				if(option.byte_from_disp)
+				if(option.byte_from==1)
 				{
 					disp_to_data(pSrcDU, pDstDU->pByteData, option.color_gray_method);//disp->BYTE
 				}
-				else if (option.byte_from_mask)
+				else if (option.byte_from==2)
 				{
 					mask_to_data(pSrcDU, pDstDU->pByteData);//mask->BYTE
 				}
