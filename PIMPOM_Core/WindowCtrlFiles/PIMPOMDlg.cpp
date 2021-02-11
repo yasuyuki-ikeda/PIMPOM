@@ -321,6 +321,10 @@ BOOL CPIMPOMDlg::OnInitDialog()
 	m_toolTip.AddTool(GetDlgItem(IDC_BUTTON_PIMPON_DLG_NO_SCALE), "等倍表示");
 	m_toolTip.AddTool(GetDlgItem(IDC_CHECK_PIMPON_DLG_VIDEO_CAPTURE), "ライブ表示");
 	m_toolTip.AddTool(GetDlgItem(IDC_CHECK_PIMPON_DLG_VIDEO_CAPTURE2), "ライブ実行");
+	m_toolTip.AddTool(GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT0), "");
+	m_toolTip.AddTool(GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT1), "");
+	m_toolTip.AddTool(GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT2), "");
+	m_toolTip.AddTool(GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT3), "");
 	
 
 	//カスタムファンクションをメニューに追加
@@ -577,7 +581,11 @@ BOOL CPIMPOMDlg::PreTranslateMessage(MSG* pMsg)
 			pMsg->hwnd == GetDlgItem(IDC_BUTTON_PIMPON_DLG_SCALE_ADJUST_FILED)->m_hWnd ||
 			pMsg->hwnd == GetDlgItem(IDC_BUTTON_PIMPON_DLG_NO_SCALE)->m_hWnd ||
 			pMsg->hwnd == GetDlgItem(IDC_CHECK_PIMPON_DLG_VIDEO_CAPTURE)->m_hWnd ||
-			pMsg->hwnd == GetDlgItem(IDC_CHECK_PIMPON_DLG_VIDEO_CAPTURE2)->m_hWnd
+			pMsg->hwnd == GetDlgItem(IDC_CHECK_PIMPON_DLG_VIDEO_CAPTURE2)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT0)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT1)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT2)->m_hWnd ||
+			pMsg->hwnd == GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT3)->m_hWnd
 			)
 		{
 			m_toolTip.RelayEvent(pMsg);
@@ -1515,6 +1523,7 @@ void CPIMPOMDlg::set_bitmap_for_data_button()
 	CButton	*p_button_d3 = (CButton*)GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT3);
 	
 
+
 		if(p_du == NULL){//データが無ければ全てのデータ選択ボタンを非表示にする
 			p_button_d0->ShowWindow( SW_HIDE );
 			p_button_d1->ShowWindow( SW_HIDE );
@@ -1553,6 +1562,11 @@ void CPIMPOMDlg::set_bitmap_for_data_button()
 					set_bitmap_button( (HBITMAP)bmp_button_3d[1] , IDC_CHECK_PIMPON_DLG_DATA_SELECT1);
 					set_bitmap_button( (HBITMAP)bmp_button_3d[2] , IDC_CHECK_PIMPON_DLG_DATA_SELECT2);
 					set_bitmap_button( (HBITMAP)bmp_button_3d[3] , IDC_CHECK_PIMPON_DLG_DATA_SELECT3);
+					m_toolTip.UpdateTipText( "連続表示", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT0));
+					m_toolTip.UpdateTipText("表示ページを一つ進める", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT1) );
+					m_toolTip.UpdateTipText("表示ページを一戻す", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT2) );
+					m_toolTip.UpdateTipText("連続表示を止める", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT3) );
+					
 						if( API.GetBGProcID()==BGPROC_MOVIE )		set_data_select_button(0);//ビデオ再生中
 						else										set_data_select_button(3);//ビデオ停止中
 					break;		
@@ -1567,6 +1581,10 @@ void CPIMPOMDlg::set_bitmap_for_data_button()
 					set_bitmap_button( (HBITMAP)bmp_button_complex[2] , IDC_CHECK_PIMPON_DLG_DATA_SELECT2);
 					set_bitmap_button( (HBITMAP)bmp_button_complex[3] , IDC_CHECK_PIMPON_DLG_DATA_SELECT3);
 					set_data_select_button( p_du->DispChannel );
+					m_toolTip.UpdateTipText("実部", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT0) );
+					m_toolTip.UpdateTipText("虚部", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT1) );
+					m_toolTip.UpdateTipText("絶対値", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT2) );
+					m_toolTip.UpdateTipText("偏角", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT3));
 					break;
 
 				case XY_FORMAT:
@@ -1577,6 +1595,8 @@ void CPIMPOMDlg::set_bitmap_for_data_button()
 					set_bitmap_button( (HBITMAP)bmp_button_xy[0] , IDC_CHECK_PIMPON_DLG_DATA_SELECT0);
 					set_bitmap_button( (HBITMAP)bmp_button_xy[1] , IDC_CHECK_PIMPON_DLG_DATA_SELECT1);
 					set_data_select_button( p_du->DispChannel );
+					m_toolTip.UpdateTipText("X成分", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT0));
+					m_toolTip.UpdateTipText("Y成分", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT1));
 					break;
 	
 				case XYZ_FORMAT:
@@ -1589,6 +1609,10 @@ void CPIMPOMDlg::set_bitmap_for_data_button()
 					set_bitmap_button( (HBITMAP)bmp_button_xyz[2] , IDC_CHECK_PIMPON_DLG_DATA_SELECT2);
 					set_bitmap_button( (HBITMAP)bmp_button_xyz[3] , IDC_CHECK_PIMPON_DLG_DATA_SELECT3);
 					set_data_select_button( p_du->DispChannel );
+					m_toolTip.UpdateTipText("X成分", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT0) );
+					m_toolTip.UpdateTipText("Y成分", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT1) );
+					m_toolTip.UpdateTipText("Z成分", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT2) );
+					m_toolTip.UpdateTipText("点群", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT3) );
 					break;
 
 				case RGB_FORMAT:
@@ -1600,6 +1624,10 @@ void CPIMPOMDlg::set_bitmap_for_data_button()
 					set_bitmap_button( (HBITMAP)bmp_button_rgb[1] , IDC_CHECK_PIMPON_DLG_DATA_SELECT1);
 					set_bitmap_button( (HBITMAP)bmp_button_rgb[2] , IDC_CHECK_PIMPON_DLG_DATA_SELECT2);
 					set_bitmap_button( (HBITMAP)bmp_button_rgb[3] , IDC_CHECK_PIMPON_DLG_DATA_SELECT3);
+					m_toolTip.UpdateTipText("赤成分", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT0) );
+					m_toolTip.UpdateTipText("緑成分", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT1) );
+					m_toolTip.UpdateTipText("青成分", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT2) );
+					m_toolTip.UpdateTipText("RGBカラー", GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT3) );
 						if( p_du->DispRGB == false )	set_data_select_button( p_du->DispChannel );//色成分表示
 						else							set_data_select_button( 3 );			//RGBカラー表示
 					break;
