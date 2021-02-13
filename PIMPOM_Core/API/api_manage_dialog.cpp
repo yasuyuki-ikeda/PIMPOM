@@ -1633,7 +1633,7 @@ bool CPimpomAPI::BatchExecute(BATCH_INPUT *in_param, BATCH_OUTPUT *out_param)
 	if (strlen(in_param->imae_file_path) > 0)
 	{
 		if (SelectAndLoadImageFile(in_param->image_number, CString(in_param->imae_file_path))) {
-			DrawImage(in_param->image_number, true, false);
+			DrawImage(in_param->image_number, true, true);
 		}
 	}
 	

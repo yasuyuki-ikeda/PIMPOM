@@ -131,7 +131,11 @@ void CPIMPOMDlg::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
 void CPIMPOMDlg::OnFileOpen() 
 {
 	if( API.pDataDlg->DataExistMessage("è„èëÇ´ÇµÇƒÇ‡ÇÊÇÎÇµÇ¢Ç≈Ç∑Ç©ÅH", CURRENT_IMAGE) )		return;
-	API.SelectAndLoadImageFile( API.GetCurrentImageNumber() );
+	
+	if (API.SelectAndLoadImageFile(API.GetCurrentImageNumber()))
+	{
+		API.DrawImage(CURRENT_IMAGE, true, true);
+	}
 }
 
 /********************************************************************
@@ -445,7 +449,7 @@ void CPIMPOMDlg::OnMenuLoadIOLog(unsigned int n)
 	if( API.pDataDlg->DataExistMessage("è„èëÇ´ÇµÇƒÇ‡ÇÊÇÎÇµÇ¢Ç≈Ç∑Ç©ÅH", CURRENT_IMAGE) )		return;
 
 	if( API.SelectAndLoadImageFile(CURRENT_IMAGE, API.GetFileIOLog(n-FILE_IO_LOG_MENU_ID)) ){
-		API.DrawImage(CURRENT_IMAGE);
+		API.DrawImage(CURRENT_IMAGE,true,true);
 	}
 }
 

@@ -2488,7 +2488,7 @@ bool CCalculate::execute_macro(
 				p_err_message->Format("Error: SelectAndLoadImageFile()");
 				return false;
 			}
-			API.DrawImage((int)params[0].number);
+			API.DrawImage((int)params[0].number,true,true);
 			break;
 
 

@@ -610,7 +610,7 @@ void CDataDlg::OnDropFiles(HDROP hDropInfo)
 			return;
 		}
 
-		API.DrawImage(i + dropped_image_num,true);
+		API.DrawImage(i + dropped_image_num,true,true);
 	}
 
 	DragFinish(hDropInfo);

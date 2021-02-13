@@ -788,10 +788,15 @@ bool	CPimpomAPI::SelectAndLoadImageFile(long image_number)
 		if(myDLG.DoModal() != IDOK)  return	false;
 
 	POSITION	pos = myDLG.GetStartPosition();
+
 		//選択したファイルを順番に読み込む
-		while( ( pos != NULL )   &&   ( image_number < data_number ) ){
-			SelectAndLoadImageFile( image_number , myDLG.GetNextPathName(pos) );
-			DrawImage( image_number, true);
+		while( ( pos != NULL )   &&   ( image_number < data_number ) )
+		{
+			if (SelectAndLoadImageFile(image_number, myDLG.GetNextPathName(pos)))
+			{
+				DrawImage( image_number, true,true);
+			}
+
 			image_number ++;
 		}
 	return	true;

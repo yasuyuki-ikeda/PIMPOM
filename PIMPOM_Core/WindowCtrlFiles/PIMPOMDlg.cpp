@@ -384,7 +384,7 @@ BOOL CPIMPOMDlg::OnInitDialog()
 		//ƒtƒ@ƒCƒ‹‚ð“Ç‚Ý‚¾‚·
 		for(int n=0 ; n<filenamecnt ; n++){
 			API.SelectAndLoadImageFile(n,filenames[n]);
-			API.DrawImage(n);
+			API.DrawImage(n,true,true);
 		}
 	}
 
@@ -2548,7 +2548,7 @@ void CPIMPOMDlg::OnDropFiles(HDROP hDropInfo)
 			return;
 		}
 
-	API.DrawImage(CURRENT_IMAGE,true);
+	API.DrawImage(CURRENT_IMAGE,true,true,true);
 	DragFinish(hDropInfo);
 }
 

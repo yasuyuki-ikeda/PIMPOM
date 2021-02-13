@@ -496,7 +496,7 @@ bool CPimpomAPI::LoadIFZ(long image_number, CString pathname)
 				file.Read( p_dst + header2.grabX, header2.grabW );
 				p_dst += header2.sizeX;
 			}
-			DrawImage(image_number + n);
+			DrawImage(image_number + n,true,true);
 		}
 	}
 
@@ -525,6 +525,7 @@ bool CPimpomAPI::LoadBFZ(long image_number, CString pathname)
 	{
 		CString filepathname = pathname + CString("\\") + files[n];
 		LoadBitmap(image_number + n, filepathname);
+		DrawImage(image_number + n,true,true);
 
 		//読み込んだファイルのパスを残す
 		CDataUnit *p_du = GetDataUnit(image_number + n);
