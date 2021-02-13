@@ -991,9 +991,12 @@ bool	CPimpomAPI::SelectAndLoadImageFile(long image_number, CString pathname, sho
 		}else if( ext == _T("PIM") ){
 			return	LoadArchivedImage( image_number , pathname);
 
-		}else if( ext == _T("IFZ") ){
+		}
+		else if (ext == _T("IFZ")) {
 			return LoadIFZ(image_number, pathname);
-
+		}
+		else if (ext == _T("BFZ")) {
+			return LoadBFZ(image_number, pathname);
 		}else{
 			return  LoadAnyImage( image_number, pathname);
 		}
@@ -1619,4 +1622,46 @@ bool	CPimpomAPI::FolderDialog(CString *pfolder)
 	}
 
 	return true;
+}
+
+/********************************************************************
+機  能  名  称 : フォルダ直下のファイル一覧を作成する
+関    数    名 : GetDefaultPath
+引          数 :
+戻    り    値 : ファイル数を返す
+機          能 :
+日付         作成者          内容
+------------ --------------- ---------------------------------------
+Y.Ikeda         新規作成
+********************************************************************/
+int	CPimpomAPI::GetFileList(
+					CString		folderpath,			//(in)フォルダパス
+					CString		ext,				//(in)ファイル拡張子
+					int			file_number_max,	//(in)ファイル数上限
+					CString		pfile_names[]		//(out)ファイル名一覧
+					)
+{
+	CFileFind    finder;
+	BOOL         bWorking = finder.FindFile(folderpath + _T("\\*.") + ext);
+	int cnt = 0;
+
+	//find all *.bmp file names and add them to the list
+	while (bWorking && cnt<file_number_max)
+	{
+		bWorking = finder.FindNextFile();//find a file name
+
+		if (finder.IsDots()) continue;
+		if (finder.IsDirectory())continue;
+
+		CString filename = finder.GetFileName();
+
+		if (filename.Right(ext.GetLength()) == ext)
+		{
+			pfile_names[cnt] = filename;
+			cnt++;
+		}	
+	}
+
+
+	return cnt;
 }

@@ -428,6 +428,7 @@ public:
 	bool			LoadArchivedImage(long number , CString filename);//IMAGE型ファイルを開く
 	bool			LoadAnyImage(long number, CString filename);//Bitmap以外の画像を開く
 	bool			LoadIFZ(long number, CString filename);
+	bool			LoadBFZ(long number, CString filename);
 
 	///セーブ
 	bool			SaveViewAsRaw(long number, CString	pathname);//表示データをRAWファイルとして保存する
@@ -452,6 +453,7 @@ public:
 							CString *pfile_path, CString	pfile_names[], int *pfile_number, char *def_path=NULL);
 	bool			SaveFileDialog(CString	file_kinds, CString	*pfile_path);
 	bool			FolderDialog(CString *pfolder);
+	int				GetFileList(CString folderpath, CString file_kind_ext, int file_number_max, CString	pfile_names[]);
 
 	static CString GetDefaultPath();//アプリケーションの絶対パスを取得する
 	static CString GetVersion(const char  *KeyWord);//アプリケーションのバージョン情報を取得する

@@ -512,3 +512,27 @@ bool CPimpomAPI::LoadIFZ(long image_number, CString pathname)
 	return	true;
 }
 
+
+bool CPimpomAPI::LoadBFZ(long image_number, CString pathname)
+{
+	
+	CString files[100];
+	int cam_num = GetFileList(pathname,_T("bmp"),100, files);
+
+
+	//画像読み出し
+	for (int n = 0; n<cam_num && image_number + n < data_number; n++)
+	{
+		CString filepathname = pathname + CString("\\") + files[n];
+		LoadBitmap(image_number + n, filepathname);
+
+		//読み込んだファイルのパスを残す
+		CDataUnit *p_du = GetDataUnit(image_number + n);
+		p_du->DataName = ::PathFindFileNameA(filepathname);
+		p_du->SrcFilePath = filepathname;
+	}
+
+	SetFileIOLog(pathname);//ファイル名のログを残す
+
+	return	true;
+}
