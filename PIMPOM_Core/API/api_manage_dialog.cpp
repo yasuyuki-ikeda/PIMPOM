@@ -1382,7 +1382,7 @@ bool	CPimpomAPI::PasteFromClipbord(int image_num)
 						ret = false;
 					}
 					
-					DrawImage(image_num);//•`‰æ
+					DrawImage(image_num,true,true);//•`‰æ
 				}
 				GlobalUnlock(hBitmap); 
 			}
