@@ -262,7 +262,7 @@ void _PlotFloatImage(int imgNo, np::ndarray img)
 機  能  名  称 : PIMPOMに32bit浮動小数点のマルチチャネル画像データを出力する
 関    数    名 : _PlotByteImage
 引          数 : int imgNo　	(in)画像メモリ番号
-　               np::ndarray img (in)画像データ配列(3次元のnumpy配列 [row][col][channel])
+　               np::ndarray img (in)画像データ配列(3次元のnumpy配列 [channel][row][col])
 戻    り    値 :
 機          能 :
 日付         作成者          内容
@@ -286,9 +286,9 @@ void _PlotF3DImage(int imgNo, np::ndarray img)
 	auto shape = img.get_shape();
 	auto strides = img.get_strides();
 
-	int h = shape[0];
-	int w = shape[1];
-	int ch = shape[2];
+	int ch = shape[0];
+	int h = shape[1];
+	int w = shape[2];
 
 
 
@@ -297,12 +297,13 @@ void _PlotF3DImage(int imgNo, np::ndarray img)
 	float *tmp = new float[ch * w * h];
 	float *ptr = reinterpret_cast<float *>(img.get_data());
 
-	for (int j = 0; j < h; j++)
+	for (int c = 0; c < ch; c++)
 	{
-		for (int i = 0; i < w; i++)
+		for (int j = 0; j < h; j++)
 		{
-			for (int c = 0; c < ch; c++)
+			for (int i = 0; i < w; i++)
 			{
+
 				tmp[(ch - 1 - c)*w*h + j*w + i] = *ptr;
 				ptr++;
 			}
