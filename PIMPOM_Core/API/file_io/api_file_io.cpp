@@ -1449,6 +1449,7 @@ bool	CPimpomAPI::OpenFileDialog(int		file_number_max, //ÉtÉ@ÉCÉãç≈ëÂêî(IN)
 	name[0] = '\0';
 	myDLG.m_ofn.lpstrFile = name;
 	myDLG.m_ofn.nMaxFile  = MULTI_FILE_PATH_BUFFER-1;
+	myDLG.m_ofn.lpstrInitialDir = *pfile_path;
 
 	if(def_path){
 		CString dirpath = dirpathFromFilepath(CString(def_path));
