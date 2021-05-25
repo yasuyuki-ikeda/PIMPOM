@@ -358,8 +358,9 @@ bool C3DImgDispDlg::draw_images(int image_number)
 
 	//ウィンドウタイトルにデータ名表示
 	CString str;
-	str.Format(" (%d x %d x %d)", pDU->DataSize.cx, pDU->DataSize.cy, pDU->PageNumber);
-	::SetWindowText(m_hWnd, pDU->DataName + str);
+	str.Format("[%d]%s (%d x %d x %d)", image_number==CURRENT_IMAGE ? API.GetCurrentImageNumber() : image_number, pDU->DataName.GetBuffer(), pDU->DataSize.cx, pDU->DataSize.cy, pDU->PageNumber);
+	pDU->DataName.ReleaseBuffer();
+	::SetWindowText(m_hWnd, str);
 
 
 	//表示濃度	
