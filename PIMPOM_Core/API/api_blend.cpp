@@ -114,57 +114,64 @@ bool  CPimpomAPI::BlendPoisson(long sorce_image_num, long blend_image_num, long 
 	CRect maskRect = pBlendDu->GetRectArea();
 	subMaskMat = cv::Mat::zeros(cv::Size(subBlendMat.cols, subBlendMat.rows), CV_8U);
 
-	int cnt = 0;
-	for (int j = 0; j < subBlendMat.rows; j++)
+
+	//subBlendMatのコピー領域　4隅
+	int left, top, right, bottom;
+	left = (offsetx< 0) ? -offsetx : 0;
+	top = (offsety  < 0) ? -offsety : 0;
+	right = (offsetx + subBlendMat.cols > subSrcMat.cols) ? subSrcMat.cols - offsetx : subBlendMat.cols;
+	bottom = (offsety + subBlendMat.rows > subSrcMat.rows) ? subSrcMat.rows - offsety : subBlendMat.rows;
+
+
+	int maskArea=0;
+	int subMaskXMax = 0, subMaskXMin = 999999, subMaskYMax = 0, subMaskYMin = 999999;//ブレンド画像のマスク外接矩形
+	for (int cnt = 0,j = 0; j < subBlendMat.rows; j++)
 	{
 		for (int i = 0; i < subBlendMat.cols; i++)
 		{
+
 			if (pBlendDu->pMaskData[maskRect.left + i + (maskRect.top + j)*pBlendDu->DataSize.cx] != MASKED_PIXEL)
 			{
-				subMaskMat.data[cnt] = 255;
+				if (i > left + 1 && i < right - 1 && j > top + 1 && j < bottom - 1)
+				{
+					subMaskMat.data[cnt] = 255;
+
+					if (i < subMaskXMin)	subMaskXMin = i;
+					else if (i > subMaskXMax)	subMaskXMax = i;
+
+					if (j < subMaskYMin)	subMaskYMin = j;
+					else if (j > subMaskYMax)	subMaskYMax = j;
+
+					maskArea++;
+				}
 			}
 			cnt++;
 		}
 	}
 
-
-	if (subSrcMat.channels() == 1)
-		cv::cvtColor(subSrcMat, subSrcMat, cv::COLOR_GRAY2BGR);
-
-
-	if (subBlendMat.channels() == 1)
-		cv::cvtColor(subBlendMat, subBlendMat, cv::COLOR_GRAY2BGR);
-
+	if (maskArea == 0) {
+		return false;
+	}
 
 	try
 	{
-		//subBlendMatのコピー領域　4隅
-		int left, top, right, bottom;
-		left = (offsetx < 0) ? -offsetx : 0;
-		top = (offsety < 0) ? -offsety : 0;
-		right = (offsetx + subBlendMat.cols > subSrcMat.cols) ? subSrcMat.cols - offsetx : subBlendMat.cols;
-		bottom = (offsety + subBlendMat.rows > subSrcMat.rows) ? subSrcMat.rows - offsety : subBlendMat.rows;
+		if (subSrcMat.channels() == 1)
+			cv::cvtColor(subSrcMat, subSrcMat, cv::COLOR_GRAY2BGR);
 
-		//subBlendMatのコピー領域
-		cv::Rect roi;
-		roi.x = left;
-		roi.y = top;
-		roi.width = right - left;
-		roi.height = bottom - top;
-
-		//クリップ
-		cv::Mat subBlendMatClip = subBlendMat(roi);
-		cv::Mat subMaskMatClip = subMaskMat(roi);
-		int offsetxclip = (offsetx < 0) ? 0 : offsetx;
-		int offsetyclip = (offsety < 0) ? 0 : offsety;
-
+		if (subBlendMat.channels() == 1)
+			cv::cvtColor(subBlendMat, subBlendMat, cv::COLOR_GRAY2BGR);
 
 		//poisson合成
 		Point p;
-		p.x = offsetxclip + subBlendMatClip.cols / 2 - 1;
-		p.y = offsetyclip + subBlendMatClip.rows / 2 - 1;
-		cv::seamlessClone(subBlendMatClip, subSrcMat, subMaskMatClip, p, destMat, mode + 1);
+		p.x = offsetx + (subMaskXMin + subMaskXMax) / 2;
+		p.y = offsety + (subMaskYMin + subMaskYMax) / 2;
+		cv::seamlessClone(subBlendMat, subSrcMat, subMaskMat, p, destMat, mode + 1);
 
+
+		if (pSrcDu->DataType!=RGB_FORMAT )
+		{
+			cv::cvtColor(destMat, destMat, cv::COLOR_RGB2GRAY);
+		}
 	}
 	catch (cv::Exception e)
 	{
