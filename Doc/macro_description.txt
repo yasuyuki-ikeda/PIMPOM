@@ -349,7 +349,7 @@ ConvertDataUnit(n, type_to, rgb_to, comp_to, satulate, byte_from_disp, color_gra
 【数値】rgb_to          RGBに変換する場合の挿入先 （1:R成分 2:G成分 3:B成分 1-3以外:RGB全成分）      
 【数値】comp_to         複素数に変換する場合の挿入先（0:実部　0以外:虚部）      
 【数値】satulate        型の上下限を超える値を変換するとき飽和させるかどうか (0:折り返す 0以外:飽和する)     
-【数値】byte_from_disp  BYTEに変換する場合、表示メモリorマスクから変換するかどうか (0:画像データ 1:表示メモリ 2:マスク)
+【数値】byte_from_disp  BYTEに変換する場合、表示メモリorマスクから変換するかどうか (0:画像データ 1:表示メモリ 2:マスク 3:疑似カラー)
 【数値】color_gray      RGB->グレー変換方法 (1:彩度 2:色相  これら以外:明度)
 
 <戻り値> 　

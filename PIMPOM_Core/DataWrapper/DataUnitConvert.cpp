@@ -77,7 +77,7 @@ extern	CPimpomAPI	API;
 
 //表示画像をDATA型にコピー
 template <class DATA>
-void	disp_to_data(CDataUnit *p_du, DATA *p_buffer, int color_gray_method)
+void	disp_to_data(CDataUnit *p_du, DATA *p_buffer, int color_gray_method, bool fromPalette)
 {
 	CSize size = p_du->DataSize;
 
@@ -132,11 +132,30 @@ void	disp_to_data(CDataUnit *p_du, DATA *p_buffer, int color_gray_method)
 	}
 	else
 	{
-		for(int j=0 ; j<size.cy ; j++)
+		if (fromPalette)
+		{//カラーパレットからRGBに変換
+
+			if (p_du->pDispBufferBmpInfo) {
+				for (int j = 0; j < size.cy; j++)
+				{
+					for (int i = 0; i < size.cx; i++)
+					{
+						unsigned char v = *(p_du->pDispBuffer + i + (size.cy - j - 1)*p_du->DispBufferRow);
+						*(p_buffer + i + j*size.cx) = p_du->pDispBufferBmpInfo->bmiColors[v].rgbRed;
+						*(p_buffer + i + j*size.cx + size.cx*size.cy) = p_du->pDispBufferBmpInfo->bmiColors[v].rgbGreen;
+						*(p_buffer + i + j*size.cx + size.cx*size.cy * 2) = p_du->pDispBufferBmpInfo->bmiColors[v].rgbBlue;
+					}
+				}
+			}
+		}
+		else
 		{
-			for(int i=0 ; i<size.cx ; i++)
+			for (int j = 0; j < size.cy; j++)
 			{
-				*(p_buffer + i + j*size.cx ) = *(p_du->pDispBuffer + i + (size.cy - j -1)*p_du->DispBufferRow );
+				for (int i = 0; i < size.cx; i++)
+				{
+					*(p_buffer + i + j*size.cx) = *(p_du->pDispBuffer + i + (size.cy - j - 1)*p_du->DispBufferRow);
+				}
 			}
 		}
 	}
@@ -287,7 +306,7 @@ bool	data_convert(CDataUnit				*pSrcDU,	//(in)変換前のCDataUnitへのポインタ
 			case BYTE_FORMAT:
 				if(option.byte_from==1)
 				{
-					disp_to_data(pSrcDU, pDstDU->pByteData, option.color_gray_method);//disp->BYTE
+					disp_to_data(pSrcDU, pDstDU->pByteData, option.color_gray_method,false);//disp->BYTE
 				}
 				else if (option.byte_from==2)
 				{
@@ -323,7 +342,11 @@ bool	data_convert(CDataUnit				*pSrcDU,	//(in)変換前のCDataUnitへのポインタ
 				}
 				else
 				{
-					if( option.rgb_to == RGB_TO_B )//Bに入れる
+					if (option.byte_from == 3)
+					{
+						disp_to_data(pSrcDU, pDstDU->pByteData, 0, true);//color palette->RGB
+					}
+					else if( option.rgb_to == RGB_TO_B )//Bに入れる
 					{
 						data_to_data(pSrcDU, pSrcData, pDstDU->pByteData + size.cx * size.cy * 2, dst_data_min, dst_data_max, 0);
 					}

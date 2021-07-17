@@ -53,7 +53,7 @@ protected:
 	CComboBox m_combo_src_prop;
 	CComboBox m_combo_dst_prop;
 	CComboBox m_combo_src_prop2;
-	short	m_dst_type_table[20][2][20]; //[変換前タイプ][表示画像/データ][変換後タイプ]
+	short	m_dst_type_table[20][4][20]; //[変換前タイプ][表示画像/データ][変換後タイプ]
 	CString	m_data_type_name[20];
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート

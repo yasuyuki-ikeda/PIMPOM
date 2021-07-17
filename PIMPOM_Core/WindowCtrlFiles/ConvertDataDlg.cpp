@@ -143,12 +143,15 @@ void CConvertDataDlg::make_cvt_type_table()
 		for (int i = 0; i < 20; i++){
 			m_dst_type_table[j][0][i] = -1;
 			m_dst_type_table[j][1][i] = -1;
+			m_dst_type_table[j][2][i] = -1;
+			m_dst_type_table[j][3][i] = -1;
 		}
 	}
 
 
 	for (int i = 0; i < sizeof(data_type) / sizeof(int); i++)
 	{
+		//表示画像
 		if (data_type[i] == RGB_FORMAT || data_type[i] == RGB_3D_FORMAT){
 			m_dst_type_table[data_type[i]][0][0] = RGB_FORMAT;
 		}
@@ -156,6 +159,7 @@ void CConvertDataDlg::make_cvt_type_table()
 			m_dst_type_table[data_type[i]][0][0] = BYTE_FORMAT;
 		}
 
+		//データ
 		int cnt = 0;
 		if (data_type[i] != BYTE_FORMAT)	m_dst_type_table[data_type[i]][1][cnt++] = BYTE_FORMAT;
 		if (data_type[i] != RGB_FORMAT)		m_dst_type_table[data_type[i]][1][cnt++] = RGB_FORMAT;
@@ -170,6 +174,12 @@ void CConvertDataDlg::make_cvt_type_table()
 		m_dst_type_table[data_type[i]][1][cnt++] = THREE_D_FORMAT;
 		m_dst_type_table[data_type[i]][1][cnt++] = FLOAT_3D_FORMAT;
 		//m_dst_type_table[data_type[i]][1][cnt++] = RGB_3D_FORMAT;
+
+		//マスク
+		m_dst_type_table[data_type[i]][2][0] = BYTE_FORMAT;
+
+		//疑似カラー
+		m_dst_type_table[data_type[i]][3][0] = RGB_FORMAT;
 	}
 
 }
@@ -202,7 +212,7 @@ bool	CConvertDataDlg::show_dlg_item_src_props(int image_num)
 	m_combo_src_prop2.EnableWindow(false);
 
 	if (m_combo_src_type.GetCurSel() == 1)
-	{
+	{//データ
 		switch (p_du->DataType){
 		case BYTE_FORMAT:
 			break;
@@ -344,8 +354,13 @@ bool	CConvertDataDlg::show_dlg_item_dst_type(int image_num)
 			}
 		}
 	}
-	else{
+	else if (m_combo_src_type.GetCurSel() == 2)
+	{//マスクから変換
 		m_combo_dst_type.AddString(m_data_type_name[BYTE_FORMAT]);
+	}
+	else 
+	{//疑似カラーから変換
+		m_combo_dst_type.AddString(m_data_type_name[RGB_FORMAT]);
 	}
 
 	m_combo_dst_type.SetCurSel(0);
@@ -472,6 +487,7 @@ bool	CConvertDataDlg::show_dlg_item(int image_num)
 	m_combo_src_type.AddString("表示画像");
 	m_combo_src_type.AddString("データ");
 	m_combo_src_type.AddString("マスク");
+	m_combo_src_type.AddString("表示画像(疑似カラー)");
 	m_combo_src_type.SetCurSel(0);
 
 	//変換前のデータ（ページ・チャネル）設定
@@ -594,6 +610,9 @@ bool CConvertDataDlg::execute(int image_num)
 	}
 	else if (m_combo_src_type.GetCurSel() == 2){
 		option.byte_from = 2;
+	}
+	else if (m_combo_src_type.GetCurSel() == 3) {
+		option.byte_from = 3;
 	}
 	else{
 		if (type == RGB_FORMAT)

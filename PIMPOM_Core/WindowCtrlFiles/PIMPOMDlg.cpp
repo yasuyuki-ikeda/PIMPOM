@@ -2320,7 +2320,7 @@ void CPIMPOMDlg::draw_2points_distance()
 	ShowMessage(false, 0, false, s_coor_j);
 
 	value1 = (float)p_du->GetDataValue( CPoint(calc_begin_x, calc_begin_y),-1,-1);
-	value2 = (float)p_du->GetDataValue( CPoint(calc_end_x, calc_end_x) ,-1,-1);
+	value2 = (float)p_du->GetDataValue( CPoint(calc_end_x, calc_end_y) ,-1,-1);
 	value_dif = value2 - value1;
 	s_value = _T("’l: ") + API.ToString(value1, 8) + _T("  ") + API.ToString(value2, 8) + _T("  ") + API.ToString(value_dif, 6);
 	ShowMessage(false, 0, false, s_value);
