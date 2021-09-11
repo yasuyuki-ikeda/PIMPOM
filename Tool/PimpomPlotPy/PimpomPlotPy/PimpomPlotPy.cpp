@@ -317,6 +317,169 @@ void _PlotF3DImage(int imgNo, np::ndarray img)
 
 
 /********************************************************************
+機  能  名  称 : 32bit浮動小数点 1Dデータを折れ線グラフに出力する
+関    数    名 : _PlotDataToChart
+引          数 : 
+int imgNo　	(in)画像メモリ番号
+ np::ndarray data (in)画像データ配列(numpy配列 [row])
+戻    り    値 :
+機          能 :
+日付         作成者          内容
+------------ --------------- ---------------------------------------
+Y.Ikeda         新規作成
+********************************************************************/
+void _PlotDataToChart(int imgNo, np::ndarray data)
+{
+	int nd = data.get_nd();
+
+	if (nd != 1)
+	{
+		throw std::runtime_error("second argument must be 1-dimensional array");
+	}
+
+	auto shape = data.get_shape();
+	auto strides = data.get_strides();
+	int len = shape[0];
+
+	if (data.get_dtype() == np::dtype::get_builtin<float>())
+	{
+		float *tmp = new float[len];
+		float *ptr = reinterpret_cast<float *>(data.get_data());
+		memcpy(tmp, ptr, len * sizeof(float));
+
+		PlotDataToChartF(imgNo, len, tmp);
+
+		delete[] tmp;
+	}
+	else if (data.get_dtype() == np::dtype::get_builtin<double>())
+	{
+		double *tmp = new double[len];
+		double *ptr = reinterpret_cast<double *>(data.get_data());
+		memcpy(tmp, ptr, len * sizeof(double));
+
+		PlotDataToChartD(imgNo, len, tmp);
+
+		delete[] tmp;
+	}
+	else if (data.get_dtype() == np::dtype::get_builtin<int>())
+	{
+		int *tmp = new int[len];
+		int *ptr = reinterpret_cast<int *>(data.get_data());
+		memcpy(tmp, ptr, len * sizeof(int));
+
+		PlotDataToChartI(imgNo, len, tmp);
+
+		delete[] tmp;
+	}
+	else if (data.get_dtype() == np::dtype::get_builtin<BYTE>())
+	{
+		BYTE *tmp = new BYTE[len];
+		BYTE *ptr = reinterpret_cast<BYTE *>(data.get_data());
+		memcpy(tmp, ptr, len * sizeof(BYTE));
+
+		PlotDataToChartB(imgNo, len, tmp);
+
+		delete[] tmp;
+	}
+	else
+	{
+		throw std::runtime_error("second must be float32/float64/int32/uint8 array");
+	}
+}
+
+
+/********************************************************************
+機  能  名  称 : 32bit浮動小数点 2Dデータを散布図に出力する
+関    数    名 : _PlotDataToChart
+引          数 :
+int imgNo　	(in)画像メモリ番号
+np::ndarray dataX, dataY (in)画像データ配列(numpy配列 [row])
+戻    り    値 :
+機          能 :
+日付         作成者          内容
+------------ --------------- ---------------------------------------
+Y.Ikeda         新規作成
+********************************************************************/
+void _PlotDataToChart2(int imgNo, np::ndarray dataX, np::ndarray dataY)
+{
+	int ndX = dataX.get_nd();
+	int ndY = dataY.get_nd();
+
+	if (ndX != 1 || ndY != 1)
+	{
+		throw std::runtime_error("second and third argument must be 1-dimensional array");
+	}
+
+	auto shapeX = dataX.get_shape();
+	auto shapeY = dataY.get_shape();
+	if (shapeX[0] != shapeY[0])
+	{
+		throw std::runtime_error("length of second and third argument must be same");
+	}
+
+
+	int len = shapeX[0];
+
+	if (dataX.get_dtype() == np::dtype::get_builtin<float>() && dataY.get_dtype() == np::dtype::get_builtin<float>())
+	{
+		float *tmpX = new float[len*2];
+		float *tmpY = tmpX + len;
+		float *ptrX = reinterpret_cast<float *>(dataX.get_data());
+		float *ptrY = reinterpret_cast<float *>(dataY.get_data());
+		memcpy(tmpX, ptrX, len * sizeof(float));
+		memcpy(tmpY, ptrY, len * sizeof(float));
+
+		PlotDataToChart2F(imgNo, len, tmpX, tmpY);
+
+		delete[] tmpX;
+	}
+	else if (dataX.get_dtype() == np::dtype::get_builtin<double>() && dataY.get_dtype() == np::dtype::get_builtin<double>())
+	{
+		double *tmpX = new double[len * 2];
+		double *tmpY = tmpX + len;
+		double *ptrX = reinterpret_cast<double *>(dataX.get_data());
+		double *ptrY = reinterpret_cast<double *>(dataY.get_data());
+		memcpy(tmpX, ptrX, len * sizeof(double));
+		memcpy(tmpY, ptrY, len * sizeof(double));
+
+		PlotDataToChart2D(imgNo, len, tmpX, tmpY);
+
+		delete[] tmpX;
+	}
+	else if (dataX.get_dtype() == np::dtype::get_builtin<int>() && dataY.get_dtype() == np::dtype::get_builtin<int>())
+	{
+		int *tmpX = new int[len * 2];
+		int *tmpY = tmpX + len;
+		int *ptrX = reinterpret_cast<int *>(dataX.get_data());
+		int *ptrY = reinterpret_cast<int *>(dataY.get_data());
+		memcpy(tmpX, ptrX, len * sizeof(int));
+		memcpy(tmpY, ptrY, len * sizeof(int));
+
+		PlotDataToChart2I(imgNo, len, tmpX, tmpY);
+
+		delete[] tmpX;
+	}
+	else if (dataX.get_dtype() == np::dtype::get_builtin<BYTE>() && dataY.get_dtype() == np::dtype::get_builtin<BYTE>())
+	{
+		BYTE *tmpX = new BYTE[len * 2];
+		BYTE *tmpY = tmpX + len;
+		BYTE *ptrX = reinterpret_cast<BYTE *>(dataX.get_data());
+		BYTE *ptrY = reinterpret_cast<BYTE *>(dataY.get_data());
+		memcpy(tmpX, ptrX, len * sizeof(BYTE));
+		memcpy(tmpY, ptrY, len * sizeof(BYTE));
+
+		PlotDataToChart2B(imgNo, len, tmpX, tmpY);
+
+		delete[] tmpX;
+	}
+	else
+	{
+		throw std::runtime_error("second and third argument  must be float32/float64/int32/uint8 array");
+	}
+}
+
+
+/********************************************************************
 機  能  名  称 : PIMPOMにマスク画像データを出力する
 関    数    名 : _PlotMaskImage
 引          数 : int imgNo　	(in)画像メモリ番号
@@ -790,6 +953,8 @@ BOOST_PYTHON_MODULE(Pimpom) {
 	p::def("GetF3DImage", _GetF3DImage);
 	p::def("GetMaskImage", _GetMaskImage); 
 	p::def("GetWorkArea", _GetWorkArea);
+	p::def("PlotDataToChart", _PlotDataToChart);
+	p::def("PlotDataToChart2", _PlotDataToChart2);
 
 	pimpom_api_def();
 }

@@ -45,6 +45,42 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define  SHEAREMEM_EXPAND_MESSAGE_SIZE		50000
 #define  PIMPOM_WND_CNT_MAX		10
 
+#define  PIMPOM_PLOT_FORMAT_BYTE_IMAGE		(0)
+#define  PIMPOM_PLOT_FORMAT_SHORT_IMAGE		(1)
+#define  PIMPOM_PLOT_FORMAT_WORD_IMAGE		(2)
+#define  PIMPOM_PLOT_FORMAT_LONG_IMAGE		(3)
+#define  PIMPOM_PLOT_FORMAT_DWORD_IMAGE		(4)
+#define  PIMPOM_PLOT_FORMAT_FLOAT_IMAGE		(5)
+#define  PIMPOM_PLOT_FORMAT_3D_IMAGE		(10)
+#define  PIMPOM_PLOT_FORMAT_F3D_IMAGE		(11)
+#define  PIMPOM_PLOT_FORMAT_RGB_IMAGE		(20)
+#define  PIMPOM_PLOT_FORMAT_MASK_IMAGE		(21)
+#define  PIMPOM_PLOT_FORMAT_FLOAT_1D_CHART		(30)
+#define  PIMPOM_PLOT_FORMAT_DOUBLE_1D_CHART		(31)
+#define  PIMPOM_PLOT_FORMAT_INT_1D_CHART		(32)
+#define  PIMPOM_PLOT_FORMAT_BYTE_1D_CHART		(33)
+#define  PIMPOM_PLOT_FORMAT_FLOAT_2D_CHART		(40)
+#define  PIMPOM_PLOT_FORMAT_DOUBLE_2D_CHART		(41)
+#define  PIMPOM_PLOT_FORMAT_INT_2D_CHART		(42)
+#define  PIMPOM_PLOT_FORMAT_BYTE_2D_CHART		(43)
+
+#define  PIMPOM_PLOT_COMMAND_PREPAIR_DRAWING	(0)
+#define  PIMPOM_PLOT_COMMAND_DRAW_IMAGE	(1)
+#define  PIMPOM_PLOT_COMMAND_DRAW_POINT_ON_IMAGE	(2)
+#define  PIMPOM_PLOT_COMMAND_DRAW_LINE_ON_IMAGE	(3)
+#define  PIMPOM_PLOT_COMMAND_DRAW_RECT_ON_IMAGE	(4)
+#define  PIMPOM_PLOT_COMMAND_DRAW_CIRCLE_ON_IMAGE	(5)
+#define  PIMPOM_PLOT_COMMAND_DRAW_CURSOR_ON_IMAGE	(6)
+#define  PIMPOM_PLOT_COMMAND_DRAW_TEXT_ON_IMAGE	(10)
+#define  PIMPOM_PLOT_COMMAND_SHOW_MESSAGE	(11)
+#define  PIMPOM_PLOT_COMMAND_SHOW_NEW_MESSAGE	(12)
+#define  PIMPOM_PLOT_COMMAND_ADD_MARK	(13)
+#define  PIMPOM_PLOT_COMMAND_ADD_DATA_TO_CAHRT	(20)
+#define  PIMPOM_PLOT_COMMAND_ADD_DATA_TO_CAHRT2	(21)
+#define  PIMPOM_PLOT_COMMAND_CLEAR_CAHRT	(22)
+#define  PIMPOM_PLOT_COMMAND_BATCH_EXECUTE	(30)
+#define  PIMPOM_PLOT_COMMAND_EXECUTE	(100)
+
 // *************************************
 //         外    部    宣    言         
 // *************************************
@@ -197,43 +233,63 @@ extern "C" {
 		int pix_size = sizeof(BYTE);
 		switch (format)
 		{
-		case 0://BYTE型メモリ
+		case PIMPOM_PLOT_FORMAT_BYTE_IMAGE://BYTE型メモリ
 			pix_size = sizeof(BYTE);
 			break;
 
-		case 1://SHORT型メモリ
+		case PIMPOM_PLOT_FORMAT_SHORT_IMAGE://SHORT型メモリ
 			pix_size = sizeof(short);
 			break;
 
-		case 2://WORD型メモリ
+		case PIMPOM_PLOT_FORMAT_WORD_IMAGE://WORD型メモリ
 			pix_size = sizeof(WORD);
 			break;
 
-		case 3://LONG型メモリ
+		case PIMPOM_PLOT_FORMAT_LONG_IMAGE://LONG型メモリ
 			pix_size = sizeof(long);
 			break;
 
-		case 4://DWORD型メモリ
+		case PIMPOM_PLOT_FORMAT_DWORD_IMAGE://DWORD型メモリ
 			pix_size = sizeof(DWORD);
 			break;
 
-		case 5://float型メモリ
+		case PIMPOM_PLOT_FORMAT_FLOAT_IMAGE://float型メモリ
 			pix_size = sizeof(float);
 			break;
 
-		case 10://3D型メモリ
+		case PIMPOM_PLOT_FORMAT_3D_IMAGE://3D型メモリ
 			pix_size = sizeof(BYTE);
 			break;
 
-		case 11://F3D型メモリ
+		case PIMPOM_PLOT_FORMAT_F3D_IMAGE://F3D型メモリ
 			pix_size = sizeof(float);
 			break;
 
-		case 20://RGB型メモリ
+		case PIMPOM_PLOT_FORMAT_RGB_IMAGE://RGB型メモリ
 			pix_size = sizeof(BYTE);
 			break;
 
-		case 21://マスクメモリ
+		case PIMPOM_PLOT_FORMAT_MASK_IMAGE://マスクメモリ
+			pix_size = sizeof(BYTE);
+			break;
+
+		case PIMPOM_PLOT_FORMAT_FLOAT_1D_CHART://1Dグラフ(float)
+		case PIMPOM_PLOT_FORMAT_FLOAT_2D_CHART://2Dグラフ(float)
+			pix_size = sizeof(float);
+			break;
+
+		case PIMPOM_PLOT_FORMAT_DOUBLE_1D_CHART://1Dグラフ(double)
+		case PIMPOM_PLOT_FORMAT_DOUBLE_2D_CHART://2Dグラフ(double)
+			pix_size = sizeof(double);
+			break;
+
+		case PIMPOM_PLOT_FORMAT_INT_1D_CHART://1Dグラフ(int)
+		case PIMPOM_PLOT_FORMAT_INT_2D_CHART://2Dグラフ(int)
+			pix_size = sizeof(int);
+			break;
+
+		case PIMPOM_PLOT_FORMAT_BYTE_1D_CHART://1Dグラフ(BYTE)
+		case PIMPOM_PLOT_FORMAT_BYTE_2D_CHART://2Dグラフ(BYTE)
 			pix_size = sizeof(BYTE);
 			break;
 
@@ -350,7 +406,7 @@ extern "C" {
 	********************************************************************/
 	static void PlotByteImage(int num, int width, int height, BYTE* pData)
 	{
-		pimpom_plot_image(0, num, width, height, 1, 1, pData);
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_BYTE_IMAGE, num, width, height, 1, 1, pData);
 	}
 
 	/********************************************************************
@@ -368,7 +424,7 @@ extern "C" {
 	********************************************************************/
 	static void PlotShortImage(int num, int width, int height, short* pData)
 	{
-		pimpom_plot_image(1, num, width, height, 1, 1, pData);
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_SHORT_IMAGE, num, width, height, 1, 1, pData);
 	}
 
 	/********************************************************************
@@ -386,7 +442,7 @@ extern "C" {
 	********************************************************************/
 	static void PlotWordImage(int num, int width, int height, WORD* pData)
 	{
-		pimpom_plot_image(2, num, width, height, 1, 1, pData);
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_WORD_IMAGE, num, width, height, 1, 1, pData);
 	}
 
 	/********************************************************************
@@ -404,7 +460,7 @@ extern "C" {
 	********************************************************************/
 	static void PlotLongImage(int num, int width, int height, long* pData)
 	{
-		pimpom_plot_image(3, num, width, height, 1, 1, pData);
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_LONG_IMAGE, num, width, height, 1, 1, pData);
 	}
 
 	/********************************************************************
@@ -422,7 +478,7 @@ extern "C" {
 	********************************************************************/
 	static void PlotDwordImage(int num, int width, int height, DWORD* pData)
 	{
-		pimpom_plot_image(4, num, width, height, 1, 1, pData);
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_DWORD_IMAGE, num, width, height, 1, 1, pData);
 	}
 
 	/********************************************************************
@@ -440,7 +496,7 @@ extern "C" {
 	********************************************************************/
 	static void PlotFloatImage(int num, int width, int height, float* pData)
 	{
-		pimpom_plot_image(5, num, width, height, 1, 1, pData);
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_FLOAT_IMAGE, num, width, height, 1, 1, pData);
 	}
 
 	/********************************************************************
@@ -459,7 +515,7 @@ extern "C" {
 	********************************************************************/
 	static void Plot3DImage(int num, int width, int height, int page, BYTE* pData)
 	{
-		pimpom_plot_image(10, num, width, height, page, 1, pData);
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_3D_IMAGE, num, width, height, page, 1, pData);
 	}
 
 
@@ -479,7 +535,7 @@ extern "C" {
 	********************************************************************/
 	static void PlotF3DImage(int num, int width, int height, int page, float* pData)
 	{
-		pimpom_plot_image(11, num, width, height, page, 1, pData);
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_F3D_IMAGE, num, width, height, page, 1, pData);
 	}
 
 	/********************************************************************
@@ -497,8 +553,100 @@ extern "C" {
 	********************************************************************/
 	static void PlotRGBImage(int num, int width, int height, BYTE* pData)
 	{
-		pimpom_plot_image(20, num, width, height, 1, 3, pData);
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_RGB_IMAGE, num, width, height, 1, 3, pData);
 	}
+
+
+	/********************************************************************
+	機  能  名  称 : 1Dデータを折れ線表示
+	関    数    名 : PlotDataToChart
+	引          数 :
+	int	num　			(in)グラフ番号
+	int			dataNum		(in)データの数
+	float		*pData				(in)値
+	戻    り    値 :
+	機          能 : 折れ線グラフに値を描画する
+	日付         作成者          内容
+	------------ --------------- ---------------------------------------
+	Y.Ikeda         新規作成
+	********************************************************************/
+	static void PlotDataToChartF(int num, int dataNum, float *pData)
+	{
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_FLOAT_1D_CHART, num, dataNum, 1, 1, 1, pData);
+	}
+
+	static void PlotDataToChartD(int num, int dataNum, double *pData)
+	{
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_DOUBLE_1D_CHART, num, dataNum, 1, 1, 1, pData);
+	}
+
+	static void PlotDataToChartI(int num, int dataNum, int *pData)
+	{
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_INT_1D_CHART, num, dataNum, 1, 1, 1, pData);
+	}
+
+	static void PlotDataToChartB(int num, int dataNum, BYTE *pData)
+	{
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_BYTE_1D_CHART, num, dataNum, 1, 1, 1, pData);
+	}
+
+	/********************************************************************
+	機  能  名  称 : 2Dデータを散布図表示
+	関    数    名 : PlotDataToChart
+	引          数 :
+	int			num　			(in)グラフ番号
+	int			dataNum		(in)データの数
+	float		*pDataX,*pDataY		(in)値
+	戻    り    値 :
+	機          能 : 2次元散布図に値を描画する
+	日付         作成者          内容
+	------------ --------------- ---------------------------------------
+	Y.Ikeda         新規作成
+	********************************************************************/
+	static void PlotDataToChart2F(int num, int dataNum, float *pDataX, float *pDataY)
+	{
+		float *pdataBuf = new float[dataNum * 2];
+		memcpy(pdataBuf, pDataX, dataNum * sizeof(float));
+		memcpy(pdataBuf + dataNum, pDataY, dataNum * sizeof(float));
+
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_FLOAT_2D_CHART, num, dataNum, 2, 1, 1, pdataBuf);
+
+		delete[] pdataBuf;
+	}
+
+	static void PlotDataToChart2D(int num, int dataNum, double *pDataX, double *pDataY)
+	{
+		double *pdataBuf = new double[dataNum * 2];
+		memcpy(pdataBuf, pDataX, dataNum * sizeof(double));
+		memcpy(pdataBuf + dataNum, pDataY, dataNum * sizeof(double));
+
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_DOUBLE_2D_CHART, num, dataNum, 2, 1, 1, pdataBuf);
+
+		delete[] pdataBuf;
+	}
+
+	static void PlotDataToChart2I(int num, int dataNum, int *pDataX, int *pDataY)
+	{
+		int *pdataBuf = new int[dataNum * 2];
+		memcpy(pdataBuf, pDataX, dataNum * sizeof(int));
+		memcpy(pdataBuf + dataNum, pDataY, dataNum * sizeof(int));
+
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_INT_2D_CHART, num, dataNum, 2, 1, 1, pdataBuf);
+
+		delete[] pdataBuf;
+	}
+
+	static void PlotDataToChart2B(int num, int dataNum, BYTE *pDataX, BYTE *pDataY)
+	{
+		BYTE *pdataBuf = new BYTE[dataNum * 2];
+		memcpy(pdataBuf, pDataX, dataNum * sizeof(BYTE));
+		memcpy(pdataBuf + dataNum, pDataY, dataNum * sizeof(BYTE));
+
+		pimpom_plot_image(PIMPOM_PLOT_FORMAT_BYTE_2D_CHART, num, dataNum, 2, 1, 1, pdataBuf);
+
+		delete[] pdataBuf;
+	}
+
 
 	/********************************************************************
 	機  能  名  称 : PIMPOMからBYTE画像データを入力する
@@ -515,7 +663,7 @@ extern "C" {
 	********************************************************************/
 	static void GetByteImage(int num, int width, int height, BYTE* pData)
 	{
-		pimpom_get_image(0, num, width, height, 1, 1, pData);
+		pimpom_get_image(PIMPOM_PLOT_FORMAT_BYTE_IMAGE, num, width, height, 1, 1, pData);
 	}
 
 	/********************************************************************
@@ -533,7 +681,7 @@ extern "C" {
 	********************************************************************/
 	static void GetShortImage(int num, int width, int height, short* pData)
 	{
-		pimpom_get_image(1, num, width, height, 1, 1, pData);
+		pimpom_get_image(PIMPOM_PLOT_FORMAT_SHORT_IMAGE, num, width, height, 1, 1, pData);
 	}
 
 	/********************************************************************
@@ -551,7 +699,7 @@ extern "C" {
 	********************************************************************/
 	static void GetWordImage(int num, int width, int height, WORD* pData)
 	{
-		pimpom_get_image(2, num, width, height, 1, 1, pData);
+		pimpom_get_image(PIMPOM_PLOT_FORMAT_WORD_IMAGE, num, width, height, 1, 1, pData);
 	}
 
 	/********************************************************************
@@ -569,7 +717,7 @@ extern "C" {
 	********************************************************************/
 	static void GetLongImage(int num, int width, int height, long* pData)
 	{
-		pimpom_get_image(3, num, width, height, 1, 1, pData);
+		pimpom_get_image(PIMPOM_PLOT_FORMAT_LONG_IMAGE, num, width, height, 1, 1, pData);
 	}
 
 	/********************************************************************
@@ -587,7 +735,7 @@ extern "C" {
 	********************************************************************/
 	static void GetDwordImage(int num, int width, int height, DWORD* pData)
 	{
-		pimpom_get_image(4, num, width, height, 1, 1, pData);
+		pimpom_get_image(PIMPOM_PLOT_FORMAT_DWORD_IMAGE, num, width, height, 1, 1, pData);
 	}
 
 	/********************************************************************
@@ -605,7 +753,7 @@ extern "C" {
 	********************************************************************/
 	static void GetFloatImage(int num, int width, int height, float* pData)
 	{
-		pimpom_get_image(5, num, width, height, 1, 1, pData);
+		pimpom_get_image(PIMPOM_PLOT_FORMAT_FLOAT_IMAGE, num, width, height, 1, 1, pData);
 	}
 
 	/********************************************************************
@@ -624,7 +772,7 @@ extern "C" {
 	********************************************************************/
 	static void Get3DImage(int num, int width, int height, int page, BYTE* pData)
 	{
-		pimpom_get_image(10, num, width, height, page, 1, pData);
+		pimpom_get_image(PIMPOM_PLOT_FORMAT_3D_IMAGE, num, width, height, page, 1, pData);
 	}
 
 	/********************************************************************
@@ -643,7 +791,7 @@ extern "C" {
 	********************************************************************/
 	static void GetF3DImage(int num, int width, int height, int page, float* pData)
 	{
-		pimpom_get_image(11, num, width, height, page, 1, pData);
+		pimpom_get_image(PIMPOM_PLOT_FORMAT_F3D_IMAGE, num, width, height, page, 1, pData);
 	}
 
 
@@ -662,7 +810,7 @@ extern "C" {
 	********************************************************************/
 	static void GetRGBImage(int num, int width, int height, BYTE* pData)
 	{
-		pimpom_get_image(20, num, width, height, 1, 3, pData);
+		pimpom_get_image(PIMPOM_PLOT_FORMAT_RGB_IMAGE, num, width, height, 1, 3, pData);
 	}
 
 
@@ -731,7 +879,7 @@ extern "C" {
 	********************************************************************/
 	static void PrepeareDrawing(int num, int copy_src_num)
 	{
-		pimpom_draw_figure(0, num, 0, 0, 0, 0, 0, 0, 0, 0, copy_src_num);
+		pimpom_draw_figure(PIMPOM_PLOT_COMMAND_PREPAIR_DRAWING, num, 0, 0, 0, 0, 0, 0, 0, 0, copy_src_num);
 	}
 
 	/********************************************************************
@@ -761,7 +909,7 @@ extern "C" {
 		pShereMem = (SHEAREMEM_EXT_PROC*)pimpom_plot_get_shere_mem(sizeof(SHEAREMEM_EXT_PROC), &hShare, 1);
 		if (!pShereMem)	return;
 
-		pShereMem->type = 1;
+		pShereMem->type = PIMPOM_PLOT_COMMAND_DRAW_IMAGE;
 		pShereMem->image_num = num;
 		sprintf(pShereMem->message, "%d,%s\n", doAdjust, buf);
 
@@ -789,7 +937,7 @@ extern "C" {
 	********************************************************************/
 	static void DrawPointOnImage(int num, int x, int y, BYTE r, BYTE g, BYTE b)
 	{
-		pimpom_draw_figure(2, num, x, y, 0, 0, 1, r, g, b, -1);
+		pimpom_draw_figure(PIMPOM_PLOT_COMMAND_DRAW_POINT_ON_IMAGE, num, x, y, 0, 0, 1, r, g, b, -1);
 	}
 
 	/********************************************************************
@@ -806,7 +954,7 @@ extern "C" {
 	********************************************************************/
 	static void DrawLineOnImage(int num, int x0, int y0, int x1, int y1, BYTE r, BYTE g, BYTE b)
 	{
-		pimpom_draw_figure(3, num, x0, y0, x1, y1, 1, r, g, b, -1);
+		pimpom_draw_figure(PIMPOM_PLOT_COMMAND_DRAW_LINE_ON_IMAGE, num, x0, y0, x1, y1, 1, r, g, b, -1);
 	}
 
 	/********************************************************************
@@ -823,7 +971,7 @@ extern "C" {
 	********************************************************************/
 	static void DrawRectOnImage(int num, int x0, int y0, int x1, int y1, BYTE r, BYTE g, BYTE b)
 	{
-		pimpom_draw_figure(4, num, x0, y0, x1, y1, 1, r, g, b, -1);
+		pimpom_draw_figure(PIMPOM_PLOT_COMMAND_DRAW_RECT_ON_IMAGE, num, x0, y0, x1, y1, 1, r, g, b, -1);
 	}
 
 	/********************************************************************
@@ -842,7 +990,7 @@ extern "C" {
 	********************************************************************/
 	static void DrawCircleOnImage(int num, int cx, int cy, int rad, bool fill, BYTE r, BYTE g, BYTE b)
 	{
-		pimpom_draw_figure(5, num, cx, cy, rad, fill, 1, r, g, b, -1);
+		pimpom_draw_figure(PIMPOM_PLOT_COMMAND_DRAW_CIRCLE_ON_IMAGE, num, cx, cy, rad, fill, 1, r, g, b, -1);
 	}
 
 
@@ -860,7 +1008,7 @@ extern "C" {
 	********************************************************************/
 	static void DrawCursorOnImage(int num, int x, int y, BYTE r, BYTE g, BYTE b)
 	{
-		pimpom_draw_figure(6, num, x, y, 0, 0, 1, r, g, b, -1);
+		pimpom_draw_figure(PIMPOM_PLOT_COMMAND_DRAW_CURSOR_ON_IMAGE, num, x, y, 0, 0, 1, r, g, b, -1);
 	}
 
 
@@ -885,7 +1033,7 @@ extern "C" {
 		vsprintf(buf, format, list);
 		va_end(list);
 
-		pimpom_draw_text(10, num, x, y, buf, r, g, b, -1);
+		pimpom_draw_text(PIMPOM_PLOT_COMMAND_DRAW_TEXT_ON_IMAGE, num, x, y, buf, r, g, b, -1);
 	}
 
 	/********************************************************************
@@ -907,7 +1055,7 @@ extern "C" {
 		vsprintf(buf, format, list);
 		va_end(list);
 
-		pimpom_draw_text(11, 0, 0, 0, buf, 0, 0, 0, -1);
+		pimpom_draw_text(PIMPOM_PLOT_COMMAND_SHOW_MESSAGE, 0, 0, 0, buf, 0, 0, 0, -1);
 	}
 
 
@@ -930,7 +1078,7 @@ extern "C" {
 		vsprintf(buf, format, list);
 		va_end(list);
 
-		pimpom_draw_text(12, 0, 0, 0, buf, 0, 0, 0, -1);
+		pimpom_draw_text(PIMPOM_PLOT_COMMAND_SHOW_NEW_MESSAGE, 0, 0, 0, buf, 0, 0, 0, -1);
 	}
 
 	/********************************************************************
@@ -952,7 +1100,7 @@ extern "C" {
 		pShereMem = (SHEAREMEM_EXT_PROC*)pimpom_plot_get_shere_mem(sizeof(SHEAREMEM_EXT_PROC), &hShare, 1);
 		if (!pShereMem)	return;
 
-		pShereMem->type = 13;
+		pShereMem->type = PIMPOM_PLOT_COMMAND_ADD_MARK;
 		pShereMem->image_num = num;
 		sprintf(pShereMem->message, "%f,%f,%lf,%lf,%lf\n", x, y, atrrib0, atrrib1, atrrib2);
 
@@ -980,7 +1128,7 @@ extern "C" {
 		pShereMem = (SHEAREMEM_EXT_PROC*)pimpom_plot_get_shere_mem(sizeof(SHEAREMEM_EXT_PROC), &hShare, 1);
 		if (!pShereMem)	return;
 
-		pShereMem->type = 20;
+		pShereMem->type = PIMPOM_PLOT_COMMAND_ADD_DATA_TO_CAHRT;
 		pShereMem->image_num = num;
 		sprintf(pShereMem->message, "%f\n", val);
 
@@ -988,10 +1136,13 @@ extern "C" {
 		pimpom_plot_free_shere_mem(pShereMem, hShare);
 	}
 
+
+
 	/********************************************************************
 	機  能  名  称 : グラフに値追加
 	関    数    名 : AddDataToChart2
-	引          数 : int	num　			(in)グラフ番号
+	引          数 : 
+	int	num　			(in)グラフ番号
 	float valx,valy		(in)値
 	戻    り    値 :
 	機          能 : 2次元散布図に値を追加して描画する
@@ -1007,13 +1158,14 @@ extern "C" {
 		pShereMem = (SHEAREMEM_EXT_PROC*)pimpom_plot_get_shere_mem(sizeof(SHEAREMEM_EXT_PROC), &hShare, 1);
 		if (!pShereMem)	return;
 
-		pShereMem->type = 21;
+		pShereMem->type = PIMPOM_PLOT_COMMAND_ADD_DATA_TO_CAHRT2;
 		pShereMem->image_num = num;
 		sprintf(pShereMem->message, "%f,%f\n", valx, valy);
 
 		pimpom_plot_send_data(WM_USER + 101, 0, pimpom_target_id);
 		pimpom_plot_free_shere_mem(pShereMem, hShare);
 	}
+
 
 	/********************************************************************
 	機  能  名  称 : グラフをクリア
@@ -1033,7 +1185,7 @@ extern "C" {
 		pShereMem = (SHEAREMEM_EXT_PROC*)pimpom_plot_get_shere_mem(sizeof(SHEAREMEM_EXT_PROC), &hShare, 1);
 		if (!pShereMem)	return;
 
-		pShereMem->type = 22;
+		pShereMem->type = PIMPOM_PLOT_COMMAND_CLEAR_CAHRT;
 		pShereMem->image_num = num;
 
 		pimpom_plot_send_data(WM_USER + 101, 0, pimpom_target_id);
@@ -1068,7 +1220,7 @@ extern "C" {
 		pShereMem = (SHEAREMEM_EXT_PROC*)pimpom_plot_get_shere_mem(sizeof(SHEAREMEM_EXT_PROC) + SHEAREMEM_EXPAND_MESSAGE_SIZE, &hShare, 1);
 		if (!pShereMem)	return;
 
-		pShereMem->type = 30;
+		pShereMem->type = PIMPOM_PLOT_COMMAND_BATCH_EXECUTE;
 		pShereMem->image_num = num;
 
 		//パラメタ書き込み
@@ -1122,7 +1274,7 @@ extern "C" {
 		pShereMem = (SHEAREMEM_EXT_PROC*)pimpom_plot_get_shere_mem(sizeof(SHEAREMEM_EXT_PROC) + SHEAREMEM_EXPAND_MESSAGE_SIZE, &hShare, 1);
 		if (!pShereMem)	return 0;
 
-		pShereMem->type = 100;
+		pShereMem->type = PIMPOM_PLOT_COMMAND_EXECUTE;
 
 		//コマンド書き込み
 		ptr = (char*)pShereMem + sizeof(SHEAREMEM_EXT_PROC);
@@ -1197,7 +1349,7 @@ extern "C" {
 		int width = 0, height = 0, type = 0, page = 0;
 		GetDataTypeSize(num, &type, &width, &height, &page);//画像サイズ取得
 
-		pimpom_get_image(21, num, width, height, 1, 1, pData);
+		pimpom_get_image(PIMPOM_PLOT_FORMAT_MASK_IMAGE, num, width, height, 1, 1, pData);
 	}
 
 	/********************************************************************
@@ -1217,7 +1369,7 @@ extern "C" {
 		GetDataTypeSize(num, &type, &width, &height, &page);//画像サイズ取得
 
 		if (width > 0 && height > 0) {
-			pimpom_plot_image(21, num, width, height, 1, 1, pData);
+			pimpom_plot_image(PIMPOM_PLOT_FORMAT_MASK_IMAGE, num, width, height, 1, 1, pData);
 		}
 	}
 

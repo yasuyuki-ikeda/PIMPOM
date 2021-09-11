@@ -2603,72 +2603,73 @@ LRESULT CPIMPOMDlg::OnMessageExtInput(WPARAM wParam, LPARAM lParam)
 
 
 	//データコピー実施
+	bool doDrawImage = true;//再描画するかどうか
 	switch(pShmem->format)
 	{
-		case 0://BYTE型メモリ
+		case PIMPOM_PLOT_FORMAT_BYTE_IMAGE://BYTE型メモリ
 			{
 				BYTE *pDstImg = API.GetByteMemory(pShmem->image_num, CSize(pShmem->width,pShmem->height), true);
 				memcpy(pDstImg, pShmem->pData, pShmem->width*pShmem->height);	
 			}
 			break;
 
-		case 1://SHORT型メモリ
+		case PIMPOM_PLOT_FORMAT_SHORT_IMAGE://SHORT型メモリ
 			{
 				short *pDstImg = API.GetShortMemory(pShmem->image_num, CSize(pShmem->width,pShmem->height), true);
 				memcpy(pDstImg, pShmem->pData, pShmem->width*pShmem->height*sizeof(short));	
 			}
 			break;
 
-		case 2://WORD型メモリ
+		case PIMPOM_PLOT_FORMAT_WORD_IMAGE://WORD型メモリ
 			{
 				WORD *pDstImg = API.GetWordMemory(pShmem->image_num, CSize(pShmem->width,pShmem->height), true);
 				memcpy(pDstImg, pShmem->pData, pShmem->width*pShmem->height*sizeof(WORD));	
 			}
 			break;
 
-		case 3://LONG型メモリ
+		case PIMPOM_PLOT_FORMAT_LONG_IMAGE://LONG型メモリ
 			{
 				long *pDstImg = API.GetLongMemory(pShmem->image_num, CSize(pShmem->width,pShmem->height), true);
 				memcpy(pDstImg, pShmem->pData, pShmem->width*pShmem->height*sizeof(long));	
 			}
 			break;
 
-		case 4://DWORD型メモリ
+		case PIMPOM_PLOT_FORMAT_DWORD_IMAGE://DWORD型メモリ
 			{
 				DWORD *pDstImg = API.GetDwordMemory(pShmem->image_num, CSize(pShmem->width,pShmem->height), true);
 				memcpy(pDstImg, pShmem->pData, pShmem->width*pShmem->height*sizeof(DWORD));	
 			}
 			break;
 
-		case 5://float型メモリ
+		case PIMPOM_PLOT_FORMAT_FLOAT_IMAGE://float型メモリ
 			{
 				float *pDstImg = API.GetFloatMemory(pShmem->image_num, CSize(pShmem->width,pShmem->height), true);
 				memcpy(pDstImg, pShmem->pData, pShmem->width*pShmem->height*sizeof(float));	
 			}
 			break;
 
-		case 10://3D型メモリ
+		case PIMPOM_PLOT_FORMAT_3D_IMAGE://3D型メモリ
 			{
 				BYTE *pDstImg = API.Get3DMemory(pShmem->image_num, CSize(pShmem->width,pShmem->height),pShmem->page, true);
 				memcpy(pDstImg, pShmem->pData, pShmem->width*pShmem->height*pShmem->page);	
 			}
 			break;
 
-		case 11://F3D型メモリ
+		case PIMPOM_PLOT_FORMAT_F3D_IMAGE://F3D型メモリ
 			{
 				float *pDstImg = API.GetF3DMemory(pShmem->image_num, CSize(pShmem->width, pShmem->height), pShmem->page, true);
 				memcpy(pDstImg, pShmem->pData, pShmem->width*pShmem->height*pShmem->page*sizeof(float));
 			}
 			break;
 
-		case 20://RGB型メモリ
+		case PIMPOM_PLOT_FORMAT_RGB_IMAGE://RGB型メモリ
 			{
 				BYTE *pDstImg = API.GetRGBMemory(pShmem->image_num, CSize(pShmem->width,pShmem->height),true);
 				memcpy(pDstImg, pShmem->pData, pShmem->width*pShmem->height*pShmem->channel);	
 			}
 			break;
 
-		case 21://マスク画像
+		case PIMPOM_PLOT_FORMAT_MASK_IMAGE://マスク画像
 			{
 				BYTE *pMskImg = API.GetMaskMemory(pShmem->image_num);
 				if (pMskImg)
@@ -2677,8 +2678,67 @@ LRESULT CPIMPOMDlg::OnMessageExtInput(WPARAM wParam, LPARAM lParam)
 				}
 			}
 			break;
+
+		case PIMPOM_PLOT_FORMAT_FLOAT_1D_CHART://1次元データ(float)
+			{
+				API.PlotDataToChart(pShmem->image_num, pShmem->width, (float*)pShmem->pData);
+				doDrawImage = false;
+			}
+			break;
+
+		case PIMPOM_PLOT_FORMAT_DOUBLE_1D_CHART://1次元データ(double)
+			{
+				API.PlotDataToChart(pShmem->image_num, pShmem->width, (double*)pShmem->pData);
+				doDrawImage = false;
+			}
+			break;
+
+		case PIMPOM_PLOT_FORMAT_INT_1D_CHART://1次元データ(int)
+			{
+				API.PlotDataToChart(pShmem->image_num, pShmem->width, (int*)pShmem->pData);
+				doDrawImage = false;
+			}
+			break;
+
+		case PIMPOM_PLOT_FORMAT_BYTE_1D_CHART://1次元データ(BYTE)
+			{
+				API.PlotDataToChart(pShmem->image_num, pShmem->width, (BYTE*)pShmem->pData);
+				doDrawImage = false;
+			}
+			break;
+
+		case PIMPOM_PLOT_FORMAT_FLOAT_2D_CHART://2次元データ(float)
+			{
+				API.PlotDataToChart2(pShmem->image_num, pShmem->width, (float*)pShmem->pData, (float*)pShmem->pData + pShmem->width);
+				doDrawImage = false;
+			}
+			break;
+
+		case PIMPOM_PLOT_FORMAT_DOUBLE_2D_CHART://2次元データ(double)
+			{
+				API.PlotDataToChart2(pShmem->image_num, pShmem->width, (double*)pShmem->pData, (double*)pShmem->pData + pShmem->width);
+				doDrawImage = false;
+			}
+			break;
+
+		case PIMPOM_PLOT_FORMAT_INT_2D_CHART://2次元データ(int)
+			{
+				API.PlotDataToChart2(pShmem->image_num, pShmem->width, (int*)pShmem->pData, (int*)pShmem->pData + pShmem->width);
+				doDrawImage = false;
+			}
+			break;
+
+		case PIMPOM_PLOT_FORMAT_BYTE_2D_CHART://2次元データ(BYTE)
+			{
+				API.PlotDataToChart2(pShmem->image_num, pShmem->width, (BYTE*)pShmem->pData, (BYTE*)pShmem->pData + pShmem->width);
+				doDrawImage = false;
+			}
+			break;
 	}
-	API.DrawImage(pShmem->image_num,true,true);//描画
+
+	if (doDrawImage) {
+		API.DrawImage(pShmem->image_num, true, true);//描画
+	}
 
 	pimpom_plot_free_shere_mem(pShmem, hShare);//共有メモリ解放
 
@@ -2726,70 +2786,70 @@ LRESULT CPIMPOMDlg::OnMessageExtOutput(WPARAM wParam, LPARAM lParam)
 		//データコピー実施
 		switch (pShmem->format)
 		{
-			case 0://BYTE型メモリ
+			case PIMPOM_PLOT_FORMAT_BYTE_IMAGE://BYTE型メモリ
 			{
 				BYTE *pDstImg = API.GetByteMemory(pShmem->image_num, CSize(pShmem->width, pShmem->height), false);
 				memcpy(pShmem->pData, pDstImg, pShmem->width*pShmem->height);
 			}
 			break;
 
-			case 1://SHORT型メモリ
+			case PIMPOM_PLOT_FORMAT_SHORT_IMAGE://SHORT型メモリ
 			{
 				short *pDstImg = API.GetShortMemory(pShmem->image_num, CSize(pShmem->width, pShmem->height), false);
 				memcpy(pShmem->pData, pDstImg, pShmem->width*pShmem->height * sizeof(short));
 			}
 			break;
 
-			case 2://WORD型メモリ
+			case PIMPOM_PLOT_FORMAT_WORD_IMAGE://WORD型メモリ
 			{
 				WORD *pDstImg = API.GetWordMemory(pShmem->image_num, CSize(pShmem->width, pShmem->height), false);
 				memcpy(pShmem->pData, pDstImg, pShmem->width*pShmem->height * sizeof(WORD));
 			}
 			break;
 
-			case 3://LONG型メモリ
+			case PIMPOM_PLOT_FORMAT_LONG_IMAGE://LONG型メモリ
 			{
 				long *pDstImg = API.GetLongMemory(pShmem->image_num, CSize(pShmem->width, pShmem->height), false);
 				memcpy(pShmem->pData, pDstImg, pShmem->width*pShmem->height * sizeof(long));
 			}
 			break;
 
-			case 4://DWORD型メモリ
+			case PIMPOM_PLOT_FORMAT_DWORD_IMAGE://DWORD型メモリ
 			{
 				DWORD *pDstImg = API.GetDwordMemory(pShmem->image_num, CSize(pShmem->width, pShmem->height), false);
 				memcpy(pShmem->pData, pDstImg, pShmem->width*pShmem->height * sizeof(DWORD));
 			}
 			break;
 
-			case 5://float型メモリ
+			case PIMPOM_PLOT_FORMAT_FLOAT_IMAGE://float型メモリ
 			{
 				float *pDstImg = API.GetFloatMemory(pShmem->image_num, CSize(pShmem->width, pShmem->height), false);
 				memcpy(pShmem->pData, pDstImg, pShmem->width*pShmem->height * sizeof(float));
 			}
 			break;
 
-			case 10://3D型メモリ
+			case PIMPOM_PLOT_FORMAT_3D_IMAGE://3D型メモリ
 			{
 				BYTE *pDstImg = API.Get3DMemory(pShmem->image_num, CSize(pShmem->width, pShmem->height), pShmem->page, false);
 				memcpy(pShmem->pData, pDstImg, pShmem->width*pShmem->height*pShmem->page);
 			}
 			break;
 
-			case 11://F3D型メモリ
+			case PIMPOM_PLOT_FORMAT_F3D_IMAGE://F3D型メモリ
 			{
 				float *pDstImg = API.GetF3DMemory(pShmem->image_num, CSize(pShmem->width, pShmem->height), pShmem->page, false);
 				memcpy(pShmem->pData, pDstImg, pShmem->width*pShmem->height*pShmem->page * sizeof(float));
 			}
 			break;
 
-			case 20://RGB型メモリ
+			case PIMPOM_PLOT_FORMAT_RGB_IMAGE://RGB型メモリ
 			{
 				BYTE *pDstImg = API.GetRGBMemory(pShmem->image_num, CSize(pShmem->width, pShmem->height), false);
 				memcpy(pShmem->pData, pDstImg, pShmem->width*pShmem->height*pShmem->channel);
 			}
 			break;
 
-			case 21://マスク画像メモリ
+			case PIMPOM_PLOT_FORMAT_MASK_IMAGE://マスク画像メモリ
 			{
 				BYTE *pMskImg = API.GetMaskMemory(pShmem->image_num);
 				memcpy(pShmem->pData, pMskImg, pShmem->width*pShmem->height*pShmem->channel);
@@ -2831,7 +2891,7 @@ LRESULT CPIMPOMDlg::OnMessageExtProcess(WPARAM wParam, LPARAM lParam)
 
 	switch(pShmem->type)
 	{
-		case 0://画像コピー
+		case PIMPOM_PLOT_COMMAND_PREPAIR_DRAWING://画像上に描画する準備のために、背景となる画像をコピーしてRGBフォーマットに変換する
 			if(pShmem->copy_src>=0 && pShmem->copy_src<API.GetDataUnitNumber()){
 				API.CopyDataUnit(pShmem->copy_src, pShmem->image_num);
 				CONVERT_DATA_OPTION	option;
@@ -2842,7 +2902,7 @@ LRESULT CPIMPOMDlg::OnMessageExtProcess(WPARAM wParam, LPARAM lParam)
 			}
 			break;
 
-		case 1://画像描画
+		case PIMPOM_PLOT_COMMAND_DRAW_IMAGE://画像描画
 			{
 				int doAdjust;
 				char buf[1024]={0};
@@ -2855,39 +2915,39 @@ LRESULT CPIMPOMDlg::OnMessageExtProcess(WPARAM wParam, LPARAM lParam)
 			}
 			break;
 
-		case 2://点描画
+		case PIMPOM_PLOT_COMMAND_DRAW_POINT_ON_IMAGE://点描画
 			API.DrawPointOnImage(pShmem->image_num, pShmem->x0, pShmem->y0, pShmem->size, RGB(pShmem->red, pShmem->green, pShmem->blue), pShmem->copy_src);
 			break;
 
-		case 3://直線描画
+		case PIMPOM_PLOT_COMMAND_DRAW_LINE_ON_IMAGE://直線描画
 			API.DrawLineOnImage(pShmem->image_num, pShmem->x0, pShmem->y0, pShmem->x1, pShmem->y1, pShmem->size, RGB(pShmem->red, pShmem->green, pShmem->blue), pShmem->copy_src);
 			break;
 
-		case 4://矩形描画
+		case PIMPOM_PLOT_COMMAND_DRAW_RECT_ON_IMAGE://矩形描画
 			API.DrawRectOnImage(pShmem->image_num, pShmem->x0, pShmem->y0, pShmem->x1, pShmem->y1, RGB(pShmem->red, pShmem->green, pShmem->blue), false, 0, pShmem->copy_src);
 			break;
 
-		case 5://円形描画
+		case PIMPOM_PLOT_COMMAND_DRAW_CIRCLE_ON_IMAGE://円形描画
 			API.DrawCircleOnImage(pShmem->image_num, pShmem->x0, pShmem->y0, pShmem->x1, RGB(pShmem->red, pShmem->green, pShmem->blue), pShmem->y1, pShmem->copy_src);
 			break;
 
-		case 6://十字カーソル描画
+		case PIMPOM_PLOT_COMMAND_DRAW_CURSOR_ON_IMAGE://十字カーソル描画
 			API.DrawCursorOnImage(pShmem->image_num, pShmem->x0, pShmem->y0, pShmem->size, RGB(pShmem->red, pShmem->green, pShmem->blue), pShmem->copy_src);
 			break;
 
-		case 10://テキスト描画
+		case PIMPOM_PLOT_COMMAND_DRAW_TEXT_ON_IMAGE://テキスト描画
 			API.DrawTextOnImage(pShmem->image_num, pShmem->x0, pShmem->y0, pShmem->message,  RGB(pShmem->red, pShmem->green, pShmem->blue), pShmem->copy_src);
 			break;
 
-		case 11://メッセージ表示
+		case PIMPOM_PLOT_COMMAND_SHOW_MESSAGE://メッセージ表示
 			API.ShowMessage(false,1,true, CString(pShmem->message));
 			break;
 
-		case 12://メッセージ表示(新規)
+		case PIMPOM_PLOT_COMMAND_SHOW_NEW_MESSAGE://メッセージ表示(新規)
 			API.ShowMessage(true,1,true, CString(pShmem->message));
 			break;
 
-		case 13://マーカー追加
+		case PIMPOM_PLOT_COMMAND_ADD_MARK://マーカー追加
 			{
 				float x,y;
 				double atrb[3]={0};
@@ -2896,7 +2956,7 @@ LRESULT CPIMPOMDlg::OnMessageExtProcess(WPARAM wParam, LPARAM lParam)
 			}
 			break;
 
-		case 20://グラフ(折れ線)に値追加
+		case PIMPOM_PLOT_COMMAND_ADD_DATA_TO_CAHRT://グラフ(折れ線)に値追加
 			{
 				float val;
 				sscanf(pShmem->message,"%f\n",&val);
@@ -2904,7 +2964,7 @@ LRESULT CPIMPOMDlg::OnMessageExtProcess(WPARAM wParam, LPARAM lParam)
 			}
 			break;
 
-		case 21://グラフ(2次元散布図)に値追加
+		case PIMPOM_PLOT_COMMAND_ADD_DATA_TO_CAHRT2://グラフ(2次元散布図)に値追加
 			{
 				float valx, valy;
 				sscanf(pShmem->message,"%f,%f\n", &valx, &valy);
@@ -2912,12 +2972,12 @@ LRESULT CPIMPOMDlg::OnMessageExtProcess(WPARAM wParam, LPARAM lParam)
 			}
 			break;
 
-		case 22://グラフクリア
+		case PIMPOM_PLOT_COMMAND_CLEAR_CAHRT://グラフクリア
 			API.ClearChart(pShmem->image_num);
 			break;
 
 
-		case 30://バッチ実行
+		case PIMPOM_PLOT_COMMAND_BATCH_EXECUTE://バッチ実行
 			{
 				pimpom_plot_free_shere_mem(pShmem, hShare);//共有メモリいったん解放
 
@@ -2987,7 +3047,7 @@ LRESULT CPIMPOMDlg::OnMessageExtProcess(WPARAM wParam, LPARAM lParam)
 
 
 
-		case 100://コマンド文字列
+		case PIMPOM_PLOT_COMMAND_EXECUTE://コマンド文字列
 			{
 				pimpom_plot_free_shere_mem(pShmem, hShare);//共有メモリいったん解放
 

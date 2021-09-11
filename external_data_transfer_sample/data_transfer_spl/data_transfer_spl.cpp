@@ -294,15 +294,36 @@ int _tmain(int argc, _TCHAR* argv[])
 		///////////////////////////////////////////////////////////////////////////////
 
 		//折れ線グラフ
-		for (int i = 0; i<100; i++) {
-			AddDataToChart(0, i % 8);
+		float dataF[100];
+		double dataD[100];
+		int dataI[100];
+		BYTE dataB[100];
+		for (int i = 0; i<100; i++) 
+		{
+			dataF[i] = dataD[i] = dataI[i] = dataB[i] = i % 8;
+			AddDataToChart(0, dataF[i]);
 		}
+		PlotDataToChartF(1, 100, dataF);
+		PlotDataToChartD(2, 100, dataD);
+		PlotDataToChartI(3, 100, dataI);
+		PlotDataToChartB(4, 100, dataB);
+
 
 		//2次元散布図
-		for (int i = 0; i<100; i++) {
-			AddDataToChart2(1, i % 8, i % 6);
+		float dataXF[100], dataYF[100];
+		double dataXD[100], dataYD[100];
+		int dataXI[100], dataYI[100];
+		BYTE dataXB[100], dataYB[100];
+		for (int i = 0; i<100; i++) 
+		{
+			dataXF[i] = dataXD[i] = dataXI[i] = dataXB[i] = i % 8;
+			dataYF[i] = dataYD[i] = dataYI[i] = dataYB[i] = i % 6;
+			AddDataToChart2(5, dataXF[i], dataYF[i]);
 		}
-
+		PlotDataToChart2F(6, 100, dataXF, dataYF);
+		PlotDataToChart2D(7, 100, dataXD, dataYD);
+		PlotDataToChart2I(8, 100, dataXI, dataYI);
+		PlotDataToChart2B(9, 100, dataXB, dataYB);
 
 		////////////////////////////////////////////////////////////////////////////////
 		//バッチ実行

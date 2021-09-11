@@ -28,5 +28,33 @@ Pimpom.SetMaskImage(0,mask)
 
 Pimpom.SetWorkArea(0,0,100,100,200,200,1)
 
+
 area=Pimpom.GetWorkArea(0,0)
 print(area)
+
+
+
+data = numpy.arange(300, dtype=numpy.float32)
+Pimpom.PlotDataToChart(0,data)
+
+data = numpy.arange(300, dtype=numpy.float64)
+Pimpom.PlotDataToChart(1,data)
+
+data = numpy.arange(300, dtype=numpy.int32)
+Pimpom.PlotDataToChart(2,data)
+
+data = numpy.arange(300, dtype=numpy.uint8)
+Pimpom.PlotDataToChart(3,data)
+
+
+dataX = numpy.arange(300, dtype=numpy.float32)
+dataY = numpy.arange(300, dtype=numpy.float32)
+Pimpom.PlotDataToChart2(4,dataX,dataY)
+
+dataX = numpy.arange(300, dtype=numpy.float64)
+dataY = numpy.arange(300, dtype=numpy.float64)
+Pimpom.PlotDataToChart2(5,dataX,dataY)
+
+dataX = numpy.arange(300, dtype=numpy.int32)
+dataY = numpy.arange(300, dtype=numpy.int32)
+Pimpom.PlotDataToChart2(6,dataX,dataY)
