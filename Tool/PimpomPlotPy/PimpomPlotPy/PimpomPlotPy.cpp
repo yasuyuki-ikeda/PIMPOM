@@ -45,7 +45,7 @@ void pimpom_api_def();
 ------------ --------------- ---------------------------------------
 Y.Ikeda         新規作成
 ********************************************************************/
-void _PlotByteImage(int imgNo, np::ndarray img)
+void plot_byte_image_internal(int imgNo, np::ndarray img, bool async)
 {
 	int nd = img.get_nd();
 
@@ -79,11 +79,23 @@ void _PlotByteImage(int imgNo, np::ndarray img)
 		}
 	}
 
-	PlotByteImage(imgNo, w, h, tmp);
+	if (!async)
+		PlotByteImage(imgNo, w, h, tmp);
+	else
+		PlotByteImageAsync(imgNo, w, h, tmp,1);
 
 	delete[] tmp;
 }
 
+void _PlotByteImage(int imgNo, np::ndarray img)
+{
+	plot_byte_image_internal(imgNo, img, false);
+}
+
+void _PlotByteImageAsync(int imgNo, np::ndarray img)
+{
+	plot_byte_image_internal(imgNo, img, true);
+}
 
 /********************************************************************
 機  能  名  称 : PIMPOMに24bitカラー画像データを出力する
@@ -97,7 +109,7 @@ void _PlotByteImage(int imgNo, np::ndarray img)
 ------------ --------------- ---------------------------------------
 Y.Ikeda         新規作成
 ********************************************************************/
-void _PlotRGBImage(int imgNo, np::ndarray img, int order_rgb)
+void plot_rgb_image_internal(int imgNo, np::ndarray img, int order_rgb, bool async)
 {
 	int nd = img.get_nd();
 
@@ -118,7 +130,7 @@ void _PlotRGBImage(int imgNo, np::ndarray img, int order_rgb)
 	int w = shape[1];
 	int ch = shape[2];
 
-	if (ch != 3){
+	if (ch != 3) {
 		throw std::runtime_error("last channel length must be 3");
 	}
 
@@ -133,22 +145,34 @@ void _PlotRGBImage(int imgNo, np::ndarray img, int order_rgb)
 		{
 			for (int c = 0; c < ch; c++)
 			{
-				if (order_rgb){
+				if (order_rgb) {
 					tmp[c*w*h + j*w + i] = *ptr;
 				}
-				else{
-					tmp[(ch-1-c)*w*h + j*w + i] = *ptr;
+				else {
+					tmp[(ch - 1 - c)*w*h + j*w + i] = *ptr;
 				}
-				
+
 				ptr++;
 			}
 		}
 	}
 
-
-	PlotRGBImage(imgNo, w, h, tmp);
+	if(!async)
+		PlotRGBImage(imgNo, w, h, tmp);
+	else
+		PlotRGBImageAsync(imgNo, w, h, tmp,1);
 
 	delete[] tmp;
+}
+
+void _PlotRGBImage(int imgNo, np::ndarray img, int order_rgb)
+{
+	plot_rgb_image_internal(imgNo, img, order_rgb, false);
+}
+
+void _PlotRGBImageAsync(int imgNo, np::ndarray img, int order_rgb)
+{
+	plot_rgb_image_internal(imgNo, img, order_rgb, true);
 }
 
 
@@ -569,6 +593,47 @@ np::ndarray  _GetByteImage(int imgNo)
 	return img;
 }
 
+/********************************************************************
+機  能  名  称 : PIMPOMから8bitモノクロ画像データを非同期入力する
+関    数    名 : _GetByteImage
+引          数 : int imgNo　	(in)画像メモリ番号
+戻    り    値 :画像データ配列(2次元のnumpy配列 [row][col])
+失敗したらサイズ1x1の行列が入る
+機          能 :
+日付         作成者          内容
+------------ --------------- ---------------------------------------
+Y.Ikeda         新規作成
+********************************************************************/
+np::ndarray  _GetByteImageAsync()
+{
+	int w, h, num;
+	unsigned char *tmp;
+
+	int ret = GetByteImageAsync(&num, &w, &h, &tmp,1);
+	if (!ret) 
+	{
+		Py_intptr_t shape[2] = { 1, 1 };
+		np::ndarray img = np::zeros(2, shape, np::dtype::get_builtin<unsigned char>());
+		return img;
+	}
+
+	Py_intptr_t shape[2] = { h, w };
+	np::ndarray img = np::zeros(2, shape, np::dtype::get_builtin<unsigned char>());
+	unsigned char *ptr = reinterpret_cast<unsigned char *>(img.get_data());
+
+	for (int j = 0; j < h; j++)
+	{
+		for (int i = 0; i < w; i++)
+		{
+			*ptr = tmp[j*w + i];
+			ptr++;
+		}
+	}
+
+	free(tmp);
+
+	return img;
+}
 
 /********************************************************************
 機  能  名  称 : PIMPOMから24bitカラー画像データを入力する
@@ -618,6 +683,58 @@ np::ndarray   _GetRGBImage(int imgNo, int order_rgb)
 	}
 
 	delete[] tmp;
+
+	return img;
+}
+
+/********************************************************************
+機  能  名  称 : PIMPOMから24bitカラー画像データを非同期入力する
+関    数    名 : _GetRGBImage
+引          数 : int imgNo　	(in)画像メモリ番号
+int order_rgb   (out)カラーの並び (0以外：RGB  0:BGR)
+戻    り    値 :画像データ配列(3次元のnumpy配列 [row][col][channel])
+失敗したらサイズ1x1x1の行列が入る
+機          能 :
+日付         作成者          内容
+------------ --------------- ---------------------------------------
+Y.Ikeda         新規作成
+********************************************************************/
+np::ndarray  _GetRGBImageAsync(int order_rgb)
+{
+	int w, h, num;
+	unsigned char *tmp;
+
+	int ret = GetRGBImageAsync(&num, &w, &h, &tmp,1);
+	if (!ret)
+	{
+		Py_intptr_t shape[3] = { 1, 1 , 1 };
+		np::ndarray img = np::zeros(3, shape, np::dtype::get_builtin<unsigned char>());
+		return img;
+	}
+
+	Py_intptr_t shape[3] = { h, w , 3 };
+	np::ndarray img = np::zeros(3, shape, np::dtype::get_builtin<unsigned char>());
+	unsigned char *ptr = reinterpret_cast<unsigned char *>(img.get_data());
+
+	for (int j = 0; j < h; j++)
+	{
+		for (int i = 0; i < w; i++)
+		{
+			for (int c = 0; c < 3; c++)
+			{
+				if (order_rgb) {
+					*ptr = tmp[c*w*h + j*w + i];
+				}
+				else {
+					*ptr = tmp[(3 - 1 - c)*w*h + j*w + i];
+				}
+
+				ptr++;
+			}
+		}
+	}
+
+	free(tmp);
 
 	return img;
 }
@@ -940,7 +1057,9 @@ BOOST_PYTHON_MODULE(Pimpom) {
 
 
 	p::def("PlotByteImage", _PlotByteImage);
+	p::def("PlotByteImageAsync", _PlotByteImageAsync);
 	p::def("PlotRGBImage", _PlotRGBImage);
+	p::def("PlotRGBImageAsync", _PlotRGBImageAsync);
 	p::def("PlotFloatImage", _PlotFloatImage);
 	p::def("Plot3DImage", _Plot3DImage);
 	p::def("PlotF3DImage", _PlotF3DImage);
@@ -948,6 +1067,8 @@ BOOST_PYTHON_MODULE(Pimpom) {
 	p::def("ExecuteCommand", _ExecuteCommand);
 	p::def("GetByteImage", _GetByteImage);
 	p::def("GetRGBImage", _GetRGBImage);
+	p::def("GetByteImageAsync", _GetByteImageAsync);
+	p::def("GetRGBImageAsync", _GetRGBImageAsync);
 	p::def("Get3DImage", _Get3DImage);
 	p::def("GetFloatImage", _GetFloatImage);
 	p::def("GetF3DImage", _GetF3DImage);

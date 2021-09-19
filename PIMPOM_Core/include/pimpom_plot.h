@@ -95,12 +95,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //画像データを受け渡しするための共有メモリのヘッダ
 typedef struct {
 	int		format;//画像データのタイプ
-				   //	0:BYTE  
-				   //	1:short
-				   //	2:WORD
-				   //	3:long
-				   //	4:DWORD
-	int		image_num;//表示先の画像メモリ番号
+				   //	0:BYTE 1:short 2:WORD 3:long 4:DWORD 5:FLOAT 10:3D 11:FLOAT3D: 20 RGB: 21 MASK
+				   //	30～33:折れ線グラフ表示用データ  40～43:散布図表示用データ
+	int	image_num;//(0～9999:表示先の画像メモリ番号   10000以上 : PIMPOMから外部プログラムへの非同期出力  20000以上:外部プログラムからPIMPOMへの非同期入力 )
 	int		width;//幅
 	int		height;//高さ
 	int		page;//奥行
@@ -112,10 +109,13 @@ typedef struct {
 #pragma	pack(pop)
 #pragma	warning(pop)
 
-//図形描画データを受け渡しするための共有メモリのヘッダ
+//画像転送を伴わないメッセージを受け渡しするための共有メモリのヘッダ
 typedef struct {
-	int		type;//描画タイプ　0:背景となる画像のコピー  1:画像描画  2:点描画  3:直線描画 4:矩形描画
-	int		image_num;////表示先の画像メモリ番号
+	int		type;//メッセージタイプ　
+                  //0:画像上への描画の背景となる画像のコピー  1:画像描画  2:画像上に点描画  3:画像上に直線描画 4:画像上に矩形描画 5:画像上に円描画 6:画像上に十字カーソル描画 10:画像上にテキスト描画 
+                  //11:メッセージエリアに追加表示   12:メッセージエリアに新規表示  13:マーク追加  20:折れ線グラフ要素追加  21:散布図要素追加  22:グラフクリア 
+                  //30:バッチ実行  100:スクリプトコマンド実行
+	int		image_num;////表示先の画像メモリ番号 (0～9999：同期転送  10000～19999:PIMPOMから外部プログラムへ非同期転送  20000～:外部プログラムからPIMPOMへ非同期転送)
 	int		x0;
 	int		y0;
 	int		x1;
@@ -174,7 +174,7 @@ extern "C" {
 		if (id == 0) {
 			_stprintf(key, _T(" - PIMPOM  "));
 		}
-		else if (id>0) {
+		else if (id > 0) {
 			_stprintf(key, _T(" - PIMPOM %d"), id);
 		}
 		else {
@@ -301,7 +301,6 @@ extern "C" {
 	}
 
 
-
 	//PIMPOMに画像データを出力する
 	static void pimpom_plot_image(int format, int num, int width, int height, int page, int channel, void* pData)
 	{
@@ -324,12 +323,12 @@ extern "C" {
 		pShereMem->size = sheremem_size;
 		memcpy(pShereMem->pData, pData, width*height*pix_size*page*channel);
 
-		pimpom_plot_send_data(WM_USER + 100, 0, pimpom_target_id);//プロットのメッセージを送信
+		pimpom_plot_send_data(WM_USER + 100, 0, pimpom_target_id);//共有メモリからPIMPOMに読み出すようにメッセージを送信
 		pimpom_plot_free_shere_mem(pShereMem, hShare);//共有メモリを解放
 	}
 
 
-	//PIMPOMから画像データを出力する
+	//PIMPOMから画像データを入力する
 	static void pimpom_get_image(int format, int num, int width, int height, int page, int channel, void* pData)
 	{
 		HANDLE	hShare;
@@ -351,7 +350,7 @@ extern "C" {
 		pShereMem->size = sheremem_size;
 
 
-		pimpom_plot_send_data(WM_USER + 102, 0, pimpom_target_id);//メッセージを送信
+		pimpom_plot_send_data(WM_USER + 102, 0, pimpom_target_id);//PIMPOMから共有メモリにデータ格納するようにメッセージを送信
 		memcpy(pData, pShereMem->pData, width*height*pix_size*page*channel);
 
 
@@ -392,6 +391,131 @@ extern "C" {
 
 
 	/********************************************************************
+	機  能  名  称 : PIMPOMとの共有メモリから画像データを非同期読み込みする
+	関    数    名 : GetImageAsync
+	引          数 :
+	int num　	(in)画像メモリ番号
+	int format (out)データ型式
+	int *height (out)高さ
+	int *page   (out)奥行
+	int *channel   (out)チャネル
+	void** ppData (out)画像データのポインタへのポインタ（ここに新しいメモリが確保される）
+	int thisIsExternalprogram (in)1:PIMPOMから外部プログラムへ読み込み  0:外部プログラムからPIMPOMへ読み込み
+	戻    り    値 :成功したらtrue
+	機          能 :
+	日付         作成者          内容
+	------------ --------------- ---------------------------------------
+	Y.Ikeda         新規作成
+	********************************************************************/
+	static int pimpom_get_image_async(int format, int *pImageNum, int *pWidth, int *pHeight, int *pPage, int *pChannel, void** ppData, int thisIsExternalprogram)
+	{
+		SHEAREMEM_PLOT_IMAGE	*pShmem;//共有メモリ領域
+		SHEAREMEM_PLOT_IMAGE	shmem_header = { 0 };
+		HANDLE	hShare;//共有メモリのハンドル
+		int pix_size;//画像データのピクセルサイズ
+		int data_size;
+
+		//共有メモリ領域のヘッダ部分を読む
+		pShmem = (SHEAREMEM_PLOT_IMAGE*)pimpom_plot_get_shere_mem(sizeof(SHEAREMEM_PLOT_IMAGE), &hShare, 1);
+		if (!pShmem)	return 0;
+
+		memcpy(&shmem_header, pShmem, sizeof(SHEAREMEM_PLOT_IMAGE));
+		pimpom_plot_free_shere_mem(pShmem, hShare);//共有メモリ解放
+
+
+		 //画像メモリヘッダの異常チェック
+		if (shmem_header.format != format || shmem_header.width <= 0 || shmem_header.height <= 0
+			|| shmem_header.channel <= 0 || shmem_header.page <= 0 || shmem_header.size <= 0)	return 0;
+
+		//非同期読み込み可能かチェック
+		if (!thisIsExternalprogram) {//PIMPOM→外部プログラム
+			if (shmem_header.image_num < 10000 || shmem_header.image_num >= 20000)	return 0;//非同期参照ではない
+			shmem_header.image_num -= 10000;
+		}
+		else {//外部プログラム→PIMPOM
+			if (shmem_header.image_num < 20000)	return 0;//非同期参照ではない
+			shmem_header.image_num -= 20000;
+		}
+
+
+		//共有メモリ領域の全体読み直す
+		pShmem = (SHEAREMEM_PLOT_IMAGE*)pimpom_plot_get_shere_mem(shmem_header.size, &hShare, 1);
+		if (!pShmem)	return 0;
+
+		pix_size = get_pix_size(shmem_header.format);
+		data_size = pix_size*shmem_header.width*shmem_header.height*shmem_header.page*shmem_header.channel;
+
+		*ppData = (void**)malloc(data_size);
+		if ((*ppData) == NULL) {
+			pimpom_plot_free_shere_mem(pShmem, hShare);//共有メモリ解放
+			return 0;
+		}
+
+		memcpy(*ppData, pShmem->pData, data_size);
+
+		pShmem->image_num = shmem_header.image_num;//共有メモリを非同期参照できなくする
+
+		pimpom_plot_free_shere_mem(pShmem, hShare);//共有メモリ解放
+		*pImageNum = shmem_header.image_num;
+		*pWidth = shmem_header.width;
+		*pHeight = shmem_header.height;
+		*pChannel = shmem_header.channel;
+		*pPage = shmem_header.page;
+
+		return 1;
+	}
+
+	/********************************************************************
+	機  能  名  称 : PIMPOMとの共有メモリへ画像データを非同期書き込みする
+	関    数    名 : PlotImageAsync
+	引          数 :
+	int num　	(in)画像メモリ番号
+	int format (in)データ型式
+	int width	(in)幅
+	int height (in)高さ
+	int page   (in)奥行
+	int channel   (in)チャネル
+	void* pData (in)画像データの先頭ポインタ
+	int thisIsExternalprogram (in)1:PIMPOMから外部プログラムへ読み込み  0:外部プログラムからPIMPOMへ読み込み
+	戻    り    値 :
+	機          能 :
+	日付         作成者          内容
+	------------ --------------- ---------------------------------------
+	Y.Ikeda         新規作成
+	********************************************************************/
+	static void pimpom_plot_image_async(int format, int num, int width, int height, int page, int channel, void* pData, int thisIsExternalprogram)
+	{
+		static HANDLE	hShare = NULL;
+		static SHEAREMEM_PLOT_IMAGE	*pShereMem = NULL;
+		int		pix_size, sheremem_size;
+
+		if (pShereMem) {
+			pimpom_plot_free_shere_mem(pShereMem, hShare);//共有メモリを解放
+		}
+
+		pix_size = get_pix_size(format);//画像データのピクセルサイズ
+		sheremem_size = sizeof(SHEAREMEM_PLOT_IMAGE) + width*height*pix_size*page*channel;//画像データのサイズ
+		pShereMem = (SHEAREMEM_PLOT_IMAGE*)pimpom_plot_get_shere_mem(sheremem_size, &hShare, 1);//共有メモリ取得
+		if (!pShereMem)	return;
+
+		//共有メモリにプロットする画像データの情報を入れる
+		pShereMem->format = format;
+		if (thisIsExternalprogram) {//PIMPOM→外部プログラム
+			pShereMem->image_num = num + 10000;
+		}
+		else {//外部プログラム→PIMPOM
+			pShereMem->image_num = num + 20000;
+		}
+		pShereMem->width = width;
+		pShereMem->height = height;
+		pShereMem->page = page;
+		pShereMem->channel = channel;
+		pShereMem->size = sheremem_size;
+		memcpy(pShereMem->pData, pData, width*height*pix_size*page*channel);
+	}
+
+
+	/********************************************************************
 	機  能  名  称 : PIMPOMにBYTE画像データを出力する
 	関    数    名 : PlotByteImage
 	引          数 : int num　	(in)画像メモリ番号
@@ -409,6 +533,12 @@ extern "C" {
 		pimpom_plot_image(PIMPOM_PLOT_FORMAT_BYTE_IMAGE, num, width, height, 1, 1, pData);
 	}
 
+	static void PlotByteImageAsync(int num, int width, int height, BYTE* pData, int thisIsExternalprogram)
+	{
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_BYTE_IMAGE, num, width, height, 1, 1, pData, thisIsExternalprogram);
+	}
+
+
 	/********************************************************************
 	機  能  名  称 : PIMPOMにshort画像データを出力する
 	関    数    名 : PlotShortImage
@@ -425,6 +555,11 @@ extern "C" {
 	static void PlotShortImage(int num, int width, int height, short* pData)
 	{
 		pimpom_plot_image(PIMPOM_PLOT_FORMAT_SHORT_IMAGE, num, width, height, 1, 1, pData);
+	}
+
+	static void PlotShortImageAsync(int num, int width, int height, short* pData, int thisIsExternalprogram)
+	{
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_SHORT_IMAGE, num, width, height, 1, 1, pData, thisIsExternalprogram);
 	}
 
 	/********************************************************************
@@ -445,6 +580,11 @@ extern "C" {
 		pimpom_plot_image(PIMPOM_PLOT_FORMAT_WORD_IMAGE, num, width, height, 1, 1, pData);
 	}
 
+	static void PlotWordImageAsync(int num, int width, int height, WORD* pData, int thisIsExternalprogram)
+	{
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_WORD_IMAGE, num, width, height, 1, 1, pData, thisIsExternalprogram);
+	}
+
 	/********************************************************************
 	機  能  名  称 : PIMPOMにlong画像データを出力する
 	関    数    名 : PlotLongImage
@@ -461,6 +601,11 @@ extern "C" {
 	static void PlotLongImage(int num, int width, int height, long* pData)
 	{
 		pimpom_plot_image(PIMPOM_PLOT_FORMAT_LONG_IMAGE, num, width, height, 1, 1, pData);
+	}
+
+	static void PlotLongImageAsync(int num, int width, int height, long* pData, int thisIsExternalprogram)
+	{
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_LONG_IMAGE, num, width, height, 1, 1, pData, thisIsExternalprogram);
 	}
 
 	/********************************************************************
@@ -481,6 +626,11 @@ extern "C" {
 		pimpom_plot_image(PIMPOM_PLOT_FORMAT_DWORD_IMAGE, num, width, height, 1, 1, pData);
 	}
 
+	static void PlotDwordImageAsync(int num, int width, int height, DWORD* pData, int thisIsExternalprogram)
+	{
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_DWORD_IMAGE, num, width, height, 1, 1, pData, thisIsExternalprogram);
+	}
+
 	/********************************************************************
 	機  能  名  称 : PIMPOMにfloat画像データを出力する
 	関    数    名 : PlotFloatImage
@@ -497,6 +647,11 @@ extern "C" {
 	static void PlotFloatImage(int num, int width, int height, float* pData)
 	{
 		pimpom_plot_image(PIMPOM_PLOT_FORMAT_FLOAT_IMAGE, num, width, height, 1, 1, pData);
+	}
+
+	static void PlotFloatImageAsync(int num, int width, int height, float* pData, int thisIsExternalprogram)
+	{
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_FLOAT_IMAGE, num, width, height, 1, 1, pData, thisIsExternalprogram);
 	}
 
 	/********************************************************************
@@ -516,6 +671,11 @@ extern "C" {
 	static void Plot3DImage(int num, int width, int height, int page, BYTE* pData)
 	{
 		pimpom_plot_image(PIMPOM_PLOT_FORMAT_3D_IMAGE, num, width, height, page, 1, pData);
+	}
+
+	static void Plot3DImageAsync(int num, int width, int height, int page, BYTE* pData, int thisIsExternalprogram)
+	{
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_3D_IMAGE, num, width, height, page, 1, pData, thisIsExternalprogram);
 	}
 
 
@@ -538,6 +698,11 @@ extern "C" {
 		pimpom_plot_image(PIMPOM_PLOT_FORMAT_F3D_IMAGE, num, width, height, page, 1, pData);
 	}
 
+	static void PlotF3DImageAsync(int num, int width, int height, int page, float* pData, int thisIsExternalprogram)
+	{
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_F3D_IMAGE, num, width, height, page, 1, pData, thisIsExternalprogram);
+	}
+
 	/********************************************************************
 	機  能  名  称 : PIMPOMにRGB画像データを出力する
 	関    数    名 : PlotRGBImage
@@ -554,6 +719,11 @@ extern "C" {
 	static void PlotRGBImage(int num, int width, int height, BYTE* pData)
 	{
 		pimpom_plot_image(PIMPOM_PLOT_FORMAT_RGB_IMAGE, num, width, height, 1, 3, pData);
+	}
+
+	static void PlotRGBImageAsync(int num, int width, int height, BYTE* pData, int thisIsExternalprogram)
+	{
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_RGB_IMAGE, num, width, height, 1, 3, pData, thisIsExternalprogram);
 	}
 
 
@@ -666,6 +836,12 @@ extern "C" {
 		pimpom_get_image(PIMPOM_PLOT_FORMAT_BYTE_IMAGE, num, width, height, 1, 1, pData);
 	}
 
+	static int GetByteImageAsync(int *num, int *width, int *height, BYTE** ppData, int thisIsExternalprogram)
+	{
+		int page, channel;
+		return pimpom_get_image_async(PIMPOM_PLOT_FORMAT_BYTE_IMAGE, num, width, height, &page, &channel, (void**)ppData, thisIsExternalprogram);
+	}
+
 	/********************************************************************
 	機  能  名  称 : PIMPOMからshort画像データを入力する
 	関    数    名 : GethortImage
@@ -682,6 +858,12 @@ extern "C" {
 	static void GetShortImage(int num, int width, int height, short* pData)
 	{
 		pimpom_get_image(PIMPOM_PLOT_FORMAT_SHORT_IMAGE, num, width, height, 1, 1, pData);
+	}
+
+	static int GetShortImageAsync(int *num, int *width, int *height, short** ppData, int thisIsExternalprogram)
+	{
+		int page, channel;
+		return pimpom_get_image_async(PIMPOM_PLOT_FORMAT_SHORT_IMAGE, num, width, height, &page, &channel, (void**)ppData, thisIsExternalprogram);
 	}
 
 	/********************************************************************
@@ -702,6 +884,12 @@ extern "C" {
 		pimpom_get_image(PIMPOM_PLOT_FORMAT_WORD_IMAGE, num, width, height, 1, 1, pData);
 	}
 
+	static int GetWordImageAsync(int *num, int *width, int *height, WORD** ppData, int thisIsExternalprogram)
+	{
+		int page, channel;
+		return pimpom_get_image_async(PIMPOM_PLOT_FORMAT_WORD_IMAGE, num, width, height, &page, &channel, (void**)ppData, thisIsExternalprogram);
+	}
+
 	/********************************************************************
 	機  能  名  称 : PIMPOMからlong画像データを入力する
 	関    数    名 : GetLongImage
@@ -718,6 +906,12 @@ extern "C" {
 	static void GetLongImage(int num, int width, int height, long* pData)
 	{
 		pimpom_get_image(PIMPOM_PLOT_FORMAT_LONG_IMAGE, num, width, height, 1, 1, pData);
+	}
+
+	static int GetLongImageAsync(int *num, int *width, int *height, long** ppData, int thisIsExternalprogram)
+	{
+		int page, channel;
+		return pimpom_get_image_async(PIMPOM_PLOT_FORMAT_LONG_IMAGE, num, width, height, &page, &channel, (void**)ppData, thisIsExternalprogram);
 	}
 
 	/********************************************************************
@@ -738,6 +932,12 @@ extern "C" {
 		pimpom_get_image(PIMPOM_PLOT_FORMAT_DWORD_IMAGE, num, width, height, 1, 1, pData);
 	}
 
+	static int GetDwordImageAsync(int *num, int *width, int *height, DWORD** ppData, int thisIsExternalprogram)
+	{
+		int page, channel;
+		return pimpom_get_image_async(PIMPOM_PLOT_FORMAT_DWORD_IMAGE, num, width, height, &page, &channel, (void**)ppData, thisIsExternalprogram);
+	}
+
 	/********************************************************************
 	機  能  名  称 : PIMPOMからfloat画像データを入力する
 	関    数    名 : GetFloatImage
@@ -754,6 +954,12 @@ extern "C" {
 	static void GetFloatImage(int num, int width, int height, float* pData)
 	{
 		pimpom_get_image(PIMPOM_PLOT_FORMAT_FLOAT_IMAGE, num, width, height, 1, 1, pData);
+	}
+
+	static int GetFloatImageAsync(int *num, int *width, int *height, float** ppData, int thisIsExternalprogram)
+	{
+		int page, channel;
+		return pimpom_get_image_async(PIMPOM_PLOT_FORMAT_FLOAT_IMAGE, num, width, height, &page, &channel, (void**)ppData, thisIsExternalprogram);
 	}
 
 	/********************************************************************
@@ -775,6 +981,12 @@ extern "C" {
 		pimpom_get_image(PIMPOM_PLOT_FORMAT_3D_IMAGE, num, width, height, page, 1, pData);
 	}
 
+	static int Get3DImageAsync(int *num, int *width, int *height, int *page, BYTE** ppData, int thisIsExternalprogram)
+	{
+		int channel;
+		return pimpom_get_image_async(PIMPOM_PLOT_FORMAT_3D_IMAGE, num, width, height, page, &channel, (void**)ppData, thisIsExternalprogram);
+	}
+
 	/********************************************************************
 	機  能  名  称 : PIMPOMからFloat3D画像データを入力する
 	関    数    名 : GetF3DImage
@@ -794,6 +1006,12 @@ extern "C" {
 		pimpom_get_image(PIMPOM_PLOT_FORMAT_F3D_IMAGE, num, width, height, page, 1, pData);
 	}
 
+	static int GetF3DImageAsync(int *num, int *width, int *height, int *page, float** ppData, int thisIsExternalprogram)
+	{
+		int channel;
+		return pimpom_get_image_async(PIMPOM_PLOT_FORMAT_F3D_IMAGE, num, width, height, page, &channel, (void**)ppData, thisIsExternalprogram);
+	}
+
 
 	/********************************************************************
 	機  能  名  称 : PIMPOMからRGB画像データを入力する
@@ -811,6 +1029,12 @@ extern "C" {
 	static void GetRGBImage(int num, int width, int height, BYTE* pData)
 	{
 		pimpom_get_image(PIMPOM_PLOT_FORMAT_RGB_IMAGE, num, width, height, 1, 3, pData);
+	}
+
+	static int GetRGBImageAsync(int *num, int *width, int *height, BYTE** ppData, int thisIsExternalprogram)
+	{
+		int page, channel;
+		return pimpom_get_image_async(PIMPOM_PLOT_FORMAT_RGB_IMAGE, num, width, height, &page, &channel, (void**)ppData, thisIsExternalprogram);
 	}
 
 
@@ -1251,7 +1475,7 @@ extern "C" {
 
 
 	/********************************************************************
-	機  能  名  称 : コマンド実行
+	機  能  名  称 : スクリプトコマンド実行
 	関    数    名 : ExecuteCommand
 	引          数 : (in)command
 	(out)result

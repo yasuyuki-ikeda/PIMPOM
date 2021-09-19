@@ -1293,6 +1293,7 @@ BinalizeNick(src, dst, fs, k, inv)
 		  ave: averaged pixel value within the window
 		  np: number of pixels within the window
 
+Khurshid, K., Siddiqi, I., Faure, C., Vincent, N.: Comparison of Niblack inspired Binarization methods for ancient documents. In: 16th International conference on Document Recognition and Retrieval. SPIE, USA 2010
 ==============================
 
 Label(src, dst, sort, min_area)
@@ -1328,8 +1329,8 @@ HoughLines(n, pixSkip, dirSkip, voteThresh, minLineLength, maxLineGap)
 BlendPoisson(src, blend, dst, ofsx, ofsy, mode)
 
 <引数> 　　
-【数値】src           元画像メモリ番号(-1にした場合は現在選択中の画像)
-【数値】blend         ブレンド画像メモリ番号
+【数値】src           背景画像のメモリ番号(-1にした場合は現在選択中の画像)
+【数値】blend         合成対象画像のメモリ番号
 【数値】dst           結果画像メモリ番号(-1にした場合は現在選択中の画像)
 【数値】ofsx          合成開始位置x
 【数値】ofsy          合成開始位置y
@@ -1339,7 +1340,7 @@ BlendPoisson(src, blend, dst, ofsx, ofsy, mode)
 【数値】成功したら1
 
 <機能>   　濃度勾配を配慮した継ぎ目の少ない画像合成
-Patrick P?rez, Michel Gangnet, and Andrew Blake. Poisson image editing. In ACM Transactions on Graphics (TOG), volume 22, pages 313?318. ACM, 2003.
+Patrick P?rez, Michel Gangnet, and Andrew Blake. Poisson image editing. In ACM Transactions on Graphics (TOG), volume 22, pages 313-318. ACM, 2003.
 ==============================
 
 FilterDFT(src, dst, inv)

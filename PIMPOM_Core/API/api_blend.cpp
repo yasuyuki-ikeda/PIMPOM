@@ -64,8 +64,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /********************************************************************
 機  能  名  称 : ポワソン画像合成
 関    数    名 : BlendPoisson
-引          数 : long		sorce_image_num			(in)元画像メモリ番号(-1にした場合は現在選択中の画像)
-long		blend_image_num			(in)ブレンド画像メモリ番号
+引          数 : 
+long		sorce_image_num			(in)背景画像メモリ番号(-1にした場合は現在選択中の画像)
+long		blend_image_num			(in)合成対象画像メモリ番号
 long		dst_image_num			(in)結果格納先画像メモリ番号(-1にした場合は現在選択中の画像)
 int			offsetx					(in)合成開始位置x
 int			offsety					(in)合成開始位置y

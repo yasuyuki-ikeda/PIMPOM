@@ -71,7 +71,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 引          数 : long		image_num			(in)対象エッジ画像メモリ番号(-1にした場合は現在選択中の画像)
 				 int		pixSkip				(in)投票空間の距離分解能[pix]
 				 int		dirSkip				(in)投票空間の角度分解能[deg]
-				 int		voteThresh			(in)投票の閾値パラメータ．十分な票（  >\texttt{threshold} ）を得た直線のみが出力されます．
+				 int		voteThresh			(in)投票の閾値パラメータ．十分な票を得た直線のみが出力されます．
 				 double		minLineLength		(in)最小の線分長．これより短い線分は棄却されます
 				 double		maxLineGap			(in)2点が同一線分上にあると見なす場合に許容される最大距離．
 戻    り    値 : 抽出した直線数

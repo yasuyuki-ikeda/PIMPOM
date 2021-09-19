@@ -1146,14 +1146,18 @@ void CBatchDlg::OnNMRClickListBatch(NMHDR *pNMHDR, LRESULT *pResult)
 	//LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<NMITEMACTIVATE>(pNMHDR);
 	
 	BATCH_INPUT in_param={0};
-	CString param_val[BATCH_IN_PARAM_NUM];
+	CString param_val[BATCH_IN_PARAM_NUM], filepath;
 	CConfirmDlg dlg;
 	int selected_num = get_selected_list_item();
 	if(selected_num<0)	return;
 
 	//入力パラメタを設定するダイアログを出す
 	dlg.SetTitle(_T("入力パラメタ"));
-	dlg.SetWidth(50,400);
+	dlg.SetWidth(70,600);
+
+	filepath = m_list_contol.GetItemText(selected_num, 1);
+	dlg.RegistVar(_T("ファイルパス"), &filepath);
+
 	for(int i=0 ; i<BATCH_IN_PARAM_NUM ; i++)
 	{
 		param_val[i] = m_list_contol.GetItemText(selected_num, i+2);	
@@ -1165,7 +1169,11 @@ void CBatchDlg::OnNMRClickListBatch(NMHDR *pNMHDR, LRESULT *pResult)
 
 	if(dlg.DoModal()!=IDOK)	return;
 
+
 	//パラメタをリストに設定する
+	strcpy(in_param.imae_file_path, filepath.GetBuffer());
+	filepath.ReleaseBuffer();
+
 	for(int i=0 ; i<BATCH_IN_PARAM_NUM ; i++)
 	{
 		strcpy( in_param.param[i] , param_val[i].GetBuffer() );

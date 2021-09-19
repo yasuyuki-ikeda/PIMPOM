@@ -111,6 +111,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define		BATCH_EXEC_STATE_SKIPPED	(1)//処理がスキップされた
 #define		BATCH_EXEC_STATE_RETRY		(2)//リトライ要求
 #define		BATCH_EXEC_STATE_STOP		(3)//中断要求
+#define		BATCH_EXEC_STATE_WAIT		(4)//待機要求
 
 //通信の種類
 #define		SOCKET_SERVER		(0)	//サーバソケット

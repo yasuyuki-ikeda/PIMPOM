@@ -2915,35 +2915,35 @@ LRESULT CPIMPOMDlg::OnMessageExtProcess(WPARAM wParam, LPARAM lParam)
 			}
 			break;
 
-		case PIMPOM_PLOT_COMMAND_DRAW_POINT_ON_IMAGE://点描画
+		case PIMPOM_PLOT_COMMAND_DRAW_POINT_ON_IMAGE://画像上に点描画
 			API.DrawPointOnImage(pShmem->image_num, pShmem->x0, pShmem->y0, pShmem->size, RGB(pShmem->red, pShmem->green, pShmem->blue), pShmem->copy_src);
 			break;
 
-		case PIMPOM_PLOT_COMMAND_DRAW_LINE_ON_IMAGE://直線描画
+		case PIMPOM_PLOT_COMMAND_DRAW_LINE_ON_IMAGE://画像上に直線描画
 			API.DrawLineOnImage(pShmem->image_num, pShmem->x0, pShmem->y0, pShmem->x1, pShmem->y1, pShmem->size, RGB(pShmem->red, pShmem->green, pShmem->blue), pShmem->copy_src);
 			break;
 
-		case PIMPOM_PLOT_COMMAND_DRAW_RECT_ON_IMAGE://矩形描画
+		case PIMPOM_PLOT_COMMAND_DRAW_RECT_ON_IMAGE://画像上に矩形描画
 			API.DrawRectOnImage(pShmem->image_num, pShmem->x0, pShmem->y0, pShmem->x1, pShmem->y1, RGB(pShmem->red, pShmem->green, pShmem->blue), false, 0, pShmem->copy_src);
 			break;
 
-		case PIMPOM_PLOT_COMMAND_DRAW_CIRCLE_ON_IMAGE://円形描画
+		case PIMPOM_PLOT_COMMAND_DRAW_CIRCLE_ON_IMAGE://画像上に円形描画
 			API.DrawCircleOnImage(pShmem->image_num, pShmem->x0, pShmem->y0, pShmem->x1, RGB(pShmem->red, pShmem->green, pShmem->blue), pShmem->y1, pShmem->copy_src);
 			break;
 
-		case PIMPOM_PLOT_COMMAND_DRAW_CURSOR_ON_IMAGE://十字カーソル描画
+		case PIMPOM_PLOT_COMMAND_DRAW_CURSOR_ON_IMAGE://画像上に十字カーソル描画
 			API.DrawCursorOnImage(pShmem->image_num, pShmem->x0, pShmem->y0, pShmem->size, RGB(pShmem->red, pShmem->green, pShmem->blue), pShmem->copy_src);
 			break;
 
-		case PIMPOM_PLOT_COMMAND_DRAW_TEXT_ON_IMAGE://テキスト描画
+		case PIMPOM_PLOT_COMMAND_DRAW_TEXT_ON_IMAGE://画像上にテキスト描画
 			API.DrawTextOnImage(pShmem->image_num, pShmem->x0, pShmem->y0, pShmem->message,  RGB(pShmem->red, pShmem->green, pShmem->blue), pShmem->copy_src);
 			break;
 
-		case PIMPOM_PLOT_COMMAND_SHOW_MESSAGE://メッセージ表示
+		case PIMPOM_PLOT_COMMAND_SHOW_MESSAGE://メッセージエリアに表示
 			API.ShowMessage(false,1,true, CString(pShmem->message));
 			break;
 
-		case PIMPOM_PLOT_COMMAND_SHOW_NEW_MESSAGE://メッセージ表示(新規)
+		case PIMPOM_PLOT_COMMAND_SHOW_NEW_MESSAGE://メッセージエリアに表示(新規)
 			API.ShowMessage(true,1,true, CString(pShmem->message));
 			break;
 
@@ -3047,7 +3047,7 @@ LRESULT CPIMPOMDlg::OnMessageExtProcess(WPARAM wParam, LPARAM lParam)
 
 
 
-		case PIMPOM_PLOT_COMMAND_EXECUTE://コマンド文字列
+		case PIMPOM_PLOT_COMMAND_EXECUTE://スクリプトコマンド実行
 			{
 				pimpom_plot_free_shere_mem(pShmem, hShare);//共有メモリいったん解放
 
