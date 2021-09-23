@@ -31,7 +31,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 void pimpom_api_def();
 
 
+void _InitAysnc()
+{
+	InitAysnc(0);
+}
 
+int _EnableAysnc()
+{
+	return EnableAysnc(NULL);
+}
 
 
 /********************************************************************
@@ -39,6 +47,7 @@ void pimpom_api_def();
 関    数    名 : _PlotByteImage
 引          数 : int imgNo　	(in)画像メモリ番号
 				np::ndarray img (in)画像データ配列(2次元のnumpy配列 [row][col])
+				np::ndarray params (in)パラメータ
 戻    り    値 :
 機          能 :
 日付         作成者          内容
@@ -48,7 +57,6 @@ Y.Ikeda         新規作成
 void plot_byte_image_internal(int imgNo, np::ndarray img, bool async)
 {
 	int nd = img.get_nd();
-
 	if (nd != 2)
 	{
 		throw std::runtime_error("second argument must be 2-dimensional");
@@ -57,6 +65,7 @@ void plot_byte_image_internal(int imgNo, np::ndarray img, bool async)
 	{
 		throw std::runtime_error("a must be uint8 array");
 	}
+
 
 	auto shape = img.get_shape();
 	auto strides = img.get_strides();
@@ -82,7 +91,7 @@ void plot_byte_image_internal(int imgNo, np::ndarray img, bool async)
 	if (!async)
 		PlotByteImage(imgNo, w, h, tmp);
 	else
-		PlotByteImageAsync(imgNo, w, h, tmp,1);
+		PlotByteImageAsync(imgNo, w, h, tmp, NULL);
 
 	delete[] tmp;
 }
@@ -160,7 +169,7 @@ void plot_rgb_image_internal(int imgNo, np::ndarray img, int order_rgb, bool asy
 	if(!async)
 		PlotRGBImage(imgNo, w, h, tmp);
 	else
-		PlotRGBImageAsync(imgNo, w, h, tmp,1);
+		PlotRGBImageAsync(imgNo, w, h, tmp, NULL);
 
 	delete[] tmp;
 }
@@ -609,7 +618,7 @@ np::ndarray  _GetByteImageAsync()
 	int w, h, num;
 	unsigned char *tmp;
 
-	int ret = GetByteImageAsync(&num, &w, &h, &tmp,1);
+	int ret = GetByteImageAsync(&num, &w, &h, &tmp);
 	if (!ret) 
 	{
 		Py_intptr_t shape[2] = { 1, 1 };
@@ -704,7 +713,7 @@ np::ndarray  _GetRGBImageAsync(int order_rgb)
 	int w, h, num;
 	unsigned char *tmp;
 
-	int ret = GetRGBImageAsync(&num, &w, &h, &tmp,1);
+	int ret = GetRGBImageAsync(&num, &w, &h, &tmp);
 	if (!ret)
 	{
 		Py_intptr_t shape[3] = { 1, 1 , 1 };
@@ -1055,7 +1064,8 @@ BOOST_PYTHON_MODULE(Pimpom) {
 	Py_Initialize();
 	np::initialize();
 
-
+	p::def("InitAysnc", _InitAysnc);
+	p::def("EnableAysnc", _EnableAysnc);
 	p::def("PlotByteImage", _PlotByteImage);
 	p::def("PlotByteImageAsync", _PlotByteImageAsync);
 	p::def("PlotRGBImage", _PlotRGBImage);
