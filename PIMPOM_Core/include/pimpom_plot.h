@@ -553,16 +553,30 @@ extern "C" {
 	機  能  名  称 : 非同期参照可能かチェックする
 	関    数    名 : EnableAysnc
 	引          数 :　
-	float* pAsyncParams (out)パラメタ
 	戻    り    値 : 相手のプロセスのIDならば1を返すそれ以外は0を返す
 	機          能 :
 	日付         作成者          内容
 	------------ --------------- ---------------------------------------
 	Y.Ikeda         新規作成
 	********************************************************************/
-	static int EnableAysnc(float* pAsyncParams)
+	static int EnableAysnc()
 	{
-		return pimpom_get_image_async(0, NULL, NULL, NULL, NULL, NULL, NULL, pimpom_async_ids[1], pAsyncParams);
+		return pimpom_get_image_async(0, NULL, NULL, NULL, NULL, NULL, NULL, pimpom_async_ids[1], NULL);
+	}
+
+	/********************************************************************
+	機  能  名  称 : 非同期参照パラメタを取得する
+	関    数    名 : GetAysncParams
+	引          数 :　float* pAsyncParams (out)パラメタ
+	戻    り    値 : 
+	機          能 :
+	日付         作成者          内容
+	------------ --------------- ---------------------------------------
+	Y.Ikeda         新規作成
+	********************************************************************/
+	static void GetAysncParams(float* pAsyncParams)
+	{
+		pimpom_get_image_async(0, NULL, NULL, NULL, NULL, NULL, NULL, pimpom_async_ids[1], pAsyncParams);
 	}
 
 

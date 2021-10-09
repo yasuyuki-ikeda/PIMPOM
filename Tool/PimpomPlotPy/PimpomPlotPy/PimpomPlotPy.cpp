@@ -38,8 +38,10 @@ void _InitAysnc()
 
 int _EnableAysnc()
 {
-	return EnableAysnc(NULL);
+	return EnableAysnc();
 }
+
+
 
 
 /********************************************************************
@@ -54,28 +56,33 @@ int _EnableAysnc()
 ------------ --------------- ---------------------------------------
 Y.Ikeda         新規作成
 ********************************************************************/
-void plot_byte_image_internal(int imgNo, np::ndarray img, bool async)
+void plot_byte_image_internal(int imgNo, np::ndarray img, bool async, np::ndarray *pParams)
 {
-	int nd = img.get_nd();
-	if (nd != 2)
+	//入力データのチェック
+	if (img.get_nd() != 2)
 	{
 		throw std::runtime_error("second argument must be 2-dimensional");
 	}
 	if (img.get_dtype() != np::dtype::get_builtin<unsigned char>())
 	{
-		throw std::runtime_error("a must be uint8 array");
+		throw std::runtime_error("second argument must be uint8 array");
 	}
 
+	if (pParams)
+	{//パラメタのチェック
+		if (pParams->get_nd() != 1) {
+			throw std::runtime_error("parameter must be 1-dimensional");
+		}
+		if (pParams->get_dtype() != np::dtype::get_builtin<float>())
+		{
+			throw std::runtime_error("parameter must be float32 array");
+		}
+	}
 
+	//入力データのコピー
 	auto shape = img.get_shape();
-	auto strides = img.get_strides();
-
 	int h = shape[0];
 	int w = shape[1];
-
-
-	//printf("w=%d, h=%d, ch=%d",w,h,ch);
-
 	unsigned char *tmp = new unsigned char[w * h];
 	unsigned char *ptr = reinterpret_cast<unsigned char *>(img.get_data());
 
@@ -89,21 +96,45 @@ void plot_byte_image_internal(int imgNo, np::ndarray img, bool async)
 	}
 
 	if (!async)
+	{
 		PlotByteImage(imgNo, w, h, tmp);
-	else
-		PlotByteImageAsync(imgNo, w, h, tmp, NULL);
+	}
+	else 
+	{
+		if (pParams)
+		{//パラメタのコピー
+			float tmpParam[PIMPOM_PLOT_ASYNC_PARAM_LEN] = { 0 };
+			auto param_shape = pParams->get_shape();
+			float *ptrParam = reinterpret_cast<float *>(pParams->get_data());
+			for (int i = 0; i < PIMPOM_PLOT_ASYNC_PARAM_LEN && i < param_shape[0]; i++)
+			{
+				tmpParam[i] = ptrParam[i];
+			}
+
+			PlotByteImageAsync(imgNo, w, h, tmp, tmpParam);
+		}
+		else
+		{
+			PlotByteImageAsync(imgNo, w, h, tmp, NULL);
+		}
+	}
 
 	delete[] tmp;
 }
 
 void _PlotByteImage(int imgNo, np::ndarray img)
 {
-	plot_byte_image_internal(imgNo, img, false);
+	plot_byte_image_internal(imgNo, img, false, NULL);
 }
 
 void _PlotByteImageAsync(int imgNo, np::ndarray img)
 {
-	plot_byte_image_internal(imgNo, img, true);
+	plot_byte_image_internal(imgNo, img, true, NULL);
+}
+
+void _PlotByteImageAsync(int imgNo, np::ndarray img, np::ndarray params)
+{
+	plot_byte_image_internal(imgNo, img, true, &params);
 }
 
 /********************************************************************
@@ -118,11 +149,10 @@ void _PlotByteImageAsync(int imgNo, np::ndarray img)
 ------------ --------------- ---------------------------------------
 Y.Ikeda         新規作成
 ********************************************************************/
-void plot_rgb_image_internal(int imgNo, np::ndarray img, int order_rgb, bool async)
+void plot_rgb_image_internal(int imgNo, np::ndarray img, int order_rgb, bool async, np::ndarray *pParams)
 {
-	int nd = img.get_nd();
-
-	if (nd != 3)
+	//入力データのチェック
+	if (img.get_nd() != 3)
 	{
 		throw std::runtime_error("second argument must be 3-dimensional");
 	}
@@ -132,9 +162,18 @@ void plot_rgb_image_internal(int imgNo, np::ndarray img, int order_rgb, bool asy
 		throw std::runtime_error("a must be uint8 array");
 	}
 
-	auto shape = img.get_shape();
-	auto strides = img.get_strides();
+	if (pParams)
+	{//パラメタのチェック
+		if (pParams->get_nd() != 1) {
+			throw std::runtime_error("parameter must be 1-dimensional");
+		}
+		if (pParams->get_dtype() != np::dtype::get_builtin<float>())
+		{
+			throw std::runtime_error("parameter must be float32 array");
+		}
+	}
 
+	auto shape = img.get_shape();
 	int h = shape[0];
 	int w = shape[1];
 	int ch = shape[2];
@@ -143,8 +182,7 @@ void plot_rgb_image_internal(int imgNo, np::ndarray img, int order_rgb, bool asy
 		throw std::runtime_error("last channel length must be 3");
 	}
 
-	//printf("w=%d, h=%d, ch=%d",w,h,ch);
-
+	//入力データのコピー
 	unsigned char *tmp = new unsigned char[ch * w * h];
 	unsigned char *ptr = reinterpret_cast<unsigned char *>(img.get_data());
 
@@ -166,24 +204,46 @@ void plot_rgb_image_internal(int imgNo, np::ndarray img, int order_rgb, bool asy
 		}
 	}
 
-	if(!async)
+	if (!async)
+	{
 		PlotRGBImage(imgNo, w, h, tmp);
-	else
-		PlotRGBImageAsync(imgNo, w, h, tmp, NULL);
+	}
+	else 
+	{
+		if (pParams)
+		{//パラメタのコピー
+			float tmpParam[PIMPOM_PLOT_ASYNC_PARAM_LEN] = { 0 };
+			auto param_shape = pParams->get_shape();
+			float *ptrParam = reinterpret_cast<float *>(pParams->get_data());
+			for (int i = 0; i < PIMPOM_PLOT_ASYNC_PARAM_LEN && i < param_shape[0]; i++)
+			{
+				tmpParam[i] = ptrParam[i];
+			}
+
+			PlotRGBImageAsync(imgNo, w, h, tmp, tmpParam);
+		}
+		else {
+			PlotRGBImageAsync(imgNo, w, h, tmp, NULL);
+		}
+	}
 
 	delete[] tmp;
 }
 
 void _PlotRGBImage(int imgNo, np::ndarray img, int order_rgb)
 {
-	plot_rgb_image_internal(imgNo, img, order_rgb, false);
+	plot_rgb_image_internal(imgNo, img, order_rgb, false, NULL);
 }
 
 void _PlotRGBImageAsync(int imgNo, np::ndarray img, int order_rgb)
 {
-	plot_rgb_image_internal(imgNo, img, order_rgb, true);
+	plot_rgb_image_internal(imgNo, img, order_rgb, true, NULL);
 }
 
+void _PlotRGBImageAsync(int imgNo, np::ndarray img, int order_rgb, np::ndarray params)
+{
+	plot_rgb_image_internal(imgNo, img, order_rgb, true, &params);
+}
 
 /********************************************************************
 機  能  名  称 : PIMPOMに8bitモノクロのマルチチャネル画像データを出力する
@@ -558,6 +618,26 @@ void _SetMaskImage(int imgNo, np::ndarray img)
 	SetMaskImage(imgNo, tmp);
 
 	delete[] tmp;
+}
+
+/********************************************************************
+機  能  名  称 : PIMPOMから非同期参照パラメタを取得する
+関    数    名 : _GetAysncParams
+引          数 : 
+戻    り    値 :非同期参照パラメタ(1次元のnumpy配列)
+機          能 :
+日付         作成者          内容
+------------ --------------- ---------------------------------------
+Y.Ikeda         新規作成
+********************************************************************/
+np::ndarray _GetAysncParams()
+{
+	Py_intptr_t shape[1] = { PIMPOM_PLOT_ASYNC_PARAM_LEN };
+	np::ndarray params = np::zeros(1, shape, np::dtype::get_builtin<float>());
+	float *ptr = reinterpret_cast<float *>(params.get_data());
+
+	GetAysncParams(ptr);
+	return params;
 }
 
 /********************************************************************
@@ -1067,14 +1147,17 @@ BOOST_PYTHON_MODULE(Pimpom) {
 	p::def("InitAysnc", _InitAysnc);
 	p::def("EnableAysnc", _EnableAysnc);
 	p::def("PlotByteImage", _PlotByteImage);
-	p::def("PlotByteImageAsync", _PlotByteImageAsync);
+	p::def("PlotByteImageAsync", (void(*)(int, np::ndarray))&_PlotByteImageAsync);
+	p::def("PlotByteImageAsync", (void(*)(int, np::ndarray, np::ndarray))&_PlotByteImageAsync);
 	p::def("PlotRGBImage", _PlotRGBImage);
-	p::def("PlotRGBImageAsync", _PlotRGBImageAsync);
+	p::def("PlotRGBImageAsync", (void(*)(int, np::ndarray, int))&_PlotRGBImageAsync);
+	p::def("PlotRGBImageAsync", (void(*)(int, np::ndarray, int, np::ndarray))&_PlotRGBImageAsync);
 	p::def("PlotFloatImage", _PlotFloatImage);
 	p::def("Plot3DImage", _Plot3DImage);
 	p::def("PlotF3DImage", _PlotF3DImage);
 	p::def("SetMaskImage", _SetMaskImage);
 	p::def("ExecuteCommand", _ExecuteCommand);
+	p::def("GetAysncParams", _GetAysncParams);
 	p::def("GetByteImage", _GetByteImage);
 	p::def("GetRGBImage", _GetRGBImage);
 	p::def("GetByteImageAsync", _GetByteImageAsync);
