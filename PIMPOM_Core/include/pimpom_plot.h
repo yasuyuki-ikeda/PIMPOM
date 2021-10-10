@@ -206,7 +206,7 @@ extern "C" {
 		SendMessage(hWnd, Msg, wParam, (LPARAM)NULL);
 	}
 
-	//共有メモリを取得する
+	//新たに共有メモリを取得する
 	static void *pimpom_plot_get_shere_mem(int size, HANDLE *hShare, int doWrite)
 	{
 		if (doWrite)
@@ -228,6 +228,16 @@ extern "C" {
 			return ::MapViewOfFile(*hShare, FILE_MAP_READ, 0, 0, size);
 		}
 	}
+
+	//すでにある共有メモリにアクセスする
+	static void *pimpom_plot_access_shere_mem(int size, HANDLE *hShare)
+	{
+		*hShare = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, _T(SHEAREMEM_NAME));
+		if (!*hShare)	return NULL;
+
+		return ::MapViewOfFile(*hShare, FILE_MAP_ALL_ACCESS, 0, 0, size);
+	}
+
 
 	//共有メモリを解放する
 	static void pimpom_plot_free_shere_mem(void *pMem, HANDLE hShare)
@@ -427,7 +437,7 @@ extern "C" {
 		int data_size;
 
 		//共有メモリ領域のヘッダ部分を読む
-		pShmem = (SHEAREMEM_PLOT_IMAGE_ASYNC*)pimpom_plot_get_shere_mem(sizeof(SHEAREMEM_PLOT_IMAGE_ASYNC), &hShare, 0);
+		pShmem = (SHEAREMEM_PLOT_IMAGE_ASYNC*)pimpom_plot_access_shere_mem(sizeof(SHEAREMEM_PLOT_IMAGE_ASYNC), &hShare);
 		if (!pShmem)	return 0;
 
 		memcpy(&shmem_header, pShmem, sizeof(SHEAREMEM_PLOT_IMAGE_ASYNC));
@@ -454,7 +464,7 @@ extern "C" {
 				|| shmem_header.memory.channel <= 0 || shmem_header.memory.page <= 0 || shmem_header.memory.size <= 0)	return 0;
 
 			//共有メモリ領域の全体読み直す
-			pShmem = (SHEAREMEM_PLOT_IMAGE_ASYNC*)pimpom_plot_get_shere_mem(shmem_header.memory.size, &hShare, 0);
+			pShmem = (SHEAREMEM_PLOT_IMAGE_ASYNC*)pimpom_plot_access_shere_mem(shmem_header.memory.size, &hShare);
 			if (!pShmem)	return 0;
 
 			pix_size = get_pix_size(shmem_header.memory.format);
@@ -492,27 +502,36 @@ extern "C" {
 	void* pData (in)画像データの先頭ポインタ
 	int asyncFlg (in)非同期参照フラグのセット(負数の場合は同期終了)
 	float* pAsyncParams (in)パラメタ
+	int get_memory_dlg (in)共有メモリを取得する
 	戻    り    値 :
 	機          能 :
 	日付         作成者          内容
 	------------ --------------- ---------------------------------------
 	Y.Ikeda         新規作成
 	********************************************************************/
-	static void pimpom_plot_image_async(int format, int num, int width, int height, int page, int channel, void* pData, int asyncFlg, float* pAsyncParams)
+	static void pimpom_plot_image_async(int format, int num, int width, int height, int page, int channel, void* pData, int asyncFlg, float* pAsyncParams, int get_memory_dlg)
 	{
 		static HANDLE	hShare = NULL;
 		static SHEAREMEM_PLOT_IMAGE_ASYNC	*pShereMem = NULL;
 		int		pix_size, sheremem_size;
 
 
-		if (pShereMem) {
-			pimpom_plot_free_shere_mem(pShereMem, hShare);//共有メモリを解放
-		}
-
-	
 		pix_size = get_pix_size(format);//画像データのピクセルサイズ
 		sheremem_size = sizeof(SHEAREMEM_PLOT_IMAGE_ASYNC) + width*height*pix_size*page*channel;//画像データのサイズ
-		pShereMem = (SHEAREMEM_PLOT_IMAGE_ASYNC*)pimpom_plot_get_shere_mem(sheremem_size, &hShare, 1);//共有メモリ取得
+
+		if (get_memory_dlg)
+		{
+			if (pShereMem) {
+				pimpom_plot_free_shere_mem(pShereMem, hShare);//共有メモリがある場合は解放
+				hShare = NULL;
+				pShereMem = NULL;
+			}
+
+			pShereMem = (SHEAREMEM_PLOT_IMAGE_ASYNC*)pimpom_plot_get_shere_mem(sheremem_size, &hShare, 1);//共有メモリ新規取得
+		}
+		else {
+			pShereMem = (SHEAREMEM_PLOT_IMAGE_ASYNC*)pimpom_plot_access_shere_mem(sheremem_size, &hShare);//すでにある共有メモリにアクセス
+		}
 		if (!pShereMem)	return;
 
 
@@ -526,7 +545,12 @@ extern "C" {
 
 		pShereMem->asyncFlg = asyncFlg;
 		if (pAsyncParams) {
-			memcpy(pShereMem->params, pAsyncParams, PIMPOM_PLOT_ASYNC_PARAM_LEN*sizeof(float));
+			memcpy(pShereMem->params, pAsyncParams, PIMPOM_PLOT_ASYNC_PARAM_LEN * sizeof(float));
+		}
+
+		if (!get_memory_dlg)
+		{
+			pimpom_plot_free_shere_mem(pShereMem, hShare);//共有メモリ解放
 		}
 	}
 
@@ -600,7 +624,7 @@ extern "C" {
 
 	static void PlotByteImageAsync(int num, int width, int height, BYTE* pData, float* pAsyncParams)
 	{
-		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_BYTE_IMAGE, num, width, height, 1, 1, pData, pimpom_async_ids[0], pAsyncParams);
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_BYTE_IMAGE, num, width, height, 1, 1, pData, pimpom_async_ids[0], pAsyncParams, pimpom_async_ids[0] == 1);
 	}
 
 
@@ -624,7 +648,7 @@ extern "C" {
 
 	static void PlotShortImageAsync(int num, int width, int height, short* pData, float* pAsyncParams)
 	{
-		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_SHORT_IMAGE, num, width, height, 1, 1, pData, pimpom_async_ids[0], pAsyncParams);
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_SHORT_IMAGE, num, width, height, 1, 1, pData, pimpom_async_ids[0], pAsyncParams, pimpom_async_ids[0] == 1);
 	}
 
 	/********************************************************************
@@ -647,7 +671,7 @@ extern "C" {
 
 	static void PlotWordImageAsync(int num, int width, int height, WORD* pData, float* pAsyncParams)
 	{
-		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_WORD_IMAGE, num, width, height, 1, 1, pData, pimpom_async_ids[0], pAsyncParams);
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_WORD_IMAGE, num, width, height, 1, 1, pData, pimpom_async_ids[0], pAsyncParams, pimpom_async_ids[0] == 1);
 	}
 
 	/********************************************************************
@@ -670,7 +694,7 @@ extern "C" {
 
 	static void PlotLongImageAsync(int num, int width, int height, long* pData, float* pAsyncParams)
 	{
-		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_LONG_IMAGE, num, width, height, 1, 1, pData, pimpom_async_ids[0], pAsyncParams);
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_LONG_IMAGE, num, width, height, 1, 1, pData, pimpom_async_ids[0], pAsyncParams, pimpom_async_ids[0] == 1);
 	}
 
 	/********************************************************************
@@ -693,7 +717,7 @@ extern "C" {
 
 	static void PlotDwordImageAsync(int num, int width, int height, DWORD* pData, float* pAsyncParams)
 	{
-		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_DWORD_IMAGE, num, width, height, 1, 1, pData, pimpom_async_ids[0], pAsyncParams);
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_DWORD_IMAGE, num, width, height, 1, 1, pData, pimpom_async_ids[0], pAsyncParams, pimpom_async_ids[0] == 1);
 	}
 
 	/********************************************************************
@@ -716,7 +740,7 @@ extern "C" {
 
 	static void PlotFloatImageAsync(int num, int width, int height, float* pData, float* pAsyncParams)
 	{
-		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_FLOAT_IMAGE, num, width, height, 1, 1, pData,  pimpom_async_ids[0], pAsyncParams);
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_FLOAT_IMAGE, num, width, height, 1, 1, pData,  pimpom_async_ids[0], pAsyncParams, pimpom_async_ids[0] == 1);
 	}
 
 	/********************************************************************
@@ -740,7 +764,7 @@ extern "C" {
 
 	static void Plot3DImageAsync(int num, int width, int height, int page, BYTE* pData, float* pAsyncParams)
 	{
-		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_3D_IMAGE, num, width, height, page, 1, pData,  pimpom_async_ids[0], pAsyncParams);
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_3D_IMAGE, num, width, height, page, 1, pData,  pimpom_async_ids[0], pAsyncParams, pimpom_async_ids[0] == 1);
 	}
 
 
@@ -765,7 +789,7 @@ extern "C" {
 
 	static void PlotF3DImageAsync(int num, int width, int height, int page, float* pData, float* pAsyncParams)
 	{
-		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_F3D_IMAGE, num, width, height, page, 1, pData, pimpom_async_ids[0], pAsyncParams);
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_F3D_IMAGE, num, width, height, page, 1, pData, pimpom_async_ids[0], pAsyncParams, pimpom_async_ids[0] == 1);
 	}
 
 	/********************************************************************
@@ -788,7 +812,7 @@ extern "C" {
 
 	static void PlotRGBImageAsync(int num, int width, int height, BYTE* pData, float* pAsyncParams)
 	{
-		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_RGB_IMAGE, num, width, height, 1, 3, pData,  pimpom_async_ids[0], pAsyncParams);
+		pimpom_plot_image_async(PIMPOM_PLOT_FORMAT_RGB_IMAGE, num, width, height, 1, 3, pData,  pimpom_async_ids[0], pAsyncParams, pimpom_async_ids[0] == 1);
 	}
 
 
