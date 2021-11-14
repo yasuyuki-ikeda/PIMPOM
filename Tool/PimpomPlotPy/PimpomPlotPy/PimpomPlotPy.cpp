@@ -41,6 +41,15 @@ int _EnableAysnc()
 	return EnableAysnc();
 }
 
+int _WaitAysnc(int wait)
+{
+	return WaitAysnc(wait);
+}
+
+void _ReturnAysnc()
+{
+	ReturnAysnc();
+}
 
 
 
@@ -1146,6 +1155,8 @@ BOOST_PYTHON_MODULE(Pimpom) {
 
 	p::def("InitAysnc", _InitAysnc);
 	p::def("EnableAysnc", _EnableAysnc);
+	p::def("WaitAysnc", _WaitAysnc);
+	p::def("ReturnAysnc", _ReturnAysnc);
 	p::def("PlotByteImage", _PlotByteImage);
 	p::def("PlotByteImageAsync", (void(*)(int, np::ndarray))&_PlotByteImageAsync);
 	p::def("PlotByteImageAsync", (void(*)(int, np::ndarray, np::ndarray))&_PlotByteImageAsync);

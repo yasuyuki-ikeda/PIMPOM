@@ -573,6 +573,77 @@ extern "C" {
 		}
 	}
 
+
+	/********************************************************************
+	機  能  名  称 : 非同期参照メッセージを受けるまで待つ
+	関    数    名 : WaitAysnc
+	引          数 :　
+	戻    り    値 : 成功すれば1
+	機          能 :
+	日付         作成者          内容
+	------------ --------------- ---------------------------------------
+	Y.Ikeda         新規作成
+	********************************************************************/
+	static int WaitAysnc(DWORD wait)
+	{
+		int ret = 1;
+		
+		if (pimpom_async_ids[0] == 1)
+		{//PIMPOM->外部プログラム
+			HANDLE inputEvent = ::CreateEvent(NULL, FALSE, FALSE, _T("PIMPOM_ASYNC_INPUT_EVENT"));
+			HANDLE outputEvent = ::CreateEvent(NULL, FALSE, FALSE, _T("PIMPOM_ASYNC_OUTPUT_EVENT"));
+
+			::SetEvent(inputEvent);
+
+			if (::WaitForSingleObject(outputEvent, wait) != WAIT_OBJECT_0)
+			{
+				ret = 0;
+			}
+
+			CloseHandle(inputEvent);
+			CloseHandle(outputEvent);
+		}
+		else
+		{//外部プログラム->PIMPOM
+			HANDLE inputEvent = ::CreateEvent(NULL, FALSE, FALSE, _T("PIMPOM_ASYNC_INPUT_EVENT"));
+
+			if (::WaitForSingleObject(inputEvent, wait) != WAIT_OBJECT_0)
+			{
+				ret = 0;
+			}
+
+			CloseHandle(inputEvent);
+		}
+
+		return ret;
+	}
+
+
+	/********************************************************************
+	機  能  名  称 : 非同期参照の制御を返す(外部プログラムでのみ動作)
+	関    数    名 : ReturnAysnc
+	引          数 :　
+	戻    り    値 : 
+	機          能 :
+	日付         作成者          内容
+	------------ --------------- ---------------------------------------
+	Y.Ikeda         新規作成
+	********************************************************************/
+	static int ReturnAysnc()
+	{
+		if (pimpom_async_ids[0] == 1) {
+
+		}
+		else {
+			HANDLE outputEvent = ::CreateEvent(NULL, FALSE, FALSE, _T("PIMPOM_ASYNC_OUTPUT_EVENT"));
+			::SetEvent(outputEvent);
+			CloseHandle(outputEvent);
+		}
+
+		return 1;
+	}
+
+
 	/********************************************************************
 	機  能  名  称 : 非同期参照可能かチェックする
 	関    数    名 : EnableAysnc
