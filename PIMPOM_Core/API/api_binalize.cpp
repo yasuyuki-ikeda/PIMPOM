@@ -37,7 +37,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PIMPOM_API.h"
 #include "filter\template\filter_gauss.h"
 #include "filter\template\filter_log.h"
-#include "Labeling.h"
+#include "opencv_headers.h"
+
 // *************************************
 //         マ  ク  ロ   定   義         
 // *************************************
@@ -900,7 +901,7 @@ int	CPimpomAPI::Label(
 	CDataUnit	*p_du=NULL, *p_dst_du=NULL;
 	CRect		calc_area;
 	int			labelCnt=0;
-	LabelingBS	labeling;
+
 
 	if( (p_du = GetDataUnit(src_number))==NULL)	return -1;
 	if (p_du->DataType != BYTE_FORMAT && p_du->DataType != THREE_D_FORMAT)	return -1;//8bit画像でないと処理しない
@@ -933,45 +934,49 @@ int	CPimpomAPI::Label(
 	
 	int imsize = p_du->DataSize.cx * p_du->DataSize.cy;//画像のサイズ（画素数）
 
-	//ラベリングのバッファ確保
-	short  *pLabelBuffer = new short[imsize];
-	if (!pLabelBuffer)	return -1;
 
-
+	cv::Mat src;
+	ConvertToCvImage2(src_number, &src);
 
 	int dstPageCnt = 0;
 	for (int page = pageStart; page <= pageEnd; page++)
 	{
 		for (int channel = channelStart; channel <= channelEnd; channel++)
 		{
-			memset(pLabelBuffer, 0, sizeof(short)*imsize);//バッファクリア
 
-			labeling.Exec(p_du->pByteData + imsize*dstPageCnt,
-						pLabelBuffer, p_du->DataSize.cx, p_du->DataSize.cy, sort_label, min_area);//ラベリング実行
+			//ラべリング処理
+			cv::Mat LabelImg;
+			cv::Mat stats;
+			cv::Mat centroids;
+			int nLab = cv::connectedComponentsWithStats(src, LabelImg, stats, centroids);
+
+			labelCnt = 0;
+			for (int i = 1; i < nLab && labelCnt < BINALIZE_LABEL_MAX ; i++)
+			{
+				int *param = stats.ptr<int>(i);
+				int labelarea = param[cv::ConnectedComponentsTypes::CC_STAT_AREA];
+				if (labelarea >= min_area)
+				{
+						if (!toMultiImage)
+						{//ラベル情報
+							if (gx != NULL && gy != NULL)
+							{
+								gx[labelCnt] = centroids.at<double>(i * 2);
+								gy[labelCnt] = centroids.at<double>(i * 2 + 1);
+							}
+
+							if (area != NULL) {
+								area[labelCnt] = labelarea;
+							}
+						}
+						labelCnt++;
+				}
+			}
 
 			//結果格納
-			for (int i = 0; i < imsize; i++){
-				*(p_dst_du->pFloatData + imsize*dstPageCnt + i) = *(pLabelBuffer + i);
+			for (int i = 0; i < imsize; i++) {
+				*(p_dst_du->pFloatData + imsize*dstPageCnt + i) = ((int*)LabelImg.data)[i];
 			}
-
-			labelCnt += labeling.GetNumOfResultRegions();//ラベル数
-
-			if (!toMultiImage)
-			{
-				//ラベル情報
-				if (area != NULL){
-					for (int n = 0; n < labelCnt && n < BINALIZE_LABEL_MAX; n++){
-						area[n] = labeling.GetResultRegionInfo(n)->GetNumOfPixels();
-					}
-				}
-
-				if (gx != NULL && gy != NULL){
-					for (int n = 0; n < labelCnt && n < BINALIZE_LABEL_MAX; n++){
-						labeling.GetResultRegionInfo(n)->GetCenterOfGravity(gx[n], gy[n]);
-					}
-				}
-			}
-
 
 
 			dstPageCnt++;
@@ -982,8 +987,6 @@ int	CPimpomAPI::Label(
 		p_dst_du->DispPage = p_du->DispPage;
 		p_dst_du->DispChannel = p_du->DispChannel;
 	}
-
-	delete[]	pLabelBuffer;
 
 	return labelCnt;
 }
