@@ -100,7 +100,7 @@ double	sub_pix_value(DATA *p_src_data, CSize src_size, double x, double y)
 
 
 
-	addr = (int)x + ((int)y)*src_size.cx;
+	addr = floor(x) + floor(y)*src_size.cx;
 
 	w0 = (1.0 - wx)*(1.0 - wy);
 	w1 = (wx)*(1.0 - wy);

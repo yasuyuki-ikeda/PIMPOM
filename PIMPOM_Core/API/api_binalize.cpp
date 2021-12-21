@@ -880,7 +880,6 @@ bool	CPimpomAPI::BinalizeLocalLaplaceGauss(long src_number, long dst_number, int
 				 bool			show_message		(in)変換前に問い合わせダイアログを表示するか
 戻    り    値 : ラベル数　処理が失敗した場合は -1
 機          能 : ２値化画像に対してラベリングする
-					http://imura-lab.org/products/labeling/
 日付         作成者          内容
 ------------ --------------- --------------------------------------- 
              Y.Ikeda         新規作成
