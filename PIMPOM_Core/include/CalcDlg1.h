@@ -29,12 +29,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CCalcDlg
 //演算式設定ウィンドウ
 /*******************************************************************/
+
+//**************************************
+//         インクルードファイル         
+//**************************************
 #pragma once
+#include "global_define.h"
+#include "global_typedef.h"
+
 
 ///*************************************
 //         クラス   定   義         
 ///*************************************
-class CCalcDlg : public CDialog
+class PIMPOM_EXT CCalcDlg : public CDialog
 {
 	enum { IDD = IDD_CALC_DLG };// ダイアログ データ
 

@@ -29,11 +29,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CBatchDlg
 //
 /*******************************************************************/
-#pragma once
+
 
 //**************************************
 //         インクルードファイル         
 //**************************************
+#pragma once
+#include "global_define.h"
+#include "global_typedef.h"
 #include "afxwin.h"
 #include "afxcmn.h"
 

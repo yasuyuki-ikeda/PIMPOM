@@ -29,12 +29,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CDataDlg
 //画像メモリ一覧表示ウィンドウ
 /*******************************************************************/
-#pragma once
+
 
 //**************************************
 //         インクルードファイル         
 //**************************************
-#include "DataUnit.h"	// ClassView によって追加されました。
+#pragma once
+#include "DataUnit.h"	
 #include "ImageField.h"
 
 ///*************************************

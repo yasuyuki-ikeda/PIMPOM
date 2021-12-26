@@ -29,17 +29,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CPimpomAPI
 //PIMPOM全体で共通的に使う変数・関数をここで実装する
 /*******************************************************************/
-#pragma once
+
 
 //**************************************
 //         インクルードファイル         
 //**************************************
+#pragma once
 #include "global_define.h"
 #include "global_typedef.h"
-
 #include "resource_core.h"
-
-
 #include "DataUnit.h"
 #include "Calculate.h"
 #include "SocketCtrl.h"
@@ -69,7 +67,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PythonBatchDlg.h"
 
 
-
 ///*************************************
 //         構造体   定   義         
 ///*************************************
@@ -91,7 +88,7 @@ typedef struct
 ///*************************************
 
 
-class AFX_EXT_CLASS CPimpomAPI
+class PIMPOM_EXT CPimpomAPI
 {
 public:
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////

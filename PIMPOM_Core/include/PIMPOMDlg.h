@@ -29,11 +29,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CPIMPOMDlg
 //メインウィンドウ
 /*******************************************************************/
-#pragma once
+
 
 //**************************************
 //         インクルードファイル         
 //**************************************
+#pragma once
 #include "ImageField.h"
 
 //**************************************
@@ -51,7 +52,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ///*************************************
 //         クラス   定   義         
 ///*************************************
-class AFX_EXT_CLASS CPIMPOMDlg : public CDialog
+class PIMPOM_EXT CPIMPOMDlg : public CDialog
 {
 	enum { IDD = IDD_PIMPOM_DLG };// ダイアログ データ
 

@@ -29,18 +29,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CDataUnit
 //画像データを統合的に扱うクラス
 /*******************************************************************/
-#pragma once
 
 //**************************************
 //         インクルードファイル         
 //**************************************
+#pragma once
 #include "global_define.h"
 #include "global_typedef.h"
 
 ///*************************************
 //         クラス   定   義         
 ///*************************************
-class AFX_EXT_CLASS CWorkArea
+class PIMPOM_EXT CWorkArea
 {
 public:
 	int					Type[WORKAREA_FIG_NUM];//図形のタイプ
@@ -71,7 +71,7 @@ public:
 };
 
 
-class AFX_EXT_CLASS CMark
+class PIMPOM_EXT CMark
 {
 public:
 	short			type;
@@ -89,7 +89,7 @@ public:
 };
 
 
-class AFX_EXT_CLASS CDataUnit  
+class PIMPOM_EXT CDataUnit
 {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//変数

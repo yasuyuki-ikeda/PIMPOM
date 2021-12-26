@@ -29,11 +29,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CCalculate
 //演算式の解釈と実行
 /*******************************************************************/
-#pragma once
 
 //**************************************
 //         インクルードファイル         
 //**************************************
+#pragma once
 #include "global_define.h"
 #include "global_typedef.h"
 
@@ -190,7 +190,7 @@ typedef struct CALC_VARIABLE_BUFFER_STRUCT_{
 ///*************************************
 //         クラス   定   義         
 ///*************************************
-class AFX_EXT_CLASS CCalculate
+class PIMPOM_EXT CCalculate
 {
 public:
 	CCalculate();

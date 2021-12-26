@@ -28,11 +28,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************/
 //PIMPOM全体で使用可能なマクロを定義する
 /*******************************************************************/
-#pragma once
+
+#ifdef  _PIMPOM_CORE
+#define PIMPOM_EXT   __declspec(dllexport)
+#else
+#define PIMPOM_EXT   __declspec(dllimport)
+#endif
 
 //**************************************
 //         インクルードファイル         
 //**************************************
+#pragma once
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -42,7 +48,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 ///*************************************
-//         マ  ク  ロ   定   義         
+//         定数　マ  ク  ロ   定   義         
 ///*************************************
 
 //ＩＤの定義（いじるべからず）//////////////////////////////////////////////////
@@ -234,3 +240,5 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #define		BINALIZE_LABEL_MAX			(9999)	//最大ラベル数
+
+

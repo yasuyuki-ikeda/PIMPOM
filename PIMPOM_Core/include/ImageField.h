@@ -29,11 +29,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CImageField
 //画像の画面表示を扱うクラス
 /*******************************************************************/
-#pragma once
 
 //**************************************
 //         インクルードファイル         
 //**************************************
+#pragma once
 #include "DataUnit.h"
 
 ///*************************************
@@ -46,7 +46,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ///*************************************
 //         クラス   定   義         
 ///*************************************
-class AFX_EXT_CLASS CImageField  
+class PIMPOM_EXT CImageField
 {
 public:
 	CImageField();

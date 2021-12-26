@@ -34,6 +34,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //         インクルードファイル         
 //**************************************
 #pragma once
+#include "global_define.h"
+#include "global_typedef.h"
 #include "afxwin.h"
 
 ///*************************************

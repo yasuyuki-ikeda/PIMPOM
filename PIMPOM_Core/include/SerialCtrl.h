@@ -29,11 +29,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CSerialCtrl
 //シリアル通信を扱うクラス
 /*******************************************************************/
+
+
+//**************************************
+//         インクルードファイル         
+//**************************************
 #pragma once
+#include "global_define.h"
+#include "global_typedef.h"
 
+///*************************************
+//         クラス   定   義         
+///*************************************
 
-
-class AFX_EXT_CLASS CSerialCtrl  
+class PIMPOM_EXT CSerialCtrl
 {
 public:
 	void	SendData(float pitch, float phase, bool direction);

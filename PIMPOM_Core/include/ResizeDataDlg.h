@@ -29,7 +29,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CResizeDataDlg
 //画像サイズ変更設定ウィンドウ
 /*******************************************************************/
+
+//**************************************
+//         インクルードファイル         
+//**************************************
 #pragma once
+#include "global_define.h"
+#include "global_typedef.h"
 
 ///*************************************
 //         クラス   定   義         

@@ -29,7 +29,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CTransformDlg
 //画像の幾何学変換設定ウィンドウ
 /*******************************************************************/
+
+//**************************************
+//         インクルードファイル         
+//**************************************
 #pragma once
+#include "global_define.h"
+#include "global_typedef.h"
 
 ///*************************************
 //         クラス   定   義         

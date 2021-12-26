@@ -29,11 +29,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CPointCloudDlg
 //三次元点群表示ウィンドウ
 /*******************************************************************/
-#pragma once
+
 
 //**************************************
 //         インクルードファイル         
 //**************************************
+#pragma once
+#include "global_define.h"
+#include "global_typedef.h"
 #include "DataUnit.h"
 
 ///*************************************

@@ -29,7 +29,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CFilterCtrlDlg
 //フィルタ設定ウィンドウ
 /*******************************************************************/
+
+//**************************************
+//         インクルードファイル         
+//**************************************
 #pragma once
+#include "global_define.h"
+#include "global_typedef.h"
 
 
 ///*************************************

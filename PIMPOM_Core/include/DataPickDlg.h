@@ -29,13 +29,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CDataPickDlg
 //画像メモリフリーハンド編集ウィンドウ
 /*******************************************************************/
-#pragma once
+
 
 
 //**************************************
 //         インクルードファイル         
 //**************************************
+#pragma once
 #include "afxcmn.h"
+#include "global_define.h"
+#include "global_typedef.h"
 
 
 //**************************************

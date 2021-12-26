@@ -29,11 +29,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CSocketCtrl
 //ソケット通信のラッパー
 /*******************************************************************/
-#pragma once
 
 //**************************************
 //         インクルードファイル         
 //**************************************
+#pragma once
 #include <afxsock.h>
 #include "global_define.h"
 #include "global_typedef.h"
@@ -41,7 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ///*************************************
 //         クラス   定   義         
 ///*************************************
-class AFX_EXT_CLASS CSocketCtrl : public CAsyncSocket
+class PIMPOM_EXT CSocketCtrl : public CAsyncSocket
 {
 
 

@@ -29,11 +29,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //CWorkAreaDlg
 //作業領域設定ウィンドウ
 /*******************************************************************/
-#pragma once
 
 //**************************************
 //         インクルードファイル         
 //**************************************
+#pragma once
+#include "global_define.h"
+#include "global_typedef.h"
 #include "afxwin.h"
 
 ///*************************************
