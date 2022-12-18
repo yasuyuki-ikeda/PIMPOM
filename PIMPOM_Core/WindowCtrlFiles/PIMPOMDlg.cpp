@@ -684,7 +684,7 @@ void CPIMPOMDlg::OnMove(int x, int y)
 			win_rect.left=0;
 			win_rect.right=API.main_window_size.cx;
 			win_rect.bottom=MARK_WIN_H;
-			init_flg=false;
+			
 		}
 
 		//データウィンドウの移動
@@ -714,8 +714,11 @@ void CPIMPOMDlg::OnMove(int x, int y)
 			API.pWorkAreaDlg->MoveWindow(win_rect.left + API.main_window_size.cx + mrgn_w, win_rect.top + HISTGRAM_WIN_H + 30, WORKAREA_WIN_W + offset_w, offset_h + WORKAREA_WIN_H);
 		}
 
-		//このウインドウの配置(クライアント領域との差分配慮して大きくする)
-		MoveWindow(win_rect.left, win_rect.top, API.main_window_size.cx + mrgn_w, API.main_window_size.cy + mrgn_h);
+		if (init_flg) {//最初だけこのウインドウの配置(クライアント領域との差分配慮して大きくする)
+			MoveWindow(win_rect.left, win_rect.top, API.main_window_size.cx + mrgn_w, API.main_window_size.cy + mrgn_h);
+		}
+
+		init_flg = false;
 	}		
 }
 
