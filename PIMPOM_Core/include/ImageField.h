@@ -73,7 +73,7 @@ public:
 	CPoint			FieldCoordinate;//表示領域の左上の座標
 
 private:
-	void fill_field(COLORREF color);//ImageFiled内を単一色で塗りつぶす
+	void fill_field(COLORREF color, CSize * pDrawImgSize =NULL);//ImageFiled内を単一色で塗りつぶす
 
 };
 

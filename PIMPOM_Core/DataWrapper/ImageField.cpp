@@ -223,7 +223,7 @@ void CImageField::DrawPiece(CDataUnit *p_du, CPoint src_coor, CSize src_size, bo
 		if( do_redraw_background )
 			if( dest_size.cx < FieldSize.cx   ||   dest_size.cy < FieldSize.cy  ){
 				//‰æ‘œ“]‘—æ‚Ì‹éŒ`—Ìˆæ‚ªImageFiled‚æ‚è‹·‚¢‚Æ‚«C”wŒi‚ð“h‚è‚Â‚Ô‚·
-				fill_field( API.default_bg_color );
+				fill_field( API.default_bg_color , &dest_size);
 			}
 
 	//‰æ‘œ“]‘—
@@ -275,17 +275,41 @@ void CImageField::DrawAdjustedImage(CDataUnit *p_du, bool do_update_scale)
 ------------ --------------- --------------------------------------- 
              Y.Ikeda         V‹Kì¬
 ********************************************************************/
-void CImageField::fill_field( COLORREF color )
+void CImageField::fill_field( COLORREF color ,CSize* pDrawImgSize)
 {
-	CBrush	brush( color );
-	HDC		hdc = ::GetDC( hImageWnd );
-	if(hdc==NULL)	return;
+	CBrush	brush(color);
+	CPen	pen(PS_SOLID, 1, color);
+	HDC		hdc = ::GetDC(hImageWnd);
+	if (hdc == NULL)	return;
 
-	HBRUSH	old_brush = (HBRUSH)::SelectObject(hdc, (HBRUSH)brush );
+	HBRUSH	old_brush = (HBRUSH)::SelectObject(hdc, (HBRUSH)brush);
+	HPEN old_pen = (HPEN)::SelectObject(hdc, (HPEN)pen);
 	CRect	area = GetFieldRect();
-	::Rectangle( hdc , area.left , area.top , area.right, area.bottom );
-	::SelectObject(hdc, old_brush );
-	ReleaseDC( hImageWnd, hdc );
+	if (pDrawImgSize)
+	{// ImageFiled“à‚©‚ç•`‰æ‚·‚é‰æ‘œƒTƒCƒY•ª‚ðœ‚¢‚½‚à‚Ì
+		if (area.Height() > pDrawImgSize->cy)
+		{
+			::Rectangle(hdc, area.left, area.top + pDrawImgSize->cy, area.right, area.bottom);
+
+			if (area.Width() > pDrawImgSize->cx)
+			{
+				::Rectangle(hdc, area.left + pDrawImgSize->cx, area.top, area.right, area.top + pDrawImgSize->cy);
+			}
+		}
+		else {
+			if (area.Width() > pDrawImgSize->cx)
+			{
+				::Rectangle(hdc, area.left + pDrawImgSize->cx, area.top, area.right, area.bottom);
+			}
+		}
+	}
+	else
+	{// ImageFiled“à‘Sˆæ
+		::Rectangle(hdc, area.left, area.top, area.right, area.bottom);
+	}
+	::SelectObject(hdc, old_brush);
+	::SelectObject(hdc, old_pen);
+	ReleaseDC(hImageWnd, hdc);
 }
 
 
