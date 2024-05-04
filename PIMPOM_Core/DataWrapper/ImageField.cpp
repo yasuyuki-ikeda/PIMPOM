@@ -277,17 +277,17 @@ void CImageField::DrawAdjustedImage(CDataUnit *p_du, bool do_update_scale)
 ********************************************************************/
 void CImageField::fill_field( COLORREF color ,CSize* pDrawImgSize)
 {
-	CBrush	brush(color);
-	CPen	pen(PS_SOLID, 1, color);
-	HDC		hdc = ::GetDC(hImageWnd);
-	if (hdc == NULL)	return;
+	CBrush	brush( color );
+	CPen	pen(PS_SOLID,1,color);
+	HDC		hdc = ::GetDC( hImageWnd );
+	if(hdc==NULL)	return;
 
-	HBRUSH	old_brush = (HBRUSH)::SelectObject(hdc, (HBRUSH)brush);
+	HBRUSH	old_brush = (HBRUSH)::SelectObject(hdc, (HBRUSH)brush );
 	HPEN old_pen = (HPEN)::SelectObject(hdc, (HPEN)pen);
 	CRect	area = GetFieldRect();
 	if (pDrawImgSize)
 	{// ImageFiled内から描画する画像サイズ分を除いたもの
-		if (area.Height() > pDrawImgSize->cy)
+		if (area.Height() > pDrawImgSize->cy) 
 		{
 			::Rectangle(hdc, area.left, area.top + pDrawImgSize->cy, area.right, area.bottom);
 
@@ -297,7 +297,7 @@ void CImageField::fill_field( COLORREF color ,CSize* pDrawImgSize)
 			}
 		}
 		else {
-			if (area.Width() > pDrawImgSize->cx)
+			if (area.Width() > pDrawImgSize->cx) 
 			{
 				::Rectangle(hdc, area.left + pDrawImgSize->cx, area.top, area.right, area.bottom);
 			}
@@ -307,9 +307,9 @@ void CImageField::fill_field( COLORREF color ,CSize* pDrawImgSize)
 	{// ImageFiled内全域
 		::Rectangle(hdc, area.left, area.top, area.right, area.bottom);
 	}
-	::SelectObject(hdc, old_brush);
+	::SelectObject(hdc, old_brush );
 	::SelectObject(hdc, old_pen);
-	ReleaseDC(hImageWnd, hdc);
+	ReleaseDC( hImageWnd, hdc );
 }
 
 

@@ -128,6 +128,7 @@ public:
 	afx_msg void OnPimponDlgDataSelect3();
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnMButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);

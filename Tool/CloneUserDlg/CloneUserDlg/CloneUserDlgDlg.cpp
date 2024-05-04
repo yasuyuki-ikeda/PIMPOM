@@ -355,15 +355,13 @@ void CCloneUserDlgDlg::OnBnClickedButtonClone()
 		//VisualStudio起動
 		CString slnpath;
 		
-		if (GetCheck(m_hWnd, IDC_RADIO_VS14)) {
+		if (GetCheck(m_hWnd, IDC_RADIO_VS16)) {
+			slnpath = dstpath + m_ProjName + "2019.sln";
+		}
+		else if (GetCheck(m_hWnd, IDC_RADIO_VS14)) {
 			slnpath = dstpath + m_ProjName + "2015.sln";
 		}
-		else if (GetCheck(m_hWnd, IDC_RADIO_VS12)) {
-			slnpath = dstpath + m_ProjName + "2013.sln";
-		}
-		else {
-			slnpath = dstpath + m_ProjName + "2008.sln";
-		}
+
 		ShellExecute(m_hWnd, "open", slnpath, NULL,NULL,SW_SHOWNORMAL);
 
 		//ウィンドウを閉じる

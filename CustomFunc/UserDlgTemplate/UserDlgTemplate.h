@@ -5,6 +5,13 @@
 #include "PIMPOM_API.h"
 
 
+//Halconの使用
+//#pragma		warning(push)
+//#pragma		warning(disable:4819)
+//#include	<HalconCpp.h>
+//#pragma		warning(pop)
+//using 		namespace Halcon;
+
 // ***************************************************************************
 //　関数定義
 // ***************************************************************************

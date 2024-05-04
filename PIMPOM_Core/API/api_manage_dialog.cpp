@@ -1538,6 +1538,31 @@ bool CPimpomAPI::UserDialogOnMouseDown(int n, POINT point)
 }
 
 /********************************************************************
+機  能  名  称 : メイン画面上でのマウス右ボタン押下
+関    数    名 : UserDialogOnMouseRDown
+引          数 : int		n		(in)ユーザダイアログの番号
+				 POINT		point	(in)マウス押下座標（画像座標）
+戻    り    値 : 正常実行できたらtrue
+機          能 :
+日付         作成者          内容
+------------ --------------- ---------------------------------------
+			 Y.Ikeda         新規作成
+********************************************************************/
+bool CPimpomAPI::UserDialogOnMouseRDown(int n, POINT point)
+{
+	OnMouseDown_UserDlg* func;
+
+	if (custom_func[n].hInst != NULL) {
+		func = (OnMouseDown_UserDlg*)GetProcAddress(custom_func[n].hInst, "OnMouseRDown_UserDlg");
+		if (func != NULL) {
+			func(point);
+			return true;
+		}
+	}
+	return false;
+}
+
+/********************************************************************
 機  能  名  称 : メイン画面上でのマウスドラッグ
 関    数    名 : UserDialogOnMouseDrug
 引          数 : int n		(in)ユーザダイアログの番号

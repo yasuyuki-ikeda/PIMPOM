@@ -14,4 +14,5 @@ UserDlgTemplate.rc
 UserDlgTemplate.vcxproj
 UserDlgTemplate.vcxproj.filters
 UserDlgTemplate2015.sln
+UserDlgTemplate2019.sln
 res\UserDlgTemplate.rc2

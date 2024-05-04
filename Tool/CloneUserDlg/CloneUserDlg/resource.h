@@ -11,10 +11,12 @@
 #define IDC_EDIT_CAPTION                1004
 #define IDC_BUTTON_EDIT_INI             1005
 #define IDC_RADIO_VS9                   1007
+#define IDC_RADIO_VS16                  1007
 #define IDC_RADIO2                      1008
 #define IDC_RADIO_VS12                  1008
 #define IDC_RADIO_VS13                  1009
 #define IDC_RADIO_VS14                  1009
+#define IDC_RADIO_VS19                  1010
 
 // Next default values for new objects
 // 

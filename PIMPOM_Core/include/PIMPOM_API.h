@@ -369,6 +369,7 @@ public:
 	bool			UserDialogDelete(int n);
 	bool			UserDialogOnDrawMainImage(int n, int image_number);
 	bool			UserDialogOnMouseDown(int n, POINT point);
+	bool			UserDialogOnMouseRDown(int n, POINT point);
 	bool			UserDialogOnMouseDrug(int n, POINT start_point, POINT currnet_point);
 	bool			UserDialogOnFinishMouseDrug(int n, POINT start_point, POINT currnet_point);
 	bool			UserDialogBatchExecute(int n, BATCH_INPUT *in_param, BATCH_OUTPUT *out_param);

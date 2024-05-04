@@ -137,6 +137,7 @@ BEGIN_MESSAGE_MAP(CPIMPOMDlg, CDialog)
 	ON_WM_VSCROLL()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
+	ON_WM_RBUTTONDOWN()
 	ON_WM_MBUTTONDOWN()
 	ON_WM_MBUTTONUP()
 	ON_WM_MOUSEMOVE()
@@ -865,6 +866,46 @@ void CPIMPOMDlg::OnLButtonUp(UINT nFlags, CPoint point)
 	CDialog::OnLButtonUp(nFlags, point);
 }
 
+
+/********************************************************************
+機  能  名  称 :マウスの右ボタンが押された
+関    数    名 : OnRButtonDown
+引          数 :
+戻    り    値 :
+機          能 : 
+日付         作成者          内容
+------------ --------------- ---------------------------------------
+			 Y.Ikeda         新規作成
+********************************************************************/
+void CPIMPOMDlg::OnRButtonDown(UINT nFlags, CPoint point)
+{
+
+	GetCapture();//マウスをキャプチャーする
+
+	CDataUnit* p_du = API.GetDataUnit(CURRENT_IMAGE);//現在選択中の DataUnit を取得
+	if (p_du == NULL)		return;//画像データが無ければ何もしない
+
+	CPoint		src_coor;
+	double		src_coor_subpix_x, src_coor_subpix_y;
+	if (p_image_disp_main->GetFieldRect().PtInRect(point)) //メイン画像上でクリックした場合
+	{
+		if (p_image_disp_main->GetSrcCoor(p_du, point.x, point.y, &src_coor_subpix_x, &src_coor_subpix_y))
+		{
+			src_coor.x = (int)(src_coor_subpix_x + 0.5);
+			src_coor.y = (int)(src_coor_subpix_y + 0.5);
+
+			//ユーザダイアログのマウスクリックイベント
+			for (int i = 0; i < CUSTOM_FUNC_MAX; i++) {
+				API.UserDialogOnMouseRDown(i, src_coor);
+			}
+
+			DrawImage(false);//再描画する
+
+		}
+	}
+
+	CDialog::OnRButtonDown(nFlags, point);
+}
 
 /********************************************************************
 機  能  名  称 :マウスの中央ボタンが押された
