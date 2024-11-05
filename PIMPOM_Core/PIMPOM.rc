@@ -805,8 +805,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,5,0,3
- PRODUCTVERSION 1,5,0,3
+ FILEVERSION 1,5,0,6
+ PRODUCTVERSION 1,5,0,6
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -822,12 +822,12 @@ BEGIN
         BLOCK "041104b0"
         BEGIN
             VALUE "FileDescription", "PIMPOM MFC ±ÌßØ¹°¼®Ý"
-            VALUE "FileVersion", "1.5.0.3"
+            VALUE "FileVersion", "1.5.0.6"
             VALUE "InternalName", "PIMPOM"
             VALUE "LegalCopyright", "Copyright (C) Y.Ikeda 2020"
             VALUE "OriginalFilename", "PIMPOM.EXE"
             VALUE "ProductName", "PIMPOM ±ÌßØ¹°¼®Ý"
-            VALUE "ProductVersion", "1.5.0.3"
+            VALUE "ProductVersion", "1.5.0.6"
         END
     END
     BLOCK "VarFileInfo"
