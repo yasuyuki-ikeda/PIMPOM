@@ -14,6 +14,7 @@
 #include <boost/assert.hpp>
 #include <algorithm>
 #include <array>
+#include <cstdint>
 #include <cstring>
 #include <ostream>
 
@@ -43,7 +44,7 @@ struct field_table
     }
 
     using array_type =
-        std::array<string_view, 353>;
+        std::array<string_view, 357>;
 
     // Strings are converted to lowercase
     static
@@ -116,6 +117,7 @@ struct field_table
 */
     field_table()
         : by_name_({{
+// string constants
             "<unknown-field>",
             "A-IM",
             "Accept",
@@ -393,6 +395,10 @@ struct field_table
             "Safe",
             "Schedule-Reply",
             "Schedule-Tag",
+            "Sec-Fetch-Dest",
+            "Sec-Fetch-Mode",
+            "Sec-Fetch-Site",
+            "Sec-Fetch-User",
             "Sec-WebSocket-Accept",
             "Sec-WebSocket-Extensions",
             "Sec-WebSocket-Key",

@@ -93,7 +93,7 @@ public:
         auto sp = wp_.lock();
         if(! sp)
         {
-            ec = net::error::operation_aborted;
+            BOOST_BEAST_ASSIGN_EC(ec, net::error::operation_aborted);
             return this->complete(cont, ec);
         }
         auto& impl = *sp;
@@ -105,16 +105,28 @@ public:
             // write HTTP request
             impl.do_pmd_config(d_.req);
             BOOST_ASIO_CORO_YIELD
-            http::async_write(impl.stream(),
-                d_.req, std::move(*this));
+            {
+                BOOST_ASIO_HANDLER_LOCATION((
+                    __FILE__, __LINE__,
+                    "websocket::async_handshake"));
+
+                http::async_write(impl.stream(),
+                    d_.req, std::move(*this));
+            }
             if(impl.check_stop_now(ec))
                 goto upcall;
 
             // read HTTP response
             BOOST_ASIO_CORO_YIELD
-            http::async_read(impl.stream(),
-                impl.rd_buf, d_.p,
-                    std::move(*this));
+            {
+                BOOST_ASIO_HANDLER_LOCATION((
+                    __FILE__, __LINE__,
+                    "websocket::async_handshake"));
+
+                http::async_read(impl.stream(),
+                    impl.rd_buf, d_.p,
+                        std::move(*this));
+            }
             if(ec == http::error::buffer_overflow)
             {
                 // If the response overflows the internal
@@ -127,8 +139,14 @@ public:
                 impl.rd_buf.clear();
 
                 BOOST_ASIO_CORO_YIELD
-                http::async_read(impl.stream(),
-                    d_.fb, d_.p, std::move(*this));
+                {
+                    BOOST_ASIO_HANDLER_LOCATION((
+                        __FILE__, __LINE__,
+                        "websocket::async_handshake"));
+
+                    http::async_read(impl.stream(),
+                        d_.fb, d_.p, std::move(*this));
+                }
 
                 if(! ec)
                 {
@@ -144,7 +162,7 @@ public:
                     }
                     else
                     {
-                        ec = http::error::buffer_overflow;
+                        BOOST_BEAST_ASSIGN_EC(ec, http::error::buffer_overflow);
                     }
                 }
 
@@ -170,10 +188,19 @@ template<class NextLayer, bool deflateSupported>
 struct stream<NextLayer, deflateSupported>::
     run_handshake_op
 {
+    boost::shared_ptr<impl_type> const& self;
+
+    using executor_type = typename stream::executor_type;
+
+    executor_type
+    get_executor() const noexcept
+    {
+        return self->stream().get_executor();
+    }
+
     template<class HandshakeHandler>
     void operator()(
         HandshakeHandler&& h,
-        boost::shared_ptr<impl_type> const& sp,
         request_type&& req,
         detail::sec_ws_key_type key,
         response_type* res_p)
@@ -190,7 +217,7 @@ struct stream<NextLayer, deflateSupported>::
         handshake_op<
             typename std::decay<HandshakeHandler>::type>(
                 std::forward<HandshakeHandler>(h),
-                    sp, std::move(req), key, res_p);
+                    self, std::move(req), key, res_p);
     }
 };
 
@@ -207,6 +234,9 @@ do_handshake(
     RequestDecorator const& decorator,
     error_code& ec)
 {
+    if(res_p)
+        res_p->result(http::status::internal_server_error);
+
     auto& impl = *impl_;
     impl.change_status(status::handshake);
     impl.reset();
@@ -250,19 +280,25 @@ do_handshake(
             }
             else
             {
-                ec = http::error::buffer_overflow;
+                BOOST_BEAST_ASSIGN_EC(ec, http::error::buffer_overflow);
             }
         }
     }
     if(impl.check_stop_now(ec))
         return;
 
-    impl.on_response(p.get(), key, ec);
-    if(impl.check_stop_now(ec))
-        return;
-
-    if(res_p)
+    if (res_p)
+    {
+        // If res_p is not null, move parser's response into it.
         *res_p = p.release();
+    }
+    else
+    {
+        // Otherwise point res_p at the response in the parser.
+        res_p = &p.get();
+    }
+
+    impl.on_response(*res_p, key, ec);
 }
 
 //------------------------------------------------------------------------------
@@ -284,9 +320,8 @@ async_handshake(
     return net::async_initiate<
         HandshakeHandler,
         void(error_code)>(
-            run_handshake_op{},
+            run_handshake_op{impl_},
             handler,
-            impl_,
             std::move(req),
             key,
             nullptr);
@@ -307,12 +342,12 @@ async_handshake(
     detail::sec_ws_key_type key;
     auto req = impl_->build_request(
         key, host, target, &default_decorate_req);
+    res.result(http::status::internal_server_error);
     return net::async_initiate<
         HandshakeHandler,
         void(error_code)>(
-            run_handshake_op{},
+            run_handshake_op{impl_},
             handler,
-            impl_,
             std::move(req),
             key,
             &res);

@@ -2,9 +2,10 @@
 
 // Copyright (c) 2007-2015 Barend Gehrels, Amsterdam, the Netherlands.
 
-// This file was modified by Oracle on 2014, 2015, 2017, 2019, 2020.
-// Modifications copyright (c) 2014-2020 Oracle and/or its affiliates.
+// This file was modified by Oracle on 2014-2021.
+// Modifications copyright (c) 2014-2021 Oracle and/or its affiliates.
 
+// Contributed and/or modified by Vissarion Fysikopoulos, on behalf of Oracle
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
@@ -17,42 +18,48 @@
 
 
 #include <cstddef>
+#include <deque>
+#include <type_traits>
 
-#include <boost/mpl/if.hpp>
-#include <boost/mpl/assert.hpp>
-#include <boost/range/metafunctions.hpp>
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
+#include <boost/range/size.hpp>
 
-
-#include <boost/geometry/core/is_areal.hpp>
-#include <boost/geometry/core/point_order.hpp>
-#include <boost/geometry/core/reverse_dispatch.hpp>
-#include <boost/geometry/geometries/concepts/check.hpp>
 #include <boost/geometry/algorithms/convert.hpp>
 #include <boost/geometry/algorithms/detail/point_on_border.hpp>
 #include <boost/geometry/algorithms/detail/overlay/clip_linestring.hpp>
 #include <boost/geometry/algorithms/detail/overlay/follow.hpp>
 #include <boost/geometry/algorithms/detail/overlay/get_intersection_points.hpp>
+#include <boost/geometry/algorithms/detail/overlay/linear_linear.hpp>
 #include <boost/geometry/algorithms/detail/overlay/overlay.hpp>
 #include <boost/geometry/algorithms/detail/overlay/overlay_type.hpp>
+#include <boost/geometry/algorithms/detail/overlay/pointlike_areal.hpp>
+#include <boost/geometry/algorithms/detail/overlay/pointlike_linear.hpp>
+#include <boost/geometry/algorithms/detail/overlay/pointlike_pointlike.hpp>
 #include <boost/geometry/algorithms/detail/overlay/range_in_geometry.hpp>
 #include <boost/geometry/algorithms/detail/overlay/segment_as_subrange.hpp>
+
+#include <boost/geometry/core/point_order.hpp>
+#include <boost/geometry/core/reverse_dispatch.hpp>
+#include <boost/geometry/core/static_assert.hpp>
+
+#include <boost/geometry/geometries/concepts/check.hpp>
 
 #include <boost/geometry/policies/robustness/rescale_policy_tags.hpp>
 #include <boost/geometry/policies/robustness/segment_ratio_type.hpp>
 #include <boost/geometry/policies/robustness/get_rescale_policy.hpp>
 
+#include <boost/geometry/strategies/default_strategy.hpp>
+#include <boost/geometry/strategies/detail.hpp>
+#include <boost/geometry/strategies/relate/services.hpp>
+
 #include <boost/geometry/views/segment_view.hpp>
 #include <boost/geometry/views/detail/boundary_view.hpp>
-
-#include <boost/geometry/algorithms/detail/check_iterator_range.hpp>
-#include <boost/geometry/algorithms/detail/overlay/linear_linear.hpp>
-#include <boost/geometry/algorithms/detail/overlay/pointlike_areal.hpp>
-#include <boost/geometry/algorithms/detail/overlay/pointlike_linear.hpp>
-#include <boost/geometry/algorithms/detail/overlay/pointlike_pointlike.hpp>
 
 #if defined(BOOST_GEOMETRY_DEBUG_FOLLOW)
 #include <boost/geometry/algorithms/detail/overlay/debug_turn_info.hpp>
 #include <boost/geometry/io/wkt/wkt.hpp>
+#include <boost/geometry/util/for_each_with_index.hpp>
 #endif
 
 namespace boost { namespace geometry
@@ -78,7 +85,7 @@ struct intersection_segment_segment_point
             Strategy const& strategy)
     {
         // Make sure this is only called with no rescaling
-        BOOST_STATIC_ASSERT((boost::is_same
+        BOOST_STATIC_ASSERT((std::is_same
            <
                no_rescale_policy_tag,
                typename rescale_policy_type<RobustPolicy>::type
@@ -98,7 +105,7 @@ struct intersection_segment_segment_point
         detail::segment_as_subrange<Segment2> sub_range2(segment2);
 
         intersection_return_type
-            is = strategy.apply(sub_range1, sub_range2, policy_type());
+            is = strategy.relate().apply(sub_range1, sub_range2, policy_type());
 
         for (std::size_t i = 0; i < is.count; i++)
         {
@@ -127,7 +134,7 @@ struct intersection_linestring_linestring_point
             Strategy const& strategy)
     {
         // Make sure this is only called with no rescaling
-        BOOST_STATIC_ASSERT((boost::is_same
+        BOOST_STATIC_ASSERT((std::is_same
            <
                no_rescale_policy_tag,
                typename rescale_policy_type<RobustPolicy>::type
@@ -139,11 +146,10 @@ struct intersection_linestring_linestring_point
         geometry::get_intersection_points(linestring1, linestring2,
                                           robust_policy, turns, strategy);
 
-        for (typename boost::range_iterator<std::deque<turn_info> const>::type
-            it = boost::begin(turns); it != boost::end(turns); ++it)
+        for (auto const& turn : turns)
         {
             PointOut p;
-            geometry::convert(it->point, p);
+            geometry::convert(turn.point, p);
             *out++ = p;
         }
         return out;
@@ -206,11 +212,10 @@ struct intersection_of_linestring_with_areal
         bool found_union = false;
         bool found_front = false;
 
-        for (typename Turns::const_iterator it = turns.begin();
-                it != turns.end(); ++it)
+        for (auto const& turn : turns)
         {
-            method_type const method = it->method;
-            operation_type const op = it->operations[0].operation;
+            method_type const method = turn.method;
+            operation_type const op = turn.operations[0].operation;
 
             if (method == method_crosses)
             {
@@ -234,7 +239,7 @@ struct intersection_of_linestring_with_areal
                 return false;
             }
 
-            if (it->operations[0].position == position_front)
+            if (turn.operations[0].position == position_front)
             {
                 found_front = true;
             }
@@ -285,7 +290,7 @@ struct intersection_of_linestring_with_areal
             Strategy const& strategy)
     {
         // Make sure this is only called with no rescaling
-        BOOST_STATIC_ASSERT((boost::is_same
+        BOOST_STATIC_ASSERT((std::is_same
            <
                no_rescale_policy_tag,
                typename rescale_policy_type<RobustPolicy>::type
@@ -372,14 +377,12 @@ struct intersection_of_linestring_with_areal
 
             return out;
         }
-        
+
 #if defined(BOOST_GEOMETRY_DEBUG_FOLLOW)
-        int index = 0;
-        for(typename std::deque<turn_info>::const_iterator
-            it = turns.begin(); it != turns.end(); ++it)
+        for_each_with_index(turns, [](auto index, auto const& turn)
         {
-            debug_follow(*it, it->operations[0], index++);
-        }
+            debug_follow(turn, turn.operations[0], index);
+        });
 #endif
 
         return follower::apply
@@ -396,10 +399,9 @@ template <typename Turns, typename OutputIterator>
 inline OutputIterator intersection_output_turn_points(Turns const& turns,
                                                       OutputIterator out)
 {
-    for (typename Turns::const_iterator
-            it = turns.begin(); it != turns.end(); ++it)
+    for (auto const& turn : turns)
     {
-        *out++ = it->point;
+        *out++ = turn.point;
     }
 
     return out;
@@ -456,7 +458,7 @@ struct intersection_linear_areal_point
                                        Strategy const& strategy)
     {
         // Make sure this is only called with no rescaling
-        BOOST_STATIC_ASSERT((boost::is_same
+        BOOST_STATIC_ASSERT((std::is_same
            <
                no_rescale_policy_tag,
                typename rescale_policy_type<RobustPolicy>::type
@@ -555,11 +557,10 @@ template
 >
 struct intersection_insert
 {
-    BOOST_MPL_ASSERT_MSG
-        (
-            false, NOT_OR_NOT_YET_IMPLEMENTED_FOR_THIS_GEOMETRY_TYPES_OR_ORIENTATIONS
-            , (types<Geometry1, Geometry2, GeometryOut>)
-        );
+    BOOST_GEOMETRY_STATIC_ASSERT_FALSE(
+        "Not or not yet implemented for these Geometry types or their order.",
+        Geometry1, Geometry2, GeometryOut,
+        std::integral_constant<overlay_type, OverlayType>);
 };
 
 
@@ -936,12 +937,12 @@ struct intersection_insert
         <
             Linear1, Linear2, TupledOut,
             // NOTE: points can be the result only in case of intersection.
-            typename boost::mpl::if_c
+            std::conditional_t
                 <
                     (OverlayType == overlay_intersection),
                     point_tag,
                     void
-                >::type,
+                >,
             linestring_tag
         >
 {
@@ -1428,26 +1429,26 @@ inline OutputIterator insert(Geometry1 const& geometry1,
             OutputIterator out,
             Strategy const& strategy)
 {
-    return boost::mpl::if_c
-    <
-        geometry::reverse_dispatch<Geometry1, Geometry2>::type::value,
-        geometry::dispatch::intersection_insert_reversed
+    return std::conditional_t
         <
-            Geometry1, Geometry2,
-            GeometryOut,
-            OverlayType,
-            overlay::do_reverse<geometry::point_order<Geometry1>::value>::value,
-            overlay::do_reverse<geometry::point_order<Geometry2>::value, ReverseSecond>::value
-        >,
-        geometry::dispatch::intersection_insert
-        <
-            Geometry1, Geometry2,
-            GeometryOut,
-            OverlayType,
-            geometry::detail::overlay::do_reverse<geometry::point_order<Geometry1>::value>::value,
-            geometry::detail::overlay::do_reverse<geometry::point_order<Geometry2>::value, ReverseSecond>::value
-        >
-    >::type::apply(geometry1, geometry2, robust_policy, out, strategy);
+            geometry::reverse_dispatch<Geometry1, Geometry2>::type::value,
+            geometry::dispatch::intersection_insert_reversed
+            <
+                Geometry1, Geometry2,
+                GeometryOut,
+                OverlayType,
+                overlay::do_reverse<geometry::point_order<Geometry1>::value>::value,
+                overlay::do_reverse<geometry::point_order<Geometry2>::value, ReverseSecond>::value
+            >,
+            geometry::dispatch::intersection_insert
+            <
+                Geometry1, Geometry2,
+                GeometryOut,
+                OverlayType,
+                geometry::detail::overlay::do_reverse<geometry::point_order<Geometry1>::value>::value,
+                geometry::detail::overlay::do_reverse<geometry::point_order<Geometry2>::value, ReverseSecond>::value
+            >
+        >::apply(geometry1, geometry2, robust_policy, out, strategy);
 }
 
 
@@ -1534,11 +1535,11 @@ inline OutputIterator intersection_insert(Geometry1 const& geometry1,
     concepts::check<Geometry1 const>();
     concepts::check<Geometry2 const>();
 
-    typedef typename strategy::intersection::services::default_strategy
+    typedef typename strategies::relate::services::default_strategy
         <
-            typename cs_tag<GeometryOut>::type
+            Geometry1, Geometry2
         >::type strategy_type;
-    
+
     return intersection_insert<GeometryOut>(geometry1, geometry2, out,
                                             strategy_type());
 }

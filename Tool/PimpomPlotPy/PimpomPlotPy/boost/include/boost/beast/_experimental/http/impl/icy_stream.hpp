@@ -95,10 +95,16 @@ public:
                 {
                     // Try to read the first three characters
                     BOOST_ASIO_CORO_YIELD
-                    s_.next_layer().async_read_some(
-                        net::mutable_buffer(
-                            s_.buf_ + s_.n_, 3 - s_.n_),
-                        std::move(*this));
+                    {
+                        BOOST_ASIO_HANDLER_LOCATION((
+                            __FILE__, __LINE__,
+                            "http::icy_stream::async_read_some"));
+
+                        s_.next_layer().async_read_some(
+                            net::mutable_buffer(
+                                s_.buf_ + s_.n_, 3 - s_.n_),
+                            std::move(*this));
+                    }
                     s_.n_ += static_cast<char>(bytes_transferred);
                     if(ec)
                         goto upcall;
@@ -127,8 +133,14 @@ public:
             else
             {
                 BOOST_ASIO_CORO_YIELD
-                s_.next_layer().async_read_some(
-                    b_, std::move(*this));
+                {
+                    BOOST_ASIO_HANDLER_LOCATION((
+                        __FILE__, __LINE__,
+                        "http::icy_stream::async_read_some"));
+
+                    s_.next_layer().async_read_some(
+                        b_, std::move(*this));
+                }
             }
         upcall:
             if(! cont)
@@ -136,10 +148,16 @@ public:
                 ec_ = ec;
                 n_ = bytes_transferred;
                 BOOST_ASIO_CORO_YIELD
-                s_.next_layer().async_read_some(
-                    net::mutable_buffer{},
-                    std::move(*this));
-                ec = ec_;
+                {
+                    BOOST_ASIO_HANDLER_LOCATION((
+                        __FILE__, __LINE__,
+                        "http::icy_stream::async_read_some"));
+
+                    s_.next_layer().async_read_some(
+                        net::mutable_buffer{},
+                        std::move(*this));
+                }
+                BOOST_BEAST_ASSIGN_EC(ec, ec_);
                 bytes_transferred = n_;
             }
             this->complete_now(ec, bytes_transferred);
@@ -149,11 +167,20 @@ public:
 
 struct run_read_op
 {
+    icy_stream* self;
+
+    using executor_type = typename icy_stream::executor_type;
+
+    executor_type
+    get_executor() const noexcept
+    {
+        return self->get_executor();
+    }
+
     template<class ReadHandler, class Buffers>
     void
     operator()(
         ReadHandler&& h,
-        icy_stream* s,
         Buffers const& b)
     {
         // If you get an error on the following line it means
@@ -168,7 +195,7 @@ struct run_read_op
         read_op<
             Buffers,
             typename std::decay<ReadHandler>::type>(
-                std::forward<ReadHandler>(h), *s, b);
+                std::forward<ReadHandler>(h), *self, b);
     }
 };
 
@@ -274,9 +301,8 @@ async_read_some(
     return net::async_initiate<
         ReadHandler,
         void(error_code, std::size_t)>(
-            typename ops::run_read_op{},
+            typename ops::run_read_op{this},
             handler,
-            this,
             buffers);
 }
 

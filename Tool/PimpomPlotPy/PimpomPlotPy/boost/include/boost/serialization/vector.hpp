@@ -27,6 +27,7 @@
 #include <boost/serialization/collection_size_type.hpp>
 #include <boost/serialization/library_version_type.hpp>
 #include <boost/serialization/item_version_type.hpp>
+#include <boost/serialization/library_version_type.hpp>
 
 #include <boost/serialization/collections_save_imp.hpp>
 #include <boost/serialization/collections_load_imp.hpp>
@@ -101,7 +102,7 @@ inline void save(
     const collection_size_type count(t.size());
     ar << BOOST_SERIALIZATION_NVP(count);
     if (!t.empty())
-        // explict template arguments to pass intel C++ compiler
+        // explicit template arguments to pass intel C++ compiler
         ar << serialization::make_array<const U, collection_size_type>(
             static_cast<const U *>(&t[0]),
             count
@@ -123,7 +124,7 @@ inline void load(
         ar >> BOOST_SERIALIZATION_NVP(item_version);
     }
     if (!t.empty())
-        // explict template arguments to pass intel C++ compiler
+        // explicit template arguments to pass intel C++ compiler
         ar >> serialization::make_array<U, collection_size_type>(
             static_cast<U *>(&t[0]),
             count

@@ -20,8 +20,7 @@
 // helper function templates for serialization of hashed collections
 #include <boost/config.hpp>
 #include <boost/serialization/nvp.hpp>
-#include <boost/serialization/collection_size_type.hpp>
-#include <boost/serialization/item_version_type.hpp>
+#include <boost/serialization/library_version_type.hpp>
 
 namespace boost{
 namespace serialization {

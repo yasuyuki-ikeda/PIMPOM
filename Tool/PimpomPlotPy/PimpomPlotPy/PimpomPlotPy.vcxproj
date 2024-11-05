@@ -105,13 +105,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PIMPOMPLOTPY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>boost\include;Python38\include;$(SolutionDir)\PIMPOM_Core\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>boost\include;Python310\include;$(SolutionDir)\PIMPOM_Core\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>boost\lib\x64;Python38\libs</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>boost\lib\x64;Python310\libs</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <PostBuildEvent>
@@ -146,7 +146,7 @@ Copy $(ProjectDir)spl.py $(SolutionDir)bin\$(Platform)\$(Configuration)</Command
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PIMPOMPLOTPY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>boost\include;Python38\include;$(SolutionDir)\PIMPOM_Core\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>boost\include;Python310\include;$(SolutionDir)\PIMPOM_Core\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -154,7 +154,7 @@ Copy $(ProjectDir)spl.py $(SolutionDir)bin\$(Platform)\$(Configuration)</Command
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>boost\lib\x64;Python38\libs</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>boost\lib\x64;Python310\libs</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <PostBuildEvent>

@@ -245,8 +245,8 @@ public:
 
     static char const *error_text(int code)
     {
-    // error texts in this array must appear in the same order as the items in
-    // the error enum above
+        // error texts in this array must appear in the same order as the items in
+        // the error enum above
         static char const *preprocess_exception_errors[] = {
             "no error",                                 // no_error
             "unexpected error (should not happen)",     // unexpected_error
@@ -393,7 +393,7 @@ public:
     :   preprocess_exception(what_, code, line_, column_, filename_)
     {
         unsigned int off = 0;
-        while (off < sizeof(name) && *macroname)
+        while (off < sizeof(name) - 1 && *macroname)
             name[off++] = *macroname++;
         name[off] = 0;
     }
