@@ -406,7 +406,7 @@ void _PlotF3DImage(int imgNo, np::ndarray img)
 			for (int i = 0; i < w; i++)
 			{
 
-				tmp[(ch - 1 - c)*w*h + j*w + i] = *ptr;
+				tmp[(c)*w*h + j*w + i] = *ptr;
 				ptr++;
 			}
 		}
