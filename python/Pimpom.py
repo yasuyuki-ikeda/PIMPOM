@@ -82,7 +82,6 @@ def create_shared_memory(data):
     # 共有メモリを作成
     shm = shared_memory.SharedMemory(name="PIMPOM_SHAREDMEM", create=True, size=len(packed_data))
     shm.buf[:len(packed_data)] = packed_data
-    print("共有メモリ 'PIMPOM_SHAREDMEM' にデータを書き込みました")
     return shm
     
 #######################################################
