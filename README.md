@@ -6,14 +6,14 @@ This program is rapid prototyping tool for image processing.
 
 **developping environment**  
 - All source codes are written with C++  
-- VisualStudio2015 is used for building.  
+- VisualStudio2022 is used for building.  
 - MFC is used for building HMI.  
 - OpenCV and Boost are used internally.  
 - HMI, Documents and comments in source codes are witten in Japanese only.  
  
 
 **requirements**  
-  - inatall python3.8 in your compulter for using "python script" function  
+  - inatall python3.8 or later in your compulter for using "python script" function  
     - *https://www.python.org/downloads/*  
   - before build in debug mode, unzip following file  
     - *OpenCV\x64\vc14bin\Debug.zip*  
@@ -22,7 +22,7 @@ This program is rapid prototyping tool for image processing.
 ------------------------------------------------------------
 BSD 3-Clause License
 
-Copyright (c) 2020, yasuyuki-ikeda
+Copyright (c) 2026, yasuyuki-ikeda
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
