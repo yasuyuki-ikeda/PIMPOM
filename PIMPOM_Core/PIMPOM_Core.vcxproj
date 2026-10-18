@@ -129,7 +129,11 @@ Copy $(SolutionDir)OpenCV\win32\vc12bin\Debug\*.* $(TargetDir)*.*
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PreBuildEvent>
       <Command>Copy $(ProjectDir)resource_core.h $(ProjectDir)include\resource_core.h
-Copy $(SolutionDir)OpenCV\x64\vc14bin\Debug\*.* $(TargetDir)*.*
+if not exist "$(SolutionDir)OpenCV\x64\vc14bin\Debug\opencv_world440d.dll" (
+  if not exist "$(SolutionDir)OpenCV\x64\vc14bin\Debug" mkdir "$(SolutionDir)OpenCV\x64\vc14bin\Debug"
+  %SystemRoot%\System32\tar.exe -xf "$(SolutionDir)OpenCV\x64\vc14bin\Debug.zip" -C "$(SolutionDir)OpenCV\x64\vc14bin\Debug"
+)
+xcopy /D /Y /Q "$(SolutionDir)OpenCV\x64\vc14bin\Debug\*.*" "$(TargetDir)"
 </Command>
     </PreBuildEvent>
     <Midl>
