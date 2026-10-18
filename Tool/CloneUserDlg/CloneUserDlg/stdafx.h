@@ -43,3 +43,7 @@
 
 
 
+
+// コモンコントロール v6 を使い、ボタン・チェックボックス・タブなどを現行 Windows の外観（ビジュアルスタイル）で描画する
+// （MBCS ビルドではウィザードがこの指定を入れないため明示する。Core DLL のダイアログもこのプロセスの設定で描かれる）
+#pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")

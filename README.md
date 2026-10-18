@@ -15,7 +15,7 @@ This program is rapid prototyping tool for image processing.
 **requirements**  
   - inatall python3.8 or later in your compulter for using "python script" function  
     - *https://www.python.org/downloads/*  
-  - before build in debug mode, unzip following file  
+  - the debug build extracts the following file automatically on its first run (needs Windows 10 1803 or later for tar.exe)  
     - *OpenCV\x64\vc14bin\Debug.zip*  
 
 

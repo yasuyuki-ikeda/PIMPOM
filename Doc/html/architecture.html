@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>システム構成 - PIMPOM 仕様書</title>
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+<div class="layout">
+<nav class="side">
+<div class="brand"><a href="index.html">PIMPOM 仕様書</a></div>
+<div class="sub">PIMPOM2022.sln（コード解析版）</div>
+<ol>
+<li><a href="index.html">1. 概要</a></li>
+<li><a href="architecture.html" class="current">2. システム構成</a><ul class="toc"><li><a href="#projects">ソリューションの構成</a></li><li><a href="#build">ビルド設定</a></li><li><a href="#startup">起動シーケンス</a></li><li><a href="#classes">クラス構造</a></li><li><a href="#threads">スレッドとイベント</a></li></ul></li>
+<li><a href="data.html">3. データ構造</a></li>
+<li><a href="main_window.html">4. メイン画面とメニュー</a></li>
+<li><a href="windows.html">5. 各ウィンドウ</a></li>
+<li><a href="processing.html">6. 画像処理機能</a></li>
+<li><a href="script.html">7. スクリプト</a></li>
+<li><a href="integration.html">8. 外部連携と拡張</a></li>
+<li><a href="api.html">9. API リファレンス概要</a></li>
+<li><a href="files.html">10. ファイル形式と設定</a></li>
+<li><a href="appendix.html">11. 付録（ソース一覧・資料との差異）</a></li>
+</ol>
+</nav>
+<main>
+<!-- title: システム構成 -->
+<h1>2. システム構成</h1>
+<p class="lead">ソリューションを構成するプロジェクト、ビルド設定、起動から終了までの流れ、主要クラスの関係を示す。</p>
+
+<h2 id="projects">ソリューションの構成</h2>
+<p><code>PIMPOM2022.sln</code> には 4 つのプロジェクトと 2 つのソリューションフォルダ（Tool、Sample）が含まれる。構成は <b>Debug|x64</b> と <b>Release|x64</b> のみ。</p>
+<table class="fit">
+<tr><th>プロジェクト</th><th>パス</th><th>種別</th><th>役割</th></tr>
+<tr><td>PIMPOM</td><td><code>PIMPOM_EXE\PIMPOM_EXE.vcxproj</code></td><td>EXE（MFC）</td><td>起動用の薄い実行ファイル。ini のパスを決め、メインダイアログ <code>CPIMPOMDlg</code> を <code>DoModal()</code> するだけ。PIMPOM_Core を ProjectReference で参照</td></tr>
+<tr><td>PIMPOM_Core</td><td><code>PIMPOM_Core\PIMPOM_Core.vcxproj</code></td><td>DLL（MFC 拡張 DLL）</td><td>本体。画面・データ・API・ファイル入出力・フィルタ・通信のすべてを持つ。メインダイアログやメニューのリソースもここにある</td></tr>
+<tr><td>data_transfer_spl</td><td><code>external_data_transfer_sample\data_transfer_spl\</code></td><td>EXE（Sample）</td><td>外部 C++ プログラムから PIMPOM へ画像を送るサンプル（<a href="integration.html#external">8 章</a>）</td></tr>
+<tr><td>CloneUserDlg</td><td><code>Tool\CloneUserDlg\CloneUserDlg\</code></td><td>EXE（Tool）</td><td>カスタムファンクション追加ダイアログ。雛形ソリューションを複製する。PIMPOM と PIMPOM_Core に依存</td></tr>
+</table>
+<p>ソリューション外だが同じリポジトリにあるもの:</p>
+<table class="fit">
+<tr><th>フォルダ</th><th>内容</th></tr>
+<tr><td><code>Tool\PimpomPlotPy\</code></td><td>Python 拡張モジュール <code>Pimpom.pyd</code> のプロジェクト（Boost.Python、Python 3.10/3.5 ヘッダ同梱）と、コマンド抽出ツール PimpomCommandExtract</td></tr>
+<tr><td><code>CustomFunc\UserDlgTemplate\</code></td><td>カスタムファンクションの雛形 DLL プロジェクト（<code>PIMPOM_Core.lib</code> をリンク）</td></tr>
+<tr><td><code>python\</code></td><td>Python 用ラッパ <code>Pimpom.py</code> とテスト <code>test.py</code></td></tr>
+<tr><td><code>OpenCV\</code></td><td>OpenCV 4.4.0 のヘッダ（<code>include</code>）、lib（<code>x64\vc14lib</code>）、DLL（<code>x64\vc14bin</code>）</td></tr>
+<tr><td><code>bin\x64\Debug</code>, <code>bin\x64\Release</code></td><td>実行フォルダ。exe／dll／ini／OpenCV DLL／pyd がここに集まる</td></tr>
+<tr><td><code>Doc\</code></td><td>既存資料と本仕様書（<code>Doc\html</code>）</td></tr>
+</table>
+
+<div class="diagram">
+<svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="モジュール構成図">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#888"/></marker></defs>
+<rect class="box" x="20" y="30" width="170" height="60" rx="8"/><text x="105" y="56" text-anchor="middle" font-weight="700">PIMPOM.exe</text><text x="105" y="76" text-anchor="middle" font-size="12" class="muted">CPIMPOM_EXEApp</text>
+<rect class="box hl" x="300" y="20" width="260" height="190" rx="8"/><text x="430" y="44" text-anchor="middle" font-weight="700">PIMPOM_Core.dll</text>
+<text x="320" y="70" font-size="12">・CPIMPOMDlg（メイン画面）</text>
+<text x="320" y="90" font-size="12">・各種ダイアログ（WindowCtrlFiles）</text>
+<text x="320" y="110" font-size="12">・CPimpomAPI API（グローバル唯一）</text>
+<text x="320" y="130" font-size="12">・CDataUnit × N（画像メモリ）</text>
+<text x="320" y="150" font-size="12">・CCalculate（スクリプト）</text>
+<text x="320" y="170" font-size="12">・ファイル I/O・フィルタ・通信</text>
+<text x="320" y="190" font-size="12">・リソース（PIMPOM.rc）</text>
+<rect class="box" x="660" y="20" width="180" height="50" rx="8"/><text x="750" y="50" text-anchor="middle">OpenCV 4.4.0 (world)</text>
+<rect class="box" x="660" y="90" width="180" height="60" rx="8"/><text x="750" y="114" text-anchor="middle">カスタムファンクション</text><text x="750" y="134" text-anchor="middle" font-size="12" class="muted">*.dll（最大 10）</text>
+<rect class="box" x="20" y="150" width="170" height="60" rx="8"/><text x="105" y="176" text-anchor="middle">外部 C++ プログラム</text><text x="105" y="196" text-anchor="middle" font-size="12" class="muted">pimpom_plot.h</text>
+<rect class="box" x="20" y="230" width="170" height="56" rx="8"/><text x="105" y="254" text-anchor="middle">Python</text><text x="105" y="272" text-anchor="middle" font-size="12" class="muted">Pimpom.pyd / Pimpom.py</text>
+<rect class="box" x="660" y="170" width="180" height="50" rx="8"/><text x="750" y="200" text-anchor="middle">CloneUserDlg.exe</text>
+<path class="arr" d="M190 60 H298" marker-end="url(#ah)"/><text x="244" y="52" text-anchor="middle" font-size="11" class="muted">DoModal</text>
+<path class="arr" d="M560 45 H658" marker-end="url(#ah)"/>
+<path class="arr" d="M658 120 H562" marker-end="url(#ah)"/><text x="610" y="112" text-anchor="middle" font-size="11" class="muted">API 呼出</text>
+<path class="arr" d="M190 180 H298" marker-end="url(#ah)"/><text x="244" y="172" text-anchor="middle" font-size="11" class="muted">共有メモリ＋WM_USER</text>
+<path class="arr" d="M190 258 C 250 258, 260 220, 298 200" marker-end="url(#ah)"/>
+<path class="arr" d="M562 195 H658" marker-end="url(#ah)"/><text x="610" y="187" text-anchor="middle" font-size="11" class="muted">起動</text>
+</svg>
+</div>
+
+<h2 id="build">ビルド設定</h2>
+<table class="fit">
+<tr><th>項目</th><th>PIMPOM（EXE）</th><th>PIMPOM_Core（DLL）</th></tr>
+<tr><td>プラットフォームツールセット</td><td colspan="2">v143（Visual Studio 2022）</td></tr>
+<tr><td>MFC / 文字セット</td><td colspan="2">MFC 共有 DLL（Dynamic）／マルチバイト（MBCS）</td></tr>
+<tr><td>ランタイム</td><td colspan="2">/MDd（Debug）、/MD（Release）</td></tr>
+<tr><td>プリプロセッサ定義</td><td><code>X64;_WINDOWS;_DEBUG|NDEBUG</code></td><td>左記に <code>_AFXEXT;_PIMPOM_CORE</code> を追加</td></tr>
+<tr><td>インクルード</td><td><code>..\PIMPOM_Core\include; ..\OpenCV\include</code></td><td><code>include; ..\OpenCV\include</code></td></tr>
+<tr><td>リンク</td><td><code>..\OpenCV\x64\vc14lib</code>、<code>..\bin\$(Platform)\$(Configuration)</code>（PIMPOM_Core.lib）</td><td><code>vfw32.lib</code>（ビデオキャプチャ）、<code>version.lib</code>、<code>opencv_world440(d).lib</code>（<code>opencv_headers.h</code> の <code>#pragma comment</code>）</td></tr>
+<tr><td>抑止警告</td><td>—</td><td>4244; 4800; 4819; 4996; 4305</td></tr>
+</table>
+<p>クラスの公開は <code>global_define.h</code> のマクロ <code>PIMPOM_EXT</code> で行い、<code>_PIMPOM_CORE</code> 定義時は <code>dllexport</code>、それ以外（EXE・カスタムファンクション）では <code>dllimport</code> になる。<code>.def</code> の EXPORTS は空で、クラス単位で公開している。</p>
+
+<h3>出力先とビルドイベント</h3>
+<table class="fit">
+<tr><th>構成</th><th>Core 出力先</th><th>Core ビルド前</th><th>Core ビルド後</th><th>EXE 出力先／ビルド後</th></tr>
+<tr><td>Debug</td><td><code>bin\x64\Debug\</code></td><td rowspan="2"><code>resource_core.h</code> を <code>include\</code> へコピー、OpenCV の DLL を出力先へコピー</td><td><code>*.py</code> を bin へ</td><td><code>bin\x64\Debug\</code>／なし</td></tr>
+<tr><td>Release</td><td><code>PIMPOM_Core\x64\Release\</code></td><td><code>*.lib</code>・<code>*.dll</code>・<code>*.py</code> を <code>bin\x64\Release</code> へコピー</td><td><code>PIMPOM_EXE\x64\Release\</code>／<code>*.exe</code> を bin へコピー</td></tr>
+</table>
+<p>実行フォルダ <code>bin\x64\Release</code> には PIMPOM.exe、PIMPOM_Core.dll/.lib、Pimpom.pyd、UserDlgTemplate.dll、CloneUserDlg.exe、data_transfer_spl.exe、OpenCV DLL（world、videoio_ffmpeg、videoio_msmf）、pimpom.ini などが置かれる。</p>
+<div class="warn">Debug 用 OpenCV DLL は <code>OpenCV\x64\vc14bin\Debug.zip</code> に圧縮されたまま同梱されている。展開しないと Debug 構成で <code>opencv_world440d.dll</code> が見つからない。</div>
+<div class="note">PIMPOM 本体（EXE・Core）は Python も Boost もリンクしない。Python スクリプト機能は外部の <code>python.exe</code> をプロセス起動し、Python 側から <code>Pimpom.pyd</code> を通じて PIMPOM と通信する（<a href="integration.html#python">8 章</a>）。</div>
+
+<h2 id="startup">起動シーケンス</h2>
+<ol>
+<li><b>DLL ロード時（静的初期化）</b> — グローバル変数 <code>CPimpomAPI API</code> のコンストラクタ（<code>api_func.cpp</code>）が動く。
+  <ul>
+  <li>各ダイアログへのポインタを NULL に、画像メモリ数 <code>data_number = 100</code>。</li>
+  <li>画像メモリのポインタ配列 <code>pp_data_unit</code> を上限 1000 個分確保して NULL で埋める（実体は使うときに確保）。</li>
+  <li>描画フォント「ＭＳゴシック」高さ 11、RGB→灰色変換ゲイン <code>{299, 587, 114}</code>（/1000）。</li>
+  <li>多重起動番号 <code>pimpom_id</code> を決める。タイトルに <code>" - PIMPOM i"</code> を含むダイアログを i=0..9 で探し、最初に空いている番号を使う。</li>
+  </ul></li>
+<li><b>DllMain</b> — <code>AfxInitExtensionModule</code> → <code>new CDynLinkLibrary</code>（EXE からリソースを使えるようにする）→ <code>AfxSocketInit</code>。</li>
+<li><b>CPIMPOM_EXEApp::InitInstance</b> — ini のパスを決める（コマンドライン引数があればそれ、無ければ EXE のフォルダ + <code>pimpom.ini</code>）。<code>CPIMPOMDlg::DoModal()</code> を呼び、戻ったら終了。</li>
+<li><b>CPIMPOMDlg::OnInitDialog</b>
+  <ol>
+  <li>システムメニューに「バージョン情報」を追加。</li>
+  <li><code>API.InitSettingFromProfile()</code> で pimpom.ini を読み、画像メモリ数・表示サイズなどを決める。</li>
+  <li>表示用の <code>CImageField</code> を 2 つ作る（メイン画像領域、周辺拡大 60×60）。</li>
+  <li>データウィンドウを表示状態で、ヒストグラム・作業領域・マークの各ウィンドウを非表示状態で作る。</li>
+  <li>メッセージタブ、ボタン、ツールチップの配置、ドラッグ＆ドロップ受付、<code>AVIFileInit</code>。</li>
+  <li><code>custom_func.ini</code> を読み、カスタムファンクション DLL を「カスタムファンクション」メニューに ID 9999+i で登録。</li>
+  <li>背景処理スレッド <code>BackGroundThread</code> を <code>_beginthreadex</code> で開始（10 ms 周期でキャプチャ・動画再生・ライブ実行を処理）。</li>
+  <li>pimpom.ini の <code>[DEFAULT_IMAGE]</code> とコマンドラインの画像ファイル（最大 30 個）を画像メモリ 0 から順に読み込み、表示。</li>
+  <li><code>INVISIBLE</code> 設定が 0 以外なら全ウィンドウを隠す（外部制御用）。</li>
+  </ol></li>
+<li><b>最初の OnMove</b> — ウィンドウを (0,0) に置き、クライアント領域を画像表示サイズ＋操作部の大きさに合わせる。</li>
+</ol>
+<h3>終了</h3>
+<p><code>OnDestroy</code> でタイマー停止、ビデオキャプチャ解放（<code>CaptureDeInit</code>）、<code>AVIFileExit</code>、<code>CImageField</code> 削除を行う。DLL 解放時に <code>~CPimpomAPI</code> が各ダイアログ、カスタムファンクション、バックアップメモリ、画像メモリ、キャプチャ、ソケットを解放する。</p>
+<div class="warn">コマンドライン引数は「ini ファイルのパス」と「起動時に読む画像ファイル」の両方に使われている。exe のアイコンに画像をドロップして起動すると、画像のパスが ini パスとして扱われる可能性がある。また背景スレッドを明示的に終了させる処理は無い。</div>
+
+<h2 id="classes">クラス構造</h2>
+<p>状態はすべてグローバル唯一の <code>CPimpomAPI API</code> に集約されている。各ダイアログやカスタムファンクションは <code>API</code> のメンバ関数を呼んで画像メモリや他のウィンドウを操作する（カスタムファンクションは <code>extern CPimpomAPI API</code> で参照）。</p>
+<div class="diagram">
+<svg viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="クラス構造図">
+<rect class="box hl" x="330" y="14" width="240" height="70" rx="8"/><text x="450" y="40" text-anchor="middle" font-weight="700">CPimpomAPI（API）</text><text x="450" y="62" text-anchor="middle" font-size="12" class="muted">全機能・全状態を保持</text>
+<rect class="box" x="20" y="130" width="200" height="90" rx="8"/><text x="120" y="152" text-anchor="middle" font-weight="700">CDataUnit × N</text><text x="120" y="172" text-anchor="middle" font-size="12">画像データ・表示バッファ</text><text x="120" y="190" text-anchor="middle" font-size="12">マスク・CMark・CWorkArea</text><text x="120" y="208" text-anchor="middle" font-size="12" class="muted">＋バックアップ 1 面</text>
+<rect class="box" x="250" y="130" width="190" height="90" rx="8"/><text x="345" y="152" text-anchor="middle" font-weight="700">CPIMPOMDlg</text><text x="345" y="172" text-anchor="middle" font-size="12">メイン画面</text><text x="345" y="190" text-anchor="middle" font-size="12">CImageField で描画</text>
+<rect class="box" x="470" y="130" width="190" height="90" rx="8"/><text x="565" y="152" text-anchor="middle" font-weight="700">CCalculate</text><text x="565" y="172" text-anchor="middle" font-size="12">数式・スクリプト評価</text><text x="565" y="190" text-anchor="middle" font-size="12">CalculateMacro</text>
+<rect class="box" x="690" y="130" width="190" height="90" rx="8"/><text x="785" y="152" text-anchor="middle" font-weight="700">通信</text><text x="785" y="172" text-anchor="middle" font-size="12">CSocketCtrl（TCP/IP）</text><text x="785" y="190" text-anchor="middle" font-size="12">CSerialCtrl（RS-232C）</text>
+<rect class="box" x="20" y="260" width="420" height="86" rx="8"/><text x="230" y="282" text-anchor="middle" font-weight="700">モードレスダイアログ</text><text x="230" y="304" text-anchor="middle" font-size="12">CDataDlg・CHistgramDlg・CMarkDlg・CWorkAreaDlg・CChartDlg・CCalcDlg</text><text x="230" y="322" text-anchor="middle" font-size="12">CBatchDlg・CDataPickDlg・CSocketCtrlDlg・CBinalizeDlg・CFilterCtrlDlg</text><text x="230" y="340" text-anchor="middle" font-size="12">CMultiImageDispDlg・CCommandPromptDlg・CPythonBatchDlg・C3DImgDispDlg</text>
+<rect class="box" x="470" y="260" width="250" height="86" rx="8"/><text x="595" y="282" text-anchor="middle" font-weight="700">モーダルダイアログ</text><text x="595" y="304" text-anchor="middle" font-size="12">CConvertDataDlg・CResizeDataDlg</text><text x="595" y="322" text-anchor="middle" font-size="12">CTransformDlg・CIO3DDlg・CPointCloudDlg</text><text x="595" y="340" text-anchor="middle" font-size="12">CConfirmDlg（汎用入力）</text>
+<rect class="box" x="740" y="260" width="140" height="86" rx="8"/><text x="810" y="286" text-anchor="middle" font-weight="700">CUserDlg</text><text x="810" y="306" text-anchor="middle" font-size="12">カスタム</text><text x="810" y="324" text-anchor="middle" font-size="12">ファンクション DLL</text>
+<path class="arr" d="M400 84 L120 128"/><path class="arr" d="M430 84 L345 128"/><path class="arr" d="M470 84 L565 128"/><path class="arr" d="M500 84 L785 128"/>
+<path class="arr" d="M345 220 L230 258"/><path class="arr" d="M345 220 L595 258"/><path class="arr" d="M570 84 C 820 90, 830 200, 810 258" stroke-dasharray="4 3"/>
+</svg>
+</div>
+<table class="fit">
+<tr><th>クラス</th><th>ファイル</th><th>責務</th></tr>
+<tr><td><code>CPimpomAPI</code></td><td><code>include/PIMPOM_API.h</code>、<code>API/*.cpp</code></td><td>画像メモリ管理、ファイル入出力、画像処理、描画、ダイアログ操作、通信、キャプチャなど全機能（<a href="api.html">9 章</a>）</td></tr>
+<tr><td><code>CDataUnit</code></td><td><code>DataWrapper/DataUnit.cpp</code>、<code>DataUnitConvert.cpp</code></td><td>画像メモリ 1 面。データ配列、表示バッファ、表示パラメータ、マスク、マーク、作業領域、型変換</td></tr>
+<tr><td><code>CWorkArea</code> / <code>CMark</code></td><td><code>DataWrapper/WorkArea.cpp</code>、<code>include/DataUnit.h</code></td><td>作業領域図形の集合と内外判定／マーク 1 個</td></tr>
+<tr><td><code>CImageField</code></td><td><code>DataWrapper/ImageField.cpp</code></td><td>画像メモリの表示バッファをウィンドウに描画し、画面座標と画像座標を変換する</td></tr>
+<tr><td><code>CCalculate</code></td><td><code>DataWrapper/Calculate.cpp</code>、<code>CalculateMacro.cpp</code></td><td>数式・スクリプトの解釈と実行（<a href="script.html">7 章</a>）</td></tr>
+<tr><td><code>CSocketCtrl</code> / <code>CSerialCtrl</code></td><td><code>DataWrapper/SocketCtrl.cpp</code>、<code>SerialCtrl.cpp</code></td><td>TCP/IP 通信／シリアル通信</td></tr>
+<tr><td><code>CPIMPOMDlg</code></td><td><code>WindowCtrlFiles/PIMPOMDlg.cpp</code>、<code>MainManuProc.cpp</code></td><td>メインウィンドウ、メインメニュー、マウス・キー処理、背景スレッド、外部プログラムからのメッセージ受信</td></tr>
+<tr><td>各ダイアログ</td><td><code>WindowCtrlFiles/*.cpp</code></td><td>各機能の UI（<a href="windows.html">5 章</a>）</td></tr>
+</table>
+<h3>ウィンドウのカテゴリ</h3>
+<table class="fit">
+<tr><th>カテゴリ</th><th>性質</th><th>対象</th></tr>
+<tr><td><span class="tag modeless">モードレス</span></td><td>一度作ると PIMPOM 終了まで常駐し状態を保つ。開いたまま他の操作ができる。メイン画面と頻繁に協調する可視化・解析用。</td><td>データ、ヒストグラム、マーク、作業領域、チャート、数式、バッチ、フリーハンド編集、TCP/IP、2 値化、汎用フィルタ、複数画像表示、スクリプト、Python、カスタムファンクション</td></tr>
+<tr><td><span class="tag modal">モーダル</span></td><td>閉じるとメモリを解放し状態は一時的。開いている間は他を操作できない。</td><td>型変換、サイズ変換、幾何変換、動画ファイル入出力、3D 点群表示、汎用データ入力</td></tr>
+<tr><td><span class="tag">別プログラム</span></td><td>PIMPOM.exe とは別の exe。開発環境を操作するもの。</td><td>CloneUserDlg.exe（カスタムファンクション追加）</td></tr>
+</table>
+
+<h2 id="threads">スレッドとイベント</h2>
+<table class="fit">
+<tr><th>要素</th><th>内容</th></tr>
+<tr><td>UI スレッド</td><td>MFC のメッセージループ。メニュー、マウス・キー、外部プログラムからの <code>WM_USER+100〜102</code> を処理する。</td></tr>
+<tr><td>背景スレッド</td><td><code>BackGroundThread</code>。10 ms ごとに背景処理 ID を見て、<code>CAPTURING(1)</code> なら 1 フレーム取り込み（ライブ実行時は続けてバッチ実行）、<code>MOVIE(2)</code> なら表示ページを進めて末尾で先頭に戻す。ID にはほかに <code>BATCH_EXC(3)</code> が定義されている。<code>SetBGProcID</code> は現在 <code>NOTHING(0)</code> のときだけ受け付ける。</td></tr>
+<tr><td>描画の連鎖</td><td><code>API.DrawImage()</code> がメイン画面・データウィンドウ・ヒストグラム・マーク値・複数画像表示などをまとめて更新する（<a href="data.html#flow">3 章</a>）。</td></tr>
+<tr><td>カスタムファンクションへの通知</td><td>メイン画面のマウス押下・移動・ドラッグ終了・右クリック、描画完了、バッチ実行の各イベントが <code>CUserDlg</code> に転送される。</td></tr>
+</table>
+
+<footer class="pager"><a href="index.html">← 1. 概要</a><a href="data.html">3. データ構造 →</a></footer>
+</main>
+</div>
+</body>
+</html>

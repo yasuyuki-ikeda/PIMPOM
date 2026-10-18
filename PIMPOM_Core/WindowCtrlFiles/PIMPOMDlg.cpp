@@ -38,6 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vfw.h>
 #include "PIMPOMDlg.h"
 #include "pimpom_plot.h"
+#include <map>
 // *************************************
 //         マ  ク  ロ   定   義         
 // *************************************
@@ -275,7 +276,7 @@ BOOL CPIMPOMDlg::OnInitDialog()
 	//表示画像の確保
 	/////////////////////////////////////////////////////////
 	p_image_disp_main = new CImageField( m_hWnd, API.main_image_size, CPoint(MAIN_WIN_LEFT_MARGIN, MAIN_WIN_TOP_MARGIN)  );//メイン画面を表すImageFiledのインスタンス化
-	p_image_disp_piece = new CImageField( m_hWnd, CSize(60, 60), CPoint(DATA_VALUE_DISP_FIELD_X, API.main_window_size.cy-140)  );//指定した座標の周辺画素を表示するImageFieldのインスタンス化
+	p_image_disp_piece = new CImageField( m_hWnd, CSize(ScaleByDpi(60), ScaleByDpi(60)), CPoint(DATA_VALUE_DISP_FIELD_X, API.main_window_size.cy-ScaleByDpi(140))  );//指定した座標の周辺画素を表示するImageFieldのインスタンス化
 
 	API.pPIMMOMDlg = this;
 	API.DialogOpen(IDD_DATA_DLG,true);
@@ -299,8 +300,8 @@ BOOL CPIMPOMDlg::OnInitDialog()
 	arrange_message_disp_field();//メッセージを表示するためのダイアログアイテムの配置する
 	CWnd *p_h_scroll = GetDlgItem( IDC_SCROLL_PIMPOM_DLG_MAIN_IMAGE_H );
 	CWnd *p_v_scroll = GetDlgItem( IDC_SCROLL_PIMPOM_DLG_MAIN_IMAGE_V );
-	p_h_scroll->MoveWindow( MAIN_WIN_LEFT_MARGIN , MAIN_WIN_TOP_MARGIN + API.main_image_size.cy , API.main_image_size.cx , 10 );//メイン画面の水平方向スクロールバーの配置
-	p_v_scroll->MoveWindow( MAIN_WIN_LEFT_MARGIN + API.main_image_size.cx , MAIN_WIN_TOP_MARGIN , 10, API.main_image_size.cy );//メイン画面の垂直方向スクロールバーの配置
+	p_h_scroll->MoveWindow( MAIN_WIN_LEFT_MARGIN , MAIN_WIN_TOP_MARGIN + API.main_image_size.cy , API.main_image_size.cx , ScaleByDpi(10) );//メイン画面の水平方向スクロールバーの配置
+	p_v_scroll->MoveWindow( MAIN_WIN_LEFT_MARGIN + API.main_image_size.cx , MAIN_WIN_TOP_MARGIN , ScaleByDpi(10), API.main_image_size.cy );//メイン画面の垂直方向スクロールバーの配置
 
 	DragAcceptFiles();//ドラッグ＆ドロップを許可
 
@@ -631,14 +632,14 @@ void CPIMPOMDlg::OnSize(UINT nType, int cx, int cy)
 		arrange_message_disp_field();//メッセージを表示するためのダイアログアイテムの配置する
 		CWnd *p_h_scroll = GetDlgItem(IDC_SCROLL_PIMPOM_DLG_MAIN_IMAGE_H);
 		CWnd *p_v_scroll = GetDlgItem(IDC_SCROLL_PIMPOM_DLG_MAIN_IMAGE_V);
-		p_h_scroll->MoveWindow(MAIN_WIN_LEFT_MARGIN, MAIN_WIN_TOP_MARGIN + API.main_image_size.cy, API.main_image_size.cx, 10);//メイン画面の水平方向スクロールバーの配置
-		p_v_scroll->MoveWindow(MAIN_WIN_LEFT_MARGIN + API.main_image_size.cx, MAIN_WIN_TOP_MARGIN, 10, API.main_image_size.cy);//メイン画面の垂直方向スクロールバーの配置
+		p_h_scroll->MoveWindow(MAIN_WIN_LEFT_MARGIN, MAIN_WIN_TOP_MARGIN + API.main_image_size.cy, API.main_image_size.cx, ScaleByDpi(10));//メイン画面の水平方向スクロールバーの配置
+		p_v_scroll->MoveWindow(MAIN_WIN_LEFT_MARGIN + API.main_image_size.cx, MAIN_WIN_TOP_MARGIN, ScaleByDpi(10), API.main_image_size.cy);//メイン画面の垂直方向スクロールバーの配置
 
 		//メインイメージ描画
 		CDataUnit *p_du = API.GetDataUnit(CURRENT_IMAGE);
 		p_image_disp_main->Resize(API.main_image_size);
 		p_image_disp_main->DrawImage(p_du, true);//描画;
-		p_image_disp_piece->Move(CPoint(DATA_VALUE_DISP_FIELD_X, API.main_window_size.cy - 140));
+		p_image_disp_piece->Move(CPoint(DATA_VALUE_DISP_FIELD_X, API.main_window_size.cy - ScaleByDpi(140)));
 
 		//メイン画像外部再描画
 		CRect rightToolRegn(API.main_image_size.cx, 0, API.main_window_size.cx, API.main_window_size.cy);
@@ -695,12 +696,12 @@ void CPIMPOMDlg::OnMove(int x, int y)
 		//ﾋｽﾄｸﾞﾗﾑウィンドウの移動
 		if(API.pHistgramDlg)
 		{
-			API.pHistgramDlg->MoveWindow(win_rect.left + API.main_window_size.cx + mrgn_w, win_rect.top, HISTGRAM_WIN_W, HISTGRAM_WIN_H);
+			API.pHistgramDlg->MoveWindow(win_rect.left + API.main_window_size.cx + mrgn_w, win_rect.top, ScaleByDpi(HISTGRAM_WIN_W), ScaleByDpi(HISTGRAM_WIN_H));
 		}
 		
 		//マークウィンドウの移動
 		if(API.pMarkDlg){
-			API.pMarkDlg->MoveWindow(win_rect.left + API.main_window_size.cx + mrgn_w, win_rect.top + 20, MARK_WIN_W, MARK_WIN_H);
+			API.pMarkDlg->MoveWindow(win_rect.left + API.main_window_size.cx + mrgn_w, win_rect.top + ScaleByDpi(20), ScaleByDpi(MARK_WIN_W), ScaleByDpi(MARK_WIN_H));
 		}
 
 		//作業領域ウィンドウの移動
@@ -712,7 +713,7 @@ void CPIMPOMDlg::OnMove(int x, int y)
 			int offset_h = winodowRct.bottom - winodowRct.top - clientRct.bottom;
 			int offset_w = winodowRct.right - winodowRct.left - clientRct.right;
 
-			API.pWorkAreaDlg->MoveWindow(win_rect.left + API.main_window_size.cx + mrgn_w, win_rect.top + HISTGRAM_WIN_H + 30, WORKAREA_WIN_W + offset_w, offset_h + WORKAREA_WIN_H);
+			API.pWorkAreaDlg->MoveWindow(win_rect.left + API.main_window_size.cx + mrgn_w, win_rect.top + ScaleByDpi(HISTGRAM_WIN_H + 30), ScaleByDpi(WORKAREA_WIN_W) + offset_w, offset_h + ScaleByDpi(WORKAREA_WIN_H));
 		}
 
 		if (init_flg) {//最初だけこのウインドウの配置(クライアント領域との差分配慮して大きくする)
@@ -1371,6 +1372,16 @@ void CPIMPOMDlg::disp_information_titlebar()
 //画面右端のボタンに関する処理
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//ボタンのビットマップの代わりに表示するアイコン（透過付き。表示倍率に合わせた大きさで読み込む）
+static std::map<HBITMAP, HICON>	button_icons;
+
+static void add_button_icon(CBitmap &bmp, UINT icon_id, int size)
+{
+	HINSTANCE h_inst = AfxFindResourceHandle(MAKEINTRESOURCE(icon_id), RT_GROUP_ICON);
+	HICON h_icon = (HICON)::LoadImage(h_inst, MAKEINTRESOURCE(icon_id), IMAGE_ICON, size, size, LR_DEFAULTCOLOR);
+	if (h_icon != NULL)	button_icons[(HBITMAP)bmp] = h_icon;
+}
+
 /********************************************************************
 機  能  名  称 : ボタンに表示するビットマップを読み込む
 関    数    名 : load_bitmaps
@@ -1426,6 +1437,37 @@ void CPIMPOMDlg::load_bitmaps()
 
 	bmp_button_inc.LoadBitmap(IDB_BUTTON_INCLIMENT);
 	bmp_button_dec.LoadBitmap(IDB_BUTTON_DECLIMENT);
+
+	//アイコン（ボタン 30px 角には 22px、30x20 には 16px、15px 角には 11px を 96dpi 基準で使う）
+	const int icon_l = ScaleByDpi(22), icon_m = ScaleByDpi(16), icon_s = ScaleByDpi(11);
+	const UINT icons_3d[4] = { IDI_BTN_PLAY, IDI_BTN_NEXT, IDI_BTN_PREV, IDI_BTN_STOP };
+	const UINT icons_complex[4] = { IDI_BTN_RE, IDI_BTN_IM, IDI_BTN_ABS, IDI_BTN_ARG };
+	const UINT icons_xyz[4] = { IDI_BTN_X, IDI_BTN_Y, IDI_BTN_Z, IDI_BTN_CLOUD };
+	const UINT icons_rgb[4] = { IDI_BTN_R, IDI_BTN_G, IDI_BTN_B, IDI_BTN_RGB };
+	for (int i = 0; i < 4; i++) {
+		add_button_icon(bmp_button_3d[i], icons_3d[i], icon_l);
+		add_button_icon(bmp_button_complex[i], icons_complex[i], icon_l);
+		add_button_icon(bmp_button_xyz[i], icons_xyz[i], icon_l);
+		add_button_icon(bmp_button_rgb[i], icons_rgb[i], icon_l);
+	}
+	add_button_icon(bmp_button_xy[0], IDI_BTN_X, icon_l);
+	add_button_icon(bmp_button_xy[1], IDI_BTN_Y, icon_l);
+
+	add_button_icon(bmp_button_paint, IDI_BTN_PEN, icon_l);
+	add_button_icon(bmp_button_calc, IDI_BTN_FX, icon_l);
+	add_button_icon(bmp_button_mark, IDI_BTN_MARK, icon_l);
+	add_button_icon(bmp_button_work_area, IDI_BTN_WORKAREA, icon_l);
+	add_button_icon(bmp_button_mask, IDI_BTN_MASK, icon_l);
+	add_button_icon(bmp_button_histgram, IDI_BTN_HISTOGRAM, icon_l);
+	add_button_icon(bmp_button_calc_distance, IDI_BTN_RULER, icon_l);
+	add_button_icon(bmp_button_calc_distance2, IDI_BTN_PROFILE, icon_l);
+	add_button_icon(bmp_button_video, IDI_BTN_CAMERA, icon_l);
+	add_button_icon(bmp_button_video2, IDI_BTN_CAMERA_RUN, icon_l);
+
+	add_button_icon(bmp_button_scale_adjust_field, IDI_BTN_FIT, icon_m);
+	add_button_icon(bmp_button_no_scale, IDI_BTN_ONE, icon_m);
+	add_button_icon(bmp_button_inc, IDI_BTN_ZOOMIN, icon_s);
+	add_button_icon(bmp_button_dec, IDI_BTN_ZOOMOUT, icon_s);
 }
 
 /********************************************************************
@@ -1445,10 +1487,10 @@ void CPIMPOMDlg::arrange_buttons()
 	CButton	*p_button_d2 = (CButton*)GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT2);
 	CButton	*p_button_d3 = (CButton*)GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT3);
 
-	p_button_d0->MoveWindow( API.main_window_size.cx-35 , DATA_SELECT_FIELD_Y      , 30 , 30);
-	p_button_d1->MoveWindow( API.main_window_size.cx-35 , DATA_SELECT_FIELD_Y + 30 , 30 , 30);
-	p_button_d2->MoveWindow( API.main_window_size.cx-35 , DATA_SELECT_FIELD_Y + 60 , 30 , 30);
-	p_button_d3->MoveWindow( API.main_window_size.cx-35 , DATA_SELECT_FIELD_Y + 90 , 30 , 30);
+	p_button_d0->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , DATA_SELECT_FIELD_Y      , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_d1->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , DATA_SELECT_FIELD_Y + ScaleByDpi(30) , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_d2->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , DATA_SELECT_FIELD_Y + ScaleByDpi(60) , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_d3->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , DATA_SELECT_FIELD_Y + ScaleByDpi(90) , ScaleByDpi(30) , ScaleByDpi(30));
 
 	//各種機能の表示・編集ボタン
 	CButton	*p_button_p0 = (CButton*)GetDlgItem(IDC_BUTTON_PIMPON_DLG_MARK);//マーク表示
@@ -1463,15 +1505,15 @@ void CPIMPOMDlg::arrange_buttons()
 
 
 
-	p_button_p0->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 0  , 30 , 30);
-	p_button_p1->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 30  , 30 , 30);
-	p_button_p2->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 60  , 30 , 30);
+	p_button_p0->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + 0  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_p1->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(30)  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_p2->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(60)  , ScaleByDpi(30) , ScaleByDpi(30));
 
-	p_button_t0->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 100 , 30 , 30);
-	p_button_t1->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 130  , 30 , 30);
-	p_button_t2->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 160  , 30 , 30);
-	p_button_t3->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 190  , 30 , 30);
-	p_button_t4->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 220  , 30 , 30);
+	p_button_t0->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(100) , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_t1->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(130)  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_t2->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(160)  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_t3->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(190)  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_t4->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(220)  , ScaleByDpi(30) , ScaleByDpi(30));
 
 	//表示画像のスケール変更機能
 	CEdit	*p_edit_scale = (CEdit*)GetDlgItem(IDC_EDIT_PIMPON_DLG_SCALE);
@@ -1480,19 +1522,19 @@ void CPIMPOMDlg::arrange_buttons()
 	CButton	*p_button_scale_adjust_filed = (CButton*)GetDlgItem(IDC_BUTTON_PIMPON_DLG_SCALE_ADJUST_FILED);
 	CButton	*p_button_no_scale = (CButton*)GetDlgItem(IDC_BUTTON_PIMPON_DLG_NO_SCALE);
 
-	p_edit_scale->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 340  , 30 , 20);
-	p_button_scale_dbl->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 360  , 15 , 15);
-	p_button_scale_hlf->MoveWindow( API.main_window_size.cx-35+15 , LAYER_SELECT_FIELD_Y + 360  , 15 , 15);
-	p_button_scale_adjust_filed->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 375  , 30 , 20);
-	p_button_no_scale->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 395  , 30 , 20);
+	p_edit_scale->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(340)  , ScaleByDpi(30) , ScaleByDpi(20));
+	p_button_scale_dbl->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(360)  , ScaleByDpi(15) , ScaleByDpi(15));
+	p_button_scale_hlf->MoveWindow( API.main_window_size.cx-ScaleByDpi(35)+ScaleByDpi(15) , LAYER_SELECT_FIELD_Y + ScaleByDpi(360)  , ScaleByDpi(15) , ScaleByDpi(15));
+	p_button_scale_adjust_filed->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(375)  , ScaleByDpi(30) , ScaleByDpi(20));
+	p_button_no_scale->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(395)  , ScaleByDpi(30) , ScaleByDpi(20));
 
 	//ビデオキャプチャ
 	CButton	*p_chk_video = (CButton*)GetDlgItem(IDC_CHECK_PIMPON_DLG_VIDEO_CAPTURE);
-	p_chk_video->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 430  , 30 , 30);
+	p_chk_video->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(430)  , ScaleByDpi(30) , ScaleByDpi(30));
 	
 
 	CButton	*p_chk_video2 = (CButton*)GetDlgItem(IDC_CHECK_PIMPON_DLG_VIDEO_CAPTURE2);
-	p_chk_video2->MoveWindow( API.main_window_size.cx-35 , LAYER_SELECT_FIELD_Y + 460  , 30 , 30);
+	p_chk_video2->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(460)  , ScaleByDpi(30) , ScaleByDpi(30));
 
 	if (API.IsCaptureOpened() )
 	{
@@ -1519,6 +1561,14 @@ void CPIMPOMDlg::arrange_buttons()
 HBITMAP CPIMPOMDlg::set_bitmap_button(HBITMAP h_bmp, UINT id)
 {
 	CButton	*p_button = (CButton*)GetDlgItem(id);
+
+	//対応するアイコンがあればビットマップの代わりに表示する
+	std::map<HBITMAP, HICON>::iterator it = button_icons.find(h_bmp);
+	if (it != button_icons.end()) {
+		p_button->ModifyStyle(BS_BITMAP, BS_ICON);
+		p_button->SetIcon(it->second);
+		return h_bmp;
+	}
 	return	p_button->SetBitmap( h_bmp );
 }
 
@@ -2114,11 +2164,11 @@ void CPIMPOMDlg::OnBnClickedPimponDlgCheckVideoCapture2()
 ********************************************************************/
 void CPIMPOMDlg::arrange_data_value_disp_field()
 {
-	CSize	picture(60,60) , value_disp(60,15) , coor_disp(200, 15); 
+	CSize	picture(ScaleByDpi(60),ScaleByDpi(60)) , value_disp(ScaleByDpi(60),ScaleByDpi(15)) , coor_disp(ScaleByDpi(200), ScaleByDpi(15)); 
 
 	//1点周辺の画像を表示するためのピクチャーボックスを配置する
 	CWnd	*p_wnd_picture = GetDlgItem( IDC_PICT_PIMPON_DLG_DISP_PIECE );
-	p_wnd_picture->MoveWindow( DATA_VALUE_DISP_FIELD_X, API.main_window_size.cy-140, picture.cx, picture.cy );
+	p_wnd_picture->MoveWindow( DATA_VALUE_DISP_FIELD_X, API.main_window_size.cy-ScaleByDpi(140), picture.cx, picture.cy );
 
 	//1点の画素のデータ値を表示するためのエディットボックスを配置する
 	CWnd	*p_wnd_value_1_1 = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_VALUE_1_1 );
@@ -2131,29 +2181,29 @@ void CPIMPOMDlg::arrange_data_value_disp_field()
 	CWnd	*p_wnd_value01 = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_VALUE01 );
 	CWnd	*p_wnd_value11 = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_VALUE11 );
 
-	p_wnd_value_1_1->MoveWindow(DATA_VALUE_DISP_FIELD_X + picture.cx + 10						, API.main_window_size.cy-140 + value_disp.cy	, value_disp.cx , value_disp.cy);
-	p_wnd_value0_1->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + 10 + (value_disp.cx+5)	, API.main_window_size.cy-140 + value_disp.cy	, value_disp.cx , value_disp.cy);
-	p_wnd_value1_1->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + 10 + (value_disp.cx+5)*2	, API.main_window_size.cy-140 + value_disp.cy	, value_disp.cx , value_disp.cy);
-	p_wnd_value_10->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + 10						, API.main_window_size.cy-140 + value_disp.cy*2	, value_disp.cx , value_disp.cy);
-	p_wnd_value00->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + 10 + (value_disp.cx+5)	, API.main_window_size.cy-140 + value_disp.cy*2	, value_disp.cx , value_disp.cy);
-	p_wnd_value10->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + 10 + (value_disp.cx+5)*2	, API.main_window_size.cy-140 + value_disp.cy*2	, value_disp.cx , value_disp.cy);
-	p_wnd_value_11->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + 10						, API.main_window_size.cy-140 + value_disp.cy*3	, value_disp.cx , value_disp.cy);
-	p_wnd_value01->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + 10 + (value_disp.cx+5)	, API.main_window_size.cy-140 + value_disp.cy*3	, value_disp.cx , value_disp.cy);
-	p_wnd_value11->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + 10 + (value_disp.cx+5)*2	, API.main_window_size.cy-140 + value_disp.cy*3	, value_disp.cx , value_disp.cy);
+	p_wnd_value_1_1->MoveWindow(DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10)						, API.main_window_size.cy-ScaleByDpi(140) + value_disp.cy	, value_disp.cx , value_disp.cy);
+	p_wnd_value0_1->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10) + (value_disp.cx+ScaleByDpi(5))	, API.main_window_size.cy-ScaleByDpi(140) + value_disp.cy	, value_disp.cx , value_disp.cy);
+	p_wnd_value1_1->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10) + (value_disp.cx+ScaleByDpi(5))*2	, API.main_window_size.cy-ScaleByDpi(140) + value_disp.cy	, value_disp.cx , value_disp.cy);
+	p_wnd_value_10->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10)						, API.main_window_size.cy-ScaleByDpi(140) + value_disp.cy*2	, value_disp.cx , value_disp.cy);
+	p_wnd_value00->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10) + (value_disp.cx+ScaleByDpi(5))	, API.main_window_size.cy-ScaleByDpi(140) + value_disp.cy*2	, value_disp.cx , value_disp.cy);
+	p_wnd_value10->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10) + (value_disp.cx+ScaleByDpi(5))*2	, API.main_window_size.cy-ScaleByDpi(140) + value_disp.cy*2	, value_disp.cx , value_disp.cy);
+	p_wnd_value_11->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10)						, API.main_window_size.cy-ScaleByDpi(140) + value_disp.cy*3	, value_disp.cx , value_disp.cy);
+	p_wnd_value01->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10) + (value_disp.cx+ScaleByDpi(5))	, API.main_window_size.cy-ScaleByDpi(140) + value_disp.cy*3	, value_disp.cx , value_disp.cy);
+	p_wnd_value11->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10) + (value_disp.cx+ScaleByDpi(5))*2	, API.main_window_size.cy-ScaleByDpi(140) + value_disp.cy*3	, value_disp.cx , value_disp.cy);
 
 	//1点の座標を表示するためのエディットボックスを配置する
 	CWnd	*p_wnd_coor_ij = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_COOR_IJ );
 	CWnd	*p_wnd_coor_xy = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_COOR_XY );
-	p_wnd_coor_ij->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + 10 , API.main_window_size.cy-140	, coor_disp.cx , coor_disp.cy);
+	p_wnd_coor_ij->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10) , API.main_window_size.cy-ScaleByDpi(140)	, coor_disp.cx , coor_disp.cy);
 
 	//クリック座標固定ボタン
 	CWnd	*p_wnd_filx_coor = (CWnd*)GetDlgItem( IDC_CHECK_PIMPON_DLG_FIX_COOR );
-	p_wnd_filx_coor->MoveWindow( DATA_VALUE_DISP_FIELD_X, API.main_window_size.cy-140 + picture.cy + 5, 150, 15 );
+	p_wnd_filx_coor->MoveWindow( DATA_VALUE_DISP_FIELD_X, API.main_window_size.cy-ScaleByDpi(140) + picture.cy + ScaleByDpi(5), ScaleByDpi(150), ScaleByDpi(15) );
 	
 	
 	//サブピクセル座標表示ボタン
 	CWnd	*p_wnd_subpix_coor = (CWnd*)GetDlgItem( IDC_CHECK_PIMPON_DLG_SUBPIX );
-	p_wnd_subpix_coor->MoveWindow( DATA_VALUE_DISP_FIELD_X + 150, API.main_window_size.cy-140 + picture.cy + 5, 120, 15 );
+	p_wnd_subpix_coor->MoveWindow( DATA_VALUE_DISP_FIELD_X + ScaleByDpi(150), API.main_window_size.cy-ScaleByDpi(140) + picture.cy + ScaleByDpi(5), ScaleByDpi(120), ScaleByDpi(15) );
 }
 
 
@@ -2171,8 +2221,8 @@ void CPIMPOMDlg::arrange_message_disp_field()
 	CTabCtrl	*p_wnd_tab = (CTabCtrl*)GetDlgItem( IDC_TAB_PIMPOM_DLG_MESSAGE );
 	CWnd	*p_wnd_message = (CWnd*)GetDlgItem( IDC_EDIT_PIMPOM_DLG_MESSAGE );
 
-	p_wnd_tab->MoveWindow(MESSAGE_DISP_FIELD_X , API.main_window_size.cy-150, API.main_window_size.cx - 340 , MESSAGE_DISP_FIELD_H);
-	p_wnd_message->MoveWindow(MESSAGE_DISP_FIELD_X+5 , API.main_window_size.cy-150+23, API.main_window_size.cx - 340 -10 , MESSAGE_DISP_FIELD_H-25);
+	p_wnd_tab->MoveWindow(MESSAGE_DISP_FIELD_X , API.main_window_size.cy-ScaleByDpi(150), API.main_window_size.cx - ScaleByDpi(340) , MESSAGE_DISP_FIELD_H);
+	p_wnd_message->MoveWindow(MESSAGE_DISP_FIELD_X+ScaleByDpi(5) , API.main_window_size.cy-ScaleByDpi(150)+ScaleByDpi(23), API.main_window_size.cx - ScaleByDpi(340) -ScaleByDpi(10) , MESSAGE_DISP_FIELD_H-ScaleByDpi(25));
 }
 
 

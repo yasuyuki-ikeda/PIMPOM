@@ -130,6 +130,36 @@
 #define IDB_BUTTON_RET_EXEC             270
 #define IDB_BUTTON_UNDO                 271
 #define IDB_BUTTON_REDO                 272
+#define IDI_BTN_PLAY                    273
+#define IDI_BTN_NEXT                    274
+#define IDI_BTN_PREV                    275
+#define IDI_BTN_STOP                    276
+#define IDI_BTN_RE                      277
+#define IDI_BTN_IM                      278
+#define IDI_BTN_ABS                     279
+#define IDI_BTN_ARG                     280
+#define IDI_BTN_X                       281
+#define IDI_BTN_Y                       282
+#define IDI_BTN_Z                       283
+#define IDI_BTN_CLOUD                   284
+#define IDI_BTN_R                       285
+#define IDI_BTN_G                       286
+#define IDI_BTN_B                       287
+#define IDI_BTN_RGB                     288
+#define IDI_BTN_PEN                     289
+#define IDI_BTN_FX                      290
+#define IDI_BTN_MARK                    291
+#define IDI_BTN_WORKAREA                292
+#define IDI_BTN_MASK                    293
+#define IDI_BTN_HISTOGRAM               294
+#define IDI_BTN_RULER                   295
+#define IDI_BTN_PROFILE                 296
+#define IDI_BTN_FIT                     297
+#define IDI_BTN_ONE                     298
+#define IDI_BTN_CAMERA                  299
+#define IDI_BTN_CAMERA_RUN              300
+#define IDI_BTN_ZOOMIN                  301
+#define IDI_BTN_ZOOMOUT                 302
 #define IDC_SCROLL_PIMPOM_DLG_MAIN_IMAGE_H 1000
 #define IDC_SCROLL_PIMPOM_DLG_MAIN_IMAGE_V 1001
 #define IDC_BUTTON_PIMPON_DLG_PAINT     1011
@@ -759,7 +789,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        273
+#define _APS_NEXT_RESOURCE_VALUE        303
 #define _APS_NEXT_COMMAND_VALUE         32949
 #define _APS_NEXT_CONTROL_VALUE         1384
 #define _APS_NEXT_SYMED_VALUE           105

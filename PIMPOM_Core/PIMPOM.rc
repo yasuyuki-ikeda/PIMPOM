@@ -70,6 +70,66 @@ IDI_RUN                 ICON                    "res\\run.ico"
 
 IDI_GRAPH               ICON                    "res\\graph.ico"
 
+IDI_BTN_PLAY            ICON                    "res\\icons\\play.ico"
+
+IDI_BTN_NEXT            ICON                    "res\\icons\\next.ico"
+
+IDI_BTN_PREV            ICON                    "res\\icons\\prev.ico"
+
+IDI_BTN_STOP            ICON                    "res\\icons\\stop.ico"
+
+IDI_BTN_RE              ICON                    "res\\icons\\re.ico"
+
+IDI_BTN_IM              ICON                    "res\\icons\\im.ico"
+
+IDI_BTN_ABS             ICON                    "res\\icons\\abs.ico"
+
+IDI_BTN_ARG             ICON                    "res\\icons\\arg.ico"
+
+IDI_BTN_X               ICON                    "res\\icons\\x.ico"
+
+IDI_BTN_Y               ICON                    "res\\icons\\y.ico"
+
+IDI_BTN_Z               ICON                    "res\\icons\\z.ico"
+
+IDI_BTN_CLOUD           ICON                    "res\\icons\\cloud.ico"
+
+IDI_BTN_R               ICON                    "res\\icons\\r.ico"
+
+IDI_BTN_G               ICON                    "res\\icons\\g.ico"
+
+IDI_BTN_B               ICON                    "res\\icons\\b.ico"
+
+IDI_BTN_RGB             ICON                    "res\\icons\\rgb.ico"
+
+IDI_BTN_PEN             ICON                    "res\\icons\\pen.ico"
+
+IDI_BTN_FX              ICON                    "res\\icons\\fx.ico"
+
+IDI_BTN_MARK            ICON                    "res\\icons\\mark.ico"
+
+IDI_BTN_WORKAREA        ICON                    "res\\icons\\workarea.ico"
+
+IDI_BTN_MASK            ICON                    "res\\icons\\mask.ico"
+
+IDI_BTN_HISTOGRAM       ICON                    "res\\icons\\histogram.ico"
+
+IDI_BTN_RULER           ICON                    "res\\icons\\ruler.ico"
+
+IDI_BTN_PROFILE         ICON                    "res\\icons\\profile.ico"
+
+IDI_BTN_FIT             ICON                    "res\\icons\\fit.ico"
+
+IDI_BTN_ONE             ICON                    "res\\icons\\one.ico"
+
+IDI_BTN_CAMERA          ICON                    "res\\icons\\camera.ico"
+
+IDI_BTN_CAMERA_RUN      ICON                    "res\\icons\\camera_run.ico"
+
+IDI_BTN_ZOOMIN          ICON                    "res\\icons\\zoomin.ico"
+
+IDI_BTN_ZOOMOUT         ICON                    "res\\icons\\zoomout.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -79,7 +139,7 @@ IDI_GRAPH               ICON                    "res\\graph.ico"
 IDD_ABOUTBOX DIALOGEX 0, 0, 262, 55
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "PIMPOMのﾊﾞｰｼﾞｮﾝ情報"
-FONT 9, "ＭＳ ゴシック", 0, 0, 0x0
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,12,12,20,20
     LTEXT           "Copyright (C)  2014",IDC_VERSION_COPYRIGHT,42,36,126,8
@@ -93,7 +153,7 @@ STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSM
 EXSTYLE WS_EX_ACCEPTFILES | WS_EX_APPWINDOW
 CAPTION "CV Algorithm Prototiping Softwear <PIMPOM>"
 MENU IDR_MAIN_MENU
-FONT 9, "ＭＳ ゴシック", 0, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     SCROLLBAR       IDC_SCROLL_PIMPOM_DLG_MAIN_IMAGE_H,0,309,390,8
     SCROLLBAR       IDC_SCROLL_PIMPOM_DLG_MAIN_IMAGE_V,385,0,10,305,SBS_VERT
@@ -139,7 +199,7 @@ END
 IDD_DATA_DLG DIALOGEX 0, 0, 491, 269
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
 EXSTYLE WS_EX_ACCEPTFILES | WS_EX_TOOLWINDOW | WS_EX_CLIENTEDGE
-FONT 9, "ＭＳ ゴシック", 0, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
 END
 
@@ -147,7 +207,7 @@ IDD_HISTGRAM_DLG DIALOGEX 0, 0, 249, 248
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "濃度ヒストグラム"
-FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_HISTGRAM_FIELD,"Static",SS_BLACKFRAME,0,0,180,130
     EDITTEXT        IDC_EDIT_HISTGRAM_MAX,180,0,20,14,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER,WS_EX_STATICEDGE
@@ -195,7 +255,7 @@ IDD_IO_3D_DLG DIALOGEX 0, 0, 274, 147
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "3D/F3D/RGB3D"
-FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,4,132,35,14
     PUSHBUTTON      "ｷｬﾝｾﾙ",IDCANCEL,44,132,35,14
@@ -225,7 +285,7 @@ IDD_POINT_CLOUD_DLG DIALOGEX 0, 0, 343, 353
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "3D点群表示"
-FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "閉じる",IDOK,302,0,35,14
     CONTROL         "回転",IDC_CHECK_POINT_CLOUD_CTRL_ROTATE,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,0,0,35,15
@@ -237,7 +297,7 @@ IDD_CONVERT_DATA_DLG DIALOGEX 0, 0, 276, 132
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "画像データの型変換"
-FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     PUSHBUTTON      "ｷｬﾝｾﾙ",IDCANCEL,120,114,62,14
     CONTROL         "上下限を超えた場合飽和させる",IDC_CHECK_CONVERT_SATULATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,101,116,10
@@ -265,7 +325,7 @@ IDD_FILTER_CTRL_DLG DIALOGEX 0, 0, 328, 222
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "汎用フィルタ"
-FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     COMBOBOX        IDC_COMBO_FILTER_TYPE,39,34,163,170,CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "フィルタ種類",IDC_TEXT_FILTER_MES1,0,35,37,8
@@ -309,7 +369,7 @@ IDD_CALC_DLG DIALOGEX 0, 0, 288, 159
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "数式で画像を生成"
-FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     LTEXT           "f(x,y)=",IDC_STATIC,1,2,20,8
     COMBOBOX        IDC_COMBO_CALC_COMMAND,22,0,262,391,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
@@ -343,7 +403,7 @@ IDD_MARK_DLG DIALOGEX 0, 0, 127, 164
 STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_THICKFRAME
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "マーク"
-FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     CONTROL         "マーク番号表示",IDC_CHECK_MARK_NUM_DISP,"Button",BS_AUTOCHECKBOX | BS_BITMAP | BS_PUSHLIKE | WS_TABSTOP,1,139,62,10
     PUSHBUTTON      "全削除",IDC_BUTTON_MARK_ALLDELETE,17,122,29,14,BS_BITMAP
@@ -358,7 +418,7 @@ IDD_MULTI_CONFIRM_DLG DIALOGEX 0, 0, 235, 412
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "ﾀﾞｲｱﾛｸﾞ"
-FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,53,391,50,14
     PUSHBUTTON      "ｷｬﾝｾﾙ",IDCANCEL,107,391,50,14
@@ -448,7 +508,7 @@ IDD_RESIZE_DLG DIALOGEX 0, 0, 244, 201
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "画像データのサイズ変換"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     CONTROL         "現在選択中の画像データを変換して上書きする",IDC_RADIO_RESIZE_OVERWITE,"Button",BS_AUTORADIOBUTTON | WS_GROUP,3,0,220,10
     CONTROL         "原画像:",IDC_RADIO_RESIZE_TO_IMAGE,"Button",BS_AUTORADIOBUTTON,3,13,43,10
@@ -482,7 +542,7 @@ IDD_WORKAREA_DLG DIALOGEX 0, 0, 250, 227
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "作業領域"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     LTEXT           "スタティック",IDC_STATIC_WORKAREA_PARAM1,54,17,38,8
     EDITTEXT        IDC_EDIT_WORKAREA_PARAM1,93,14,34,14,ES_AUTOHSCROLL
@@ -519,7 +579,7 @@ IDD_TRANSFORM_DLG DIALOGEX 0, 0, 298, 292
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "幾何変換"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "実行",IDOK,0,276,50,14
     PUSHBUTTON      "キャンセル",IDCANCEL,246,276,50,14
@@ -557,7 +617,7 @@ IDD_DATAPICK_DLG DIALOGEX 0, 0, 140, 129
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "フリーハンドで画像を編集"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_DATAPICK_DATA0,37,28,28,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_DATAPICK_DATA1,65,28,28,14,ES_AUTOHSCROLL
@@ -582,7 +642,7 @@ IDD_BATCH_DLG DIALOGEX 0, 0, 497, 292
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_ACCEPTFILES | WS_EX_TOOLWINDOW
 CAPTION "バッチ実行"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     PUSHBUTTON      "追加",IDC_BUTTON_BATCH_FILE_OPEN,3,10,54,12
     PUSHBUTTON      "閉じる",IDCANCEL,432,277,59,13,NOT WS_VISIBLE
@@ -610,7 +670,7 @@ IDD_SOCKET_CTRL_DLG DIALOGEX 0, 0, 205, 230
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "TCP/IP通信"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_SOKET_HOSTNAME,40,12,72,14,ES_AUTOHSCROLL
     CONTROL         "サーバー",IDC_RADIO_SOCKET_SERVER,"Button",BS_AUTORADIOBUTTON | WS_GROUP,66,0,43,10
@@ -633,7 +693,7 @@ IDD_BINALIZE_DLG DIALOGEX 0, 0, 299, 183
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "2値化"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     CONTROL         "現在選択中の画像を2値化し、黒画素をマスクする",IDC_RADIO_BINALIZE_TO_MASK,
                     "Button",BS_AUTORADIOBUTTON | WS_DISABLED,1,0,176,10
@@ -677,7 +737,7 @@ END
 IDD_CHART_DLG DIALOGEX 0, 0, 485, 294
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "グラフ"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_TAB_CHART_DLG,"SysTabControl32",0x0,0,13,478,32
     EDITTEXT        IDC_EDIT_CHART_DLG_MAX_VAL_Y,99,45,24,14,ES_AUTOHSCROLL | NOT WS_BORDER
@@ -714,7 +774,7 @@ END
 IDD_MULTI_IMAGE_DISP_DLG DIALOGEX 0, 0, 747, 313
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "複数画像同時表示"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     SCROLLBAR       IDC_SCROLL_MULTI_IMG_DLG_V0,191,14,10,145,SBS_VERT
     SCROLLBAR       IDC_SCROLL_MULTI_IMG_DLG_V1,421,17,10,145,SBS_VERT
@@ -740,7 +800,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS
 EXSTYLE WS_EX_ACCEPTFILES
 CAPTION "スクリプト"
 MENU IDR_COMMAND_PROMPT_MENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_RICHEDIT_COMMAND_PROMPT,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,30,0,364,206
     PUSHBUTTON      "ステップ実行",IDC_BUTTON_COMMAND_PROMPT_DO,83,297,50,14,BS_BITMAP
@@ -767,7 +827,7 @@ END
 IDD_3D_IMAGE_DISP_DLG DIALOGEX 0, 0, 597, 234
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Dialog"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_3D_IMG_DISP_SCALE,38,0,30,14,ES_AUTOHSCROLL | ES_READONLY
     PUSHBUTTON      "*2",IDC_BUTTON_3D_IMG_DISP_SCALE,68,0,18,14
@@ -786,7 +846,7 @@ IDD_PYTHON_BATCH_DLG DIALOGEX 0, 0, 414, 224
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_ACCEPTFILES
 CAPTION "Python script for batch execution"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
+FONT 9, "Meiryo UI", 400, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_PYTHON_BATCH_DLG_FILEPATH,52,0,343,14,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_PYTHON_BATCH_DLG_BROWSE_FILE,394,0,20,14
@@ -805,8 +865,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,5,0,6
- PRODUCTVERSION 1,5,0,6
+ FILEVERSION 1,6,0,0
+ PRODUCTVERSION 1,6,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -822,12 +882,12 @@ BEGIN
         BLOCK "041104b0"
         BEGIN
             VALUE "FileDescription", "PIMPOM MFC ｱﾌﾟﾘｹｰｼｮﾝ"
-            VALUE "FileVersion", "1.5.0.6"
+            VALUE "FileVersion", "1.6.0.0"
             VALUE "InternalName", "PIMPOM"
-            VALUE "LegalCopyright", "Copyright (C) Y.Ikeda 2020"
+            VALUE "LegalCopyright", "Copyright (C) Y.Ikeda 2026"
             VALUE "OriginalFilename", "PIMPOM.EXE"
             VALUE "ProductName", "PIMPOM ｱﾌﾟﾘｹｰｼｮﾝ"
-            VALUE "ProductVersion", "1.5.0.6"
+            VALUE "ProductVersion", "1.6.0.0"
         END
     END
     BLOCK "VarFileInfo"

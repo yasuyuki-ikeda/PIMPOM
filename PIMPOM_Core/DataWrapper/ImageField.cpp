@@ -223,7 +223,7 @@ void CImageField::DrawPiece(CDataUnit *p_du, CPoint src_coor, CSize src_size, bo
 		if( do_redraw_background )
 			if( dest_size.cx < FieldSize.cx   ||   dest_size.cy < FieldSize.cy  ){
 				//‰æ‘œ“]‘—æ‚Ì‹éŒ`—Ìˆæ‚ªImageFiled‚æ‚è‹·‚¢‚Æ‚«C”wŒi‚ð“h‚è‚Â‚Ô‚·
-				fill_field( API.default_bg_color , &dest_size);
+				fill_field( PIMPOM_VIEW_BG_COLOR , &dest_size);
 			}
 
 	//‰æ‘œ“]‘—

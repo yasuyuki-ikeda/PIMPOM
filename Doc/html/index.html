@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>概要 - PIMPOM 仕様書</title>
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+<div class="layout">
+<nav class="side">
+<div class="brand"><a href="index.html">PIMPOM 仕様書</a></div>
+<div class="sub">PIMPOM2022.sln（コード解析版）</div>
+<ol>
+<li><a href="index.html" class="current">1. 概要</a><ul class="toc"><li><a href="#purpose">目的</a></li><li><a href="#features">主な機能</a></li><li><a href="#terms">用語の定義</a></li><li><a href="#env">動作環境と開発環境</a></li><li><a href="#policy">設計方針</a></li><li><a href="#docs">本書の構成と参考資料</a></li></ul></li>
+<li><a href="architecture.html">2. システム構成</a></li>
+<li><a href="data.html">3. データ構造</a></li>
+<li><a href="main_window.html">4. メイン画面とメニュー</a></li>
+<li><a href="windows.html">5. 各ウィンドウ</a></li>
+<li><a href="processing.html">6. 画像処理機能</a></li>
+<li><a href="script.html">7. スクリプト</a></li>
+<li><a href="integration.html">8. 外部連携と拡張</a></li>
+<li><a href="api.html">9. API リファレンス概要</a></li>
+<li><a href="files.html">10. ファイル形式と設定</a></li>
+<li><a href="appendix.html">11. 付録（ソース一覧・資料との差異）</a></li>
+</ol>
+</nav>
+<main>
+<!-- title: 概要 -->
+<h1>PIMPOM ソフトウェア仕様書</h1>
+<p class="lead">対象: <code>PIMPOM2022.sln</code>（Visual Studio 2022 / x64）。ソースコードの解析結果を主とし、<code>Doc</code> フォルダの既存資料（ソフトウェア仕様書 pptx、API リファレンス、スクリプト・PimpomPy・外部プログラム受け渡しの各マニュアル）で補った。</p>
+
+<div class="fig-side">
+<div>
+<h2 id="purpose">目的</h2>
+<p>PIMPOM（<b>P</b>latform for <b>I</b>mage <b>P</b>rocessing <b>O</b>bserver &amp; <b>M</b>odifier）は、画像処理アルゴリズム開発の「技術検討」段階を効率化するためのラピッドプロトタイピングツールである。技術検討は次の 3 つの作業の繰り返しであり、PIMPOM はこのループを確実かつ素早く回すことを狙う。</p>
+<table class="fit">
+<tr><th>作業</th><th>内容</th><th>PIMPOM が提供するもの</th></tr>
+<tr><td>現象解析</td><td>内部で何が起きているかを正確に知る</td><td>ヒストグラム・ルーラー・チャートによる可視化、16bit／動画／複素数など多様なデータ型、外部プログラムからの画像転送・表示、フリーハンド編集、数式による画像生成</td></tr>
+<tr><td>実装・改善</td><td>現象に合ったアルゴリズムを実装する</td><td>カスタムファンクション（ユーザー DLL）の雛形生成と API による全機能の利用、Python からの利用、内蔵フィルタ・幾何変換、OpenCV 4.4 同梱</td></tr>
+<tr><td>効果検証</td><td>対策の効果を多数のデータで確かめる</td><td>バッチ実行（複数画像ファイルへの一斉実行）、スクリプト、Python バッチ</td></tr>
+</table>
+</div>
+<figure><img src="img/main.png" alt="PIMPOM メインウィンドウ"><figcaption>メインウィンドウ（既存仕様書より）</figcaption></figure>
+</div>
+
+<h2 id="features">主な機能</h2>
+<div class="cards">
+<div class="card"><h3><a href="data.html">画像メモリ</a></h3><p>既定 100 面（pimpom.ini で変更可、上限 1000）の画像メモリに 13 種類のデータ型（BYTE〜DWORD）を保持。マスク・作業領域・マークを画像ごとに持つ。</p></div>
+<div class="card"><h3><a href="main_window.html">表示と観察</a></h3><p>拡大縮小・スクロール・表示濃度レンジ・カラーパレット、画素値表示、ルーラー、濃度プロファイル。</p></div>
+<div class="card"><h3><a href="windows.html">解析ウィンドウ</a></h3><p>データ一覧、ヒストグラム、マーク、作業領域、チャート、複数画像同時表示、3D 点群表示。</p></div>
+<div class="card"><h3><a href="processing.html">画像処理</a></h3><p>汎用フィルタ、2 値化とラベリング、型変換、サイズ変換、幾何変換、数式による画像生成。</p></div>
+<div class="card"><h3><a href="script.html">スクリプト</a></h3><p>独自スクリプト言語（数式＋マクロ関数）とスクリプトウィンドウ、バッチ実行との連動。</p></div>
+<div class="card"><h3><a href="integration.html">外部連携と拡張</a></h3><p>カスタムファンクション DLL、Python（PimpomPy）、外部 C++ プログラムからの画像転送、TCP/IP 通信、ビデオキャプチャ。</p></div>
+</div>
+
+<h2 id="terms">用語の定義</h2>
+<table class="fit">
+<tr><th>用語</th><th>定義</th></tr>
+<tr><td>PIMPOM</td><td>本ソフトウェアの名称。Platform for Image Processing Observer &amp; Modifier の略。</td></tr>
+<tr><td>画像メモリ</td><td>PIMPOM 内部で画像を保持する領域（<code>CDataUnit</code>）。複数持てる（既定 100、上限 1000）。0 始まりの番号で指定する。</td></tr>
+<tr><td>バックアップメモリ</td><td>上書き・削除・処理の直前の画像データを退避する領域。全画像メモリで共通の 1 面だけで、「画像データ復元」で戻せる（Undo 1 段）。</td></tr>
+<tr><td>作業領域</td><td>処理・統計の対象範囲を表す図形（矩形／直線／楕円／円周）の集合。OR／NOT 指定可能。</td></tr>
+<tr><td>マスク</td><td>画素単位で処理・統計の対象外を表す 8bit 配列。表示では黒く塗られる。</td></tr>
+<tr><td>マーク</td><td>特定画素の座標（サブピクセル）と属性を保持する点・線のデータ。</td></tr>
+<tr><td>カスタムファンクション</td><td>ユーザーが機能を追加実装するモードレスダイアログを持つ DLL。雛形のソリューションを生成できる。</td></tr>
+<tr><td>API</td><td><code>CPimpomAPI</code> クラス。PIMPOM の全機能を提供し、カスタムファンクションから使用できる。</td></tr>
+<tr><td>PimpomPy</td><td>Python から PIMPOM を操作するための拡張モジュール（<code>Pimpom.pyd</code>）。</td></tr>
+</table>
+
+<h2 id="env">動作環境と開発環境</h2>
+<table class="fit">
+<tr><th>項目</th><th>内容</th></tr>
+<tr><td>OS</td><td>Microsoft Windows 10 以降（64bit）</td></tr>
+<tr><td>開発環境</td><td>Visual Studio 2022（ソリューション形式 v12.00、VisualStudioVersion 17.14）。旧版用に <code>PIMPOM2015.sln</code>／<code>PIMPOM2019.sln</code> も同梱</td></tr>
+<tr><td>言語・フレームワーク</td><td>C++、MFC（GUI）</td></tr>
+<tr><td>同梱ライブラリ</td><td>OpenCV 4.4.0（<code>OpenCV/</code>）、Boost（Python 連携用、<code>Tool/PimpomPlotPy</code>）</td></tr>
+<tr><td>Python 機能</td><td>Python 3.8 以降のインストールが必要</td></tr>
+<tr><td>Debug ビルドの準備</td><td><code>OpenCV\x64\vc14bin\Debug.zip</code> を展開しておく</td></tr>
+<tr><td>UI・資料の言語</td><td>日本語のみ</td></tr>
+<tr><td>ライセンス</td><td>BSD 3-Clause（Copyright (c) 2026, yasuyuki-ikeda）</td></tr>
+</table>
+
+<h2 id="policy">設計方針</h2>
+<table class="fit">
+<tr><th>項目</th><th>方針</th></tr>
+<tr><td>性能</td><td>本体搭載の処理は「精度 ＞ 速度」の優先順位で開発する。SSE など特定ハードに依存する処理は使わない。速度・精度とも保証はない。</td></tr>
+<tr><td>品質</td><td>動作保証はない。機能追加時は正常系の動作確認までを行う。</td></tr>
+<tr><td>バージョン</td><td>1 桁目: 全面的な構成変更 ／ 2 桁目: メニュー・ウィンドウ追加 ／ 3 桁目: 小規模な機能追加</td></tr>
+</table>
+
+<h2 id="docs">本書の構成と参考資料</h2>
+<table class="fit">
+<tr><th>章</th><th>内容</th></tr>
+<tr><td><a href="architecture.html">2. システム構成</a></td><td>プロジェクト構成、ビルド、起動シーケンス、クラス構造</td></tr>
+<tr><td><a href="data.html">3. データ構造</a></td><td>画像メモリ・データ型・マスク・作業領域・マーク・表示の流れ</td></tr>
+<tr><td><a href="main_window.html">4. メイン画面とメニュー</a></td><td>メインウィンドウ、メニュー全項目、マウス・キー操作</td></tr>
+<tr><td><a href="windows.html">5. 各ウィンドウ</a></td><td>モードレス／モーダルの各ダイアログ</td></tr>
+<tr><td><a href="processing.html">6. 画像処理機能</a></td><td>フィルタ、2 値化、型・サイズ・幾何変換、数式</td></tr>
+<tr><td><a href="script.html">7. スクリプト</a></td><td>スクリプト言語の文法、評価器、マクロ関数</td></tr>
+<tr><td><a href="integration.html">8. 外部連携と拡張</a></td><td>カスタムファンクション、Python、外部プログラム、通信</td></tr>
+<tr><td><a href="api.html">9. API リファレンス概要</a></td><td><code>CPimpomAPI</code> の関数分類</td></tr>
+<tr><td><a href="files.html">10. ファイル形式と設定</a></td><td>画像ファイル形式、pimpom.ini、custom_func.ini</td></tr>
+<tr><td><a href="appendix.html">11. 付録</a></td><td>ソースファイル一覧、既存資料とコードの差異</td></tr>
+</table>
+<p>参考にした既存資料（<code>Doc/</code>）: PIMPOMソフトウェア仕様書.pptx（Ver 1.5.0, 2020-12-28）、PIMPOM_APIリファレンス.docx、PIMPOM_スクリプトマニュアル.doc、PIMPOM_PIMPOMPYマニュアル.doc、PIMPOM_外部プログラム画像データ受け渡しマニュアル.doc、macro_description.txt、macro_help.txt、ScriptSpl（スクリプト例）。</p>
+<div class="src">本書の画面写真は既存仕様書（pptx）から流用したもので、現行ビルドとはコントロール配置が一部異なることがある。記述が既存資料とコードで食い違う場合はコードを正とし、差異は<a href="appendix.html#diff">付録</a>にまとめた。</div>
+
+<footer class="pager"><span></span><a href="architecture.html">2. システム構成 →</a></footer>
+</main>
+</div>
+</body>
+</html>

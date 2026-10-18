@@ -54,6 +54,22 @@ static char THIS_FILE[] = __FILE__;
 #define		DATA_FIELD_W	(256)//ヒストグラムデータ表示領域の幅
 #define		DATA_FIELD_H	(60)//ヒストグラムデータ表示領域の高さ
 
+//このウィンドウは 96dpi 基準のピクセル値で配置しているので、表示倍率に合わせて一様に拡大する
+#define		HS(v)			(ScaleByDpi(v))
+
+//ヒストグラム上の x 座標 → 濃度のビン番号(0～255)
+static int point_to_bin(int x)
+{
+	int bin = x * 256 / HS(HISTGRAM_W);
+	return (bin < 0) ? 0 : ((bin > 255) ? 255 : bin);
+}
+
+//濃度のビン番号 → そのビンの左端の x 座標
+static int bin_to_x(int bin)
+{
+	return bin * HS(HISTGRAM_W) / 256;
+}
+
 // *************************************
 //         外    部    宣    言         
 // *************************************
@@ -104,153 +120,153 @@ void CHistgramDlg::show_dlg_item()
 
 	//ヒストグラム領域
 	CWnd	*p_histgram_field = (CWnd*)GetDlgItem( IDC_HISTGRAM_FIELD  );
-	p_histgram_field->MoveWindow( 0, 0, HISTGRAM_W , HISTGRAM_H );
+	p_histgram_field->MoveWindow( 0, 0, HS(HISTGRAM_W), HS(HISTGRAM_H));
 
 	//ヒストグラムデータの表示領域
 	CWnd	*p_histgram_data_field = (CWnd*)GetDlgItem( IDC_HISTGRAM_DATA_FIELD  );
-	p_histgram_data_field->MoveWindow( DATA_FIELD_X , DATA_FIELD_Y , DATA_FIELD_W , DATA_FIELD_H );
+	p_histgram_data_field->MoveWindow( HS(DATA_FIELD_X), HS(DATA_FIELD_Y), HS(DATA_FIELD_W), HS(DATA_FIELD_H));
 
 	//設定ボタン
 	CWnd	*p_button_set = (CWnd*)GetDlgItem( IDC_BUTTON_HISTGRAM_SET  );
-	p_button_set->MoveWindow( HISTGRAM_W, HISTGRAM_H + COLOR_BAR_H - 25, 35, 25);
+	p_button_set->MoveWindow( HS(HISTGRAM_W), HS(HISTGRAM_H + COLOR_BAR_H - 25), HS(35), HS(25));
 
 	//度数表示の最大値を表すエディットボックス
 	CWnd	*p_edit_histgram_max = (CWnd*)GetDlgItem( IDC_EDIT_HISTGRAM_MAX  );
-	p_edit_histgram_max->MoveWindow( HISTGRAM_W, 0, 40, 15); 
+	p_edit_histgram_max->MoveWindow( HS(HISTGRAM_W), 0, HS(40), HS(15)); 
 
 	CWnd	*p_button_histgram_max_inc = (CWnd*)GetDlgItem( IDC_BUTTON_HISTGRAM_MAX_INC  );//値を1ずつ増やすボタン
-	p_button_histgram_max_inc->MoveWindow( HISTGRAM_W + 40, 0, 12, 12);
+	p_button_histgram_max_inc->MoveWindow( HS(HISTGRAM_W + 40), 0, HS(12), HS(12));
 	set_bitmap_button( (HBITMAP)bmp_button_inc, IDC_BUTTON_HISTGRAM_MAX_INC ); 
 
 	CWnd	*p_button_histgram_max_dec = (CWnd*)GetDlgItem( IDC_BUTTON_HISTGRAM_MAX_DEC  );//値を1ずつ減らすボタン
-	p_button_histgram_max_dec->MoveWindow( HISTGRAM_W + 40, 12, 12, 12);
+	p_button_histgram_max_dec->MoveWindow( HS(HISTGRAM_W + 40), HS(12), HS(12), HS(12));
 	set_bitmap_button( (HBITMAP)bmp_button_dec, IDC_BUTTON_HISTGRAM_MAX_DEC ); 
 
 	CWnd	*p_button_histgram_max_hlf = (CWnd*)GetDlgItem( IDC_BUTTON_HISTGRAM_MAX_HLF  );//値を半分にするボタン
-	p_button_histgram_max_hlf->MoveWindow( HISTGRAM_W, 15, 20, 15);
+	p_button_histgram_max_hlf->MoveWindow( HS(HISTGRAM_W), HS(15), HS(20), HS(15));
 	
 	CWnd	*p_button_histgram_max_dbl = (CWnd*)GetDlgItem( IDC_BUTTON_HISTGRAM_MAX_DBL  );//値を2倍にするボタン
-	p_button_histgram_max_dbl->MoveWindow( HISTGRAM_W + 20, 15, 20, 15);
+	p_button_histgram_max_dbl->MoveWindow( HS(HISTGRAM_W + 20), HS(15), HS(20), HS(15));
 
 	API.SetEditValue( m_hWnd, IDC_EDIT_HISTGRAM_MAX , 3000);//初期値を設定
 
 	//表示レンジの最小値を表すエディットボックス
 	CWnd	*p_edit_range_min = (CWnd*)GetDlgItem( IDC_EIDT_HISTGRAM_RANGE_MIN  );
-	p_edit_range_min->MoveWindow( 0 , HISTGRAM_H + COLOR_BAR_H , 40 , 15); 
+	p_edit_range_min->MoveWindow( 0, HS(HISTGRAM_H + COLOR_BAR_H), HS(40), HS(15)); 
 
 	CWnd	*p_button_range_min_inc = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_MIN_INC  );//値を1ずつ増やすボタン
-	p_button_range_min_inc->MoveWindow( 40, HISTGRAM_H + COLOR_BAR_H, 12, 12);
+	p_button_range_min_inc->MoveWindow( HS(40), HS(HISTGRAM_H + COLOR_BAR_H), HS(12), HS(12));
 	set_bitmap_button( (HBITMAP)bmp_button_inc, IDC_BUTTON_RANGE_MIN_INC ); 
 
 	CWnd	*p_button_range_min_dec = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_MIN_DEC  );//値を1ずつ減らすボタン
-	p_button_range_min_dec->MoveWindow( 40, HISTGRAM_H + COLOR_BAR_H + 12, 12, 12);
+	p_button_range_min_dec->MoveWindow( HS(40), HS(HISTGRAM_H + COLOR_BAR_H + 12), HS(12), HS(12));
 	set_bitmap_button( (HBITMAP)bmp_button_dec, IDC_BUTTON_RANGE_MIN_DEC );
 
 	CWnd	*p_button_range_min_hlf = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_MIN_HLF  );//値を半分にするボタン
-	p_button_range_min_hlf->MoveWindow( 0, HISTGRAM_H + COLOR_BAR_H + 15, 20, 15);
+	p_button_range_min_hlf->MoveWindow( 0, HS(HISTGRAM_H + COLOR_BAR_H + 15), HS(20), HS(15));
 	
 	CWnd	*p_button_range_min_dbl = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_MIN_DBL  );//値を2倍にするボタン
-	p_button_range_min_dbl->MoveWindow( 20, HISTGRAM_H + COLOR_BAR_H + 15, 20, 15);
+	p_button_range_min_dbl->MoveWindow( HS(20), HS(HISTGRAM_H + COLOR_BAR_H + 15), HS(20), HS(15));
 
 
 	//表示レンジの最大値を表すエディットボックス
 	CWnd	*p_edit_range_max = (CWnd*)GetDlgItem( IDC_EIDT_HISTGRAM_RANGE_MAX  );
-	p_edit_range_max->MoveWindow( HISTGRAM_W - 40 , HISTGRAM_H + COLOR_BAR_H , 40, 15); 
+	p_edit_range_max->MoveWindow( HS(HISTGRAM_W - 40), HS(HISTGRAM_H + COLOR_BAR_H), HS(40), HS(15)); 
 
 	CWnd	*p_button_range_max_inc = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_MAX_INC  );//値を1ずつ増やすボタン
-	p_button_range_max_inc->MoveWindow( HISTGRAM_W , HISTGRAM_H + COLOR_BAR_H, 12, 12);
+	p_button_range_max_inc->MoveWindow( HS(HISTGRAM_W), HS(HISTGRAM_H + COLOR_BAR_H), HS(12), HS(12));
 	set_bitmap_button( (HBITMAP)bmp_button_inc, IDC_BUTTON_RANGE_MAX_INC ); 
 
 	CWnd	*p_button_range_max_dec = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_MAX_DEC  );//値を1ずつ減らすボタン
-	p_button_range_max_dec->MoveWindow( HISTGRAM_W , HISTGRAM_H + COLOR_BAR_H + 12, 12, 12);
+	p_button_range_max_dec->MoveWindow( HS(HISTGRAM_W), HS(HISTGRAM_H + COLOR_BAR_H + 12), HS(12), HS(12));
 	set_bitmap_button( (HBITMAP)bmp_button_dec, IDC_BUTTON_RANGE_MAX_DEC );
 
 	CWnd	*p_button_range_max_hlf = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_MAX_HLF  );//値を半分にするボタン
-	p_button_range_max_hlf->MoveWindow( HISTGRAM_W - 40, HISTGRAM_H + COLOR_BAR_H + 15, 20, 15);
+	p_button_range_max_hlf->MoveWindow( HS(HISTGRAM_W - 40), HS(HISTGRAM_H + COLOR_BAR_H + 15), HS(20), HS(15));
 	
 	CWnd	*p_button_range_max_dbl = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_MAX_DBL  );//値を2倍にするボタン
-	p_button_range_max_dbl->MoveWindow( HISTGRAM_W - 20, HISTGRAM_H + COLOR_BAR_H + 15, 20, 15);
+	p_button_range_max_dbl->MoveWindow( HS(HISTGRAM_W - 20), HS(HISTGRAM_H + COLOR_BAR_H + 15), HS(20), HS(15));
 
 
 	//表示レンジの中間値を表すエディットボックス
 	CWnd	*p_edit_range_mid = (CWnd*)GetDlgItem( IDC_EIDT_HISTGRAM_RANGE_MID  );
-	p_edit_range_mid->MoveWindow(80 , HISTGRAM_H + COLOR_BAR_H , 40, 15); 
+	p_edit_range_mid->MoveWindow( HS(80), HS(HISTGRAM_H + COLOR_BAR_H), HS(40), HS(15)); 
 
 	CWnd	*p_edit_static_range_mid = (CWnd*)GetDlgItem( IDC_HISTGRAM_DLG_STATIC_RANGE_MID  );//エディットボックスの説明の文字（static）
-	p_edit_static_range_mid->MoveWindow(60 , HISTGRAM_H + COLOR_BAR_H + 2, 20, 15); 
+	p_edit_static_range_mid->MoveWindow( HS(60), HS(HISTGRAM_H + COLOR_BAR_H + 2), HS(20), HS(15)); 
 
 	CWnd	*p_button_range_mid_inc = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_MID_INC  );//値を1ずつ増やすボタン
-	p_button_range_mid_inc->MoveWindow( 120 , HISTGRAM_H + COLOR_BAR_H, 12, 12);
+	p_button_range_mid_inc->MoveWindow( HS(120), HS(HISTGRAM_H + COLOR_BAR_H), HS(12), HS(12));
 	set_bitmap_button( (HBITMAP)bmp_button_inc, IDC_BUTTON_RANGE_MID_INC ); 
 
 	CWnd	*p_button_range_mid_dec = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_MID_DEC  );//値を1ずつ減らすボタン
-	p_button_range_mid_dec->MoveWindow( 120 , HISTGRAM_H + COLOR_BAR_H + 12, 12, 12);
+	p_button_range_mid_dec->MoveWindow( HS(120), HS(HISTGRAM_H + COLOR_BAR_H + 12), HS(12), HS(12));
 	set_bitmap_button( (HBITMAP)bmp_button_dec, IDC_BUTTON_RANGE_MID_DEC );
 
 	CWnd	*p_button_range_mid_hlf = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_MID_HLF  );//値を半分にするボタン
-	p_button_range_mid_hlf->MoveWindow( 80, HISTGRAM_H + COLOR_BAR_H + 15, 20, 15);
+	p_button_range_mid_hlf->MoveWindow( HS(80), HS(HISTGRAM_H + COLOR_BAR_H + 15), HS(20), HS(15));
 	
 	CWnd	*p_button_range_mid_dbl = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_MID_DBL  );//値を2倍にするボタン
-	p_button_range_mid_dbl->MoveWindow( 100, HISTGRAM_H + COLOR_BAR_H + 15, 20, 15);
+	p_button_range_mid_dbl->MoveWindow( HS(100), HS(HISTGRAM_H + COLOR_BAR_H + 15), HS(20), HS(15));
 
 
 	//表示レンジの幅を表すエディットボックス
 	CWnd	*p_edit_range_width = (CWnd*)GetDlgItem( IDC_EIDT_HISTGRAM_RANGE_WIDTH  );
-	p_edit_range_width->MoveWindow( 150 , HISTGRAM_H + COLOR_BAR_H , 40, 15); 
+	p_edit_range_width->MoveWindow( HS(150), HS(HISTGRAM_H + COLOR_BAR_H), HS(40), HS(15)); 
 
 	CWnd	*p_edit_static_range_width = (CWnd*)GetDlgItem( IDC_HISTGRAM_DLG_STATIC_RANGE_WIDTH  );//エディットボックスの説明の文字（static）
-	p_edit_static_range_width->MoveWindow(140 , HISTGRAM_H + COLOR_BAR_H + 2, 10, 15); 
+	p_edit_static_range_width->MoveWindow( HS(140), HS(HISTGRAM_H + COLOR_BAR_H + 2), HS(10), HS(15)); 
 
 	CWnd	*p_button_range_width_inc = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_WIDTH_INC  );//値を1ずつ増やすボタン
-	p_button_range_width_inc->MoveWindow( 190 , HISTGRAM_H + COLOR_BAR_H, 12, 12);
+	p_button_range_width_inc->MoveWindow( HS(190), HS(HISTGRAM_H + COLOR_BAR_H), HS(12), HS(12));
 	set_bitmap_button( (HBITMAP)bmp_button_inc, IDC_BUTTON_RANGE_WIDTH_INC ); 
 
 	CWnd	*p_button_range_width_dec = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_WIDTH_DEC  );//値を1ずつ減らすボタン
-	p_button_range_width_dec->MoveWindow( 190 , HISTGRAM_H + COLOR_BAR_H + 12, 12, 12);
+	p_button_range_width_dec->MoveWindow( HS(190), HS(HISTGRAM_H + COLOR_BAR_H + 12), HS(12), HS(12));
 	set_bitmap_button( (HBITMAP)bmp_button_dec, IDC_BUTTON_RANGE_WIDTH_DEC );
 
 	CWnd	*p_button_range_width_hlf = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_WIDTH_HLF  );//値を半分にするボタン
-	p_button_range_width_hlf->MoveWindow( 150, HISTGRAM_H + COLOR_BAR_H + 15, 20, 15);
+	p_button_range_width_hlf->MoveWindow( HS(150), HS(HISTGRAM_H + COLOR_BAR_H + 15), HS(20), HS(15));
 	
 	CWnd	*p_button_range_width_dbl = (CWnd*)GetDlgItem( IDC_BUTTON_RANGE_WIDTH_DBL  );//値を2倍にするボタン
-	p_button_range_width_dbl->MoveWindow( 170, HISTGRAM_H + COLOR_BAR_H + 15, 20, 15);
+	p_button_range_width_dbl->MoveWindow( HS(170), HS(HISTGRAM_H + COLOR_BAR_H + 15), HS(20), HS(15));
 
 
 	//平均値を表すエディットボックス
 	CWnd	*p_edit_average = (CWnd*)GetDlgItem( IDC_EDIT_HISTGRAM_AVERAGE  );
-	p_edit_average->MoveWindow( DATA_FIELD_X + 35 , DATA_FIELD_Y + 5 , 50, 15); 
+	p_edit_average->MoveWindow( HS(DATA_FIELD_X + 35), HS(DATA_FIELD_Y + 5), HS(50), HS(15)); 
 
 	CWnd	*p_edit_static_average = (CWnd*)GetDlgItem( IDC_HISTGRAM_DLG_STATIC_AVERAGE  );//エディットボックスの説明の文字（static）
-	p_edit_static_average->MoveWindow( DATA_FIELD_X + 5 , DATA_FIELD_Y + 5, 30, 15); 
+	p_edit_static_average->MoveWindow( HS(DATA_FIELD_X + 5), HS(DATA_FIELD_Y + 5), HS(30), HS(15)); 
 
 
 	//標準偏差を表すエディットボックス
 	CWnd	*p_edit_stdiv = (CWnd*)GetDlgItem( IDC_EDIT_HISTGRAM_STDIV  );
-	p_edit_stdiv->MoveWindow( DATA_FIELD_X + 160 , DATA_FIELD_Y + 5 , 50, 15 ); 
+	p_edit_stdiv->MoveWindow( HS(DATA_FIELD_X + 160), HS(DATA_FIELD_Y + 5), HS(50), HS(15)); 
 
 	CWnd	*p_edit_static_stdiv = (CWnd*)GetDlgItem( IDC_HISTGRAM_DLG_STATIC_STDIV  );//エディットボックスの説明の文字（static）
-	p_edit_static_stdiv->MoveWindow( DATA_FIELD_X + 110 , DATA_FIELD_Y + 5 , 50 , 15 ); 
+	p_edit_static_stdiv->MoveWindow( HS(DATA_FIELD_X + 110), HS(DATA_FIELD_Y + 5), HS(50), HS(15)); 
 
 	//マウスでポイントされた濃度を表すエディットボックス
 	CWnd	*p_edit_pointed_brightness = (CWnd*)GetDlgItem( IDC_EDIT_HISTGRAM_POINTED_BRIGHTNESS  );
-	p_edit_pointed_brightness->MoveWindow( DATA_FIELD_X + 5 , DATA_FIELD_Y + 25 , 100, 15 ); 
+	p_edit_pointed_brightness->MoveWindow( HS(DATA_FIELD_X + 5), HS(DATA_FIELD_Y + 25), HS(100), HS(15)); 
 
 	//マウスでポイントされた濃度の度数を表すエディットボックス
 	CWnd	*p_edit_pointed_hist = (CWnd*)GetDlgItem( IDC_EDIT_HISTGRAM_POINTED_HIST  );
-	p_edit_pointed_hist->MoveWindow( DATA_FIELD_X + 5 , DATA_FIELD_Y + 42 , 100, 15 ); 
+	p_edit_pointed_hist->MoveWindow( HS(DATA_FIELD_X + 5), HS(DATA_FIELD_Y + 42), HS(100), HS(15)); 
 
 	//表示濃度レンジを調節するボタン
 	CWnd	*p_button_min_max = (CWnd*)GetDlgItem( IDC_BUTTON_HISTGRAM_SET_MIN_MAX  );//min-max
-	p_button_min_max->MoveWindow( DATA_FIELD_W + 2 , DATA_FIELD_Y , 55, 15 ); 
+	p_button_min_max->MoveWindow( HS(DATA_FIELD_W + 2), HS(DATA_FIELD_Y), HS(55), HS(15)); 
 
 	CWnd	*p_button_ave = (CWnd*)GetDlgItem( IDC_BUTTON_HISTGRAM_SET_AVE  );
-	p_button_ave->MoveWindow( DATA_FIELD_W + 2 , DATA_FIELD_Y + 15 , 55, 15 ); //ave±sdv
+	p_button_ave->MoveWindow( HS(DATA_FIELD_W + 2), HS(DATA_FIELD_Y + 15), HS(55), HS(15)); //ave±sdv
 
 	CWnd	*p_button_0_256 = (CWnd*)GetDlgItem( IDC_BUTTON_HISTGRAM_SET_0_256  );
-	p_button_0_256->MoveWindow( DATA_FIELD_W + 2 , DATA_FIELD_Y + 15*2 , 55, 15 ); //0-256
+	p_button_0_256->MoveWindow( HS(DATA_FIELD_W + 2), HS(DATA_FIELD_Y + 15*2), HS(55), HS(15)); //0-256
 
 	CWnd	*p_button_pi = (CWnd*)GetDlgItem( IDC_BUTTON_HISTGRAM_SET_PI_PI  );
-	p_button_pi->MoveWindow( DATA_FIELD_W + 2 , DATA_FIELD_Y + 15*3 , 55, 15 ); //-pi - pi
+	p_button_pi->MoveWindow( HS(DATA_FIELD_W + 2), HS(DATA_FIELD_Y + 15*3), HS(55), HS(15)); //-pi - pi
 }
 
 
@@ -305,14 +321,13 @@ void CHistgramDlg::DrawHistgram()
 
 		if( !API.GetEditValue(m_hWnd, IDC_EDIT_HISTGRAM_MAX , &histgram_max ))		return;//ヒストグラム最大値を取得する
 
-	p_dc->Rectangle( 0 , 0 , HISTGRAM_W , HISTGRAM_H );//背景の矩形を描画する
+	p_dc->Rectangle( 0 , 0 , HS(HISTGRAM_W) , HS(HISTGRAM_H) );//背景の矩形を描画する
 
 		for(i=0 ; i<256 ; i++){
-			disp_hist = HISTGRAM_H / histgram_max * (float)p_du->BrightLevel[i];//度数を表示するときの高さ
+			disp_hist = HS(HISTGRAM_H) / histgram_max * (float)p_du->BrightLevel[i];//度数を表示するときの高さ
 
-			//度数を表示する（縦ライン）
-			p_dc->MoveTo(i, HISTGRAM_H);
-			p_dc->LineTo(i, HISTGRAM_H - (long)disp_hist);
+			//度数を表示する（表示倍率に応じた幅の縦棒）
+			p_dc->FillSolidRect(bin_to_x(i), HS(HISTGRAM_H) - (long)disp_hist, bin_to_x(i + 1) - bin_to_x(i), (long)disp_hist, RGB(0, 0, 0));
 		}
 	
 	ReleaseDC(p_dc);//デバイスコンテキストを開放
@@ -343,7 +358,7 @@ void CHistgramDlg::draw_color_bar()
 			ZeroMemory( p_color_bar_data_info->bmiColors , 1024);//カラーパレットをゼロクリア（全て黒）
 
 	HDC	hdc = ::GetDC( m_hWnd );//デバイスコンテキストを取得する
-	::StretchDIBits( hdc,	0 , HISTGRAM_H	 , COLOR_BAR_W , COLOR_BAR_H ,//カラーバーのビットマップ（DIB）を貼り付ける
+	::StretchDIBits( hdc,	0 , HS(HISTGRAM_H)	 , HS(COLOR_BAR_W) , HS(COLOR_BAR_H) ,//カラーバーのビットマップ（DIB）を貼り付ける
 							0 ,	0			 , COLOR_BAR_W , COLOR_BAR_H ,
 							p_color_bar_data ,  p_color_bar_data_info ,  DIB_RGB_COLORS , SRCCOPY);
 	::ReleaseDC(m_hWnd, hdc);	//デバイスコンテキストを開放する
@@ -425,7 +440,7 @@ BOOL CHistgramDlg::OnInitDialog()
 	create_color_bar();//カラーバーの作成
 	show_dlg_item();//ダイアログアイテムの配置
 
-	MoveWindow(API.main_window_size.cx, 0, HISTGRAM_WIN_W,  HISTGRAM_WIN_H);//ウインドウの大きさ設定
+	MoveWindow(API.main_window_size.cx, 0, ScaleByDpi(HISTGRAM_WIN_W),  ScaleByDpi(HISTGRAM_WIN_H));//ウインドウの大きさ設定
 	flg_str_from_key = false;
 	is_draging_r=false;
 
@@ -548,7 +563,8 @@ void CHistgramDlg::OnMouseMove(UINT nFlags, CPoint point)
 	static int oldpoint_x = -1;//前回マウスでポイントした点のx座標
 	CDC		*p_dc;
 	float	max, min, coef;
-	CRect	histgram_field( 0,0, HISTGRAM_W, HISTGRAM_H );//ヒストグラムを描く領域を表す矩形
+	CRect	histgram_field( 0,0, HS(HISTGRAM_W), HS(HISTGRAM_H) );//ヒストグラムを描く領域を表す矩形
+	int		bin = point_to_bin(point.x);//マウスでポイントした濃度のビン番号
 	CString	bri, hist;
 	CDataUnit	*p_du = API.GetDataUnit( CURRENT_IMAGE );
 
@@ -568,36 +584,36 @@ void CHistgramDlg::OnMouseMove(UINT nFlags, CPoint point)
 			
 
 			//ヒストグラム上でマウスでポイントした濃度の度数を表す線を反転ペンで描く
-			p_dc->MoveTo( point.x , HISTGRAM_H -1 );
+			p_dc->MoveTo( point.x , HS(HISTGRAM_H) -1 );
 			p_dc->LineTo( point.x , 0 );
 			oldpoint_x = point.x;
 
 			//ヒストグラム上でマウスでポイントした濃度の変換前の値とその度数を表示する
 			coef = (float)((p_du->BrightMax - p_du->BrightMin)/256.0);
-			min = point.x * coef  +  p_du->BrightMin;
-			max = (point.x + 1) * coef  +  p_du->BrightMin;
+			min = bin * coef  +  p_du->BrightMin;
+			max = (bin + 1) * coef  +  p_du->BrightMin;
 	
-				if(point.x == 255)
+				if(bin == 255)
 					bri = API.ToString( min ) + _T("～");
-				else if(point.x == 0)	
+				else if(bin == 0)	
 					bri = _T("～") + API.ToString( max );
 				else
 					bri = API.ToString( min ) + _T("～") + API.ToString( max );
 
-			hist.Format("度数：%d" , p_du->BrightLevel[ point.x ] );
+			hist.Format("度数：%d" , p_du->BrightLevel[ bin ] );
 
 
 			if(is_draging_r)
 			{//右ドラッグ中
 				int sx=0,ex=0;
-				if(hist_value_drag_start > point.x){
-					sx = point.x+1;	ex = hist_value_drag_start;
-				}else if(hist_value_drag_start < point.x){
-					ex = point.x-1;	sx = hist_value_drag_start;
+				if(hist_value_drag_start > bin){
+					sx = bin+1;	ex = hist_value_drag_start;
+				}else if(hist_value_drag_start < bin){
+					ex = bin-1;	sx = hist_value_drag_start;
 				}
 
-				for(int x=sx ; x<=ex ; x++){//ドラッグ範囲を反転
-					p_dc->MoveTo( x , HISTGRAM_H -1 );
+				for(int x=bin_to_x(sx) ; x<bin_to_x(ex + 1) ; x++){//ドラッグ範囲を反転
+					p_dc->MoveTo( x , HS(HISTGRAM_H) -1 );
 					p_dc->LineTo( x , 0 );
 				}
 			}
@@ -1214,13 +1230,14 @@ void CHistgramDlg::OnHistgramSetPiPi()
 ********************************************************************/
 void CHistgramDlg::OnRButtonDown(UINT nFlags, CPoint point)
 {
-	CRect	histgram_field( 0,0, HISTGRAM_W, HISTGRAM_H );//ヒストグラムを描く領域を表す矩形
+	CRect	histgram_field( 0,0, HS(HISTGRAM_W), HS(HISTGRAM_H) );//ヒストグラムを描く領域を表す矩形
+	int		bin = point_to_bin(point.x);//マウスでポイントした濃度のビン番号
 
 	if( histgram_field.PtInRect(point) )
 	{
 		is_draging_r=true;//右ドラッグ中のフラグを立てる
 
-		hist_value_drag_start = point.x;//右ドラッグ開始座標
+		hist_value_drag_start = bin;//右ドラッグ開始座標
 	}
 
 	CDialog::OnRButtonDown(nFlags, point);
@@ -1239,7 +1256,8 @@ void CHistgramDlg::OnRButtonDown(UINT nFlags, CPoint point)
 ********************************************************************/
 void CHistgramDlg::OnRButtonUp(UINT nFlags, CPoint point)
 {
-	CRect	histgram_field( 0,0, HISTGRAM_W, HISTGRAM_H );//ヒストグラムを描く領域を表す矩形
+	CRect	histgram_field( 0,0, HS(HISTGRAM_W), HS(HISTGRAM_H) );//ヒストグラムを描く領域を表す矩形
+	int		bin = point_to_bin(point.x);//マウスでポイントした濃度のビン番号
 
 	if( histgram_field.PtInRect(point) && is_draging_r==true)
 	{
@@ -1247,10 +1265,10 @@ void CHistgramDlg::OnRButtonUp(UINT nFlags, CPoint point)
 		if(p_du)
 		{
 			int sx=0, ex=0;
-			if(hist_value_drag_start > point.x){
-				sx = point.x+1;	ex = hist_value_drag_start;
-			}else if(hist_value_drag_start < point.x){
-				ex = point.x-1;	sx = hist_value_drag_start;
+			if(hist_value_drag_start > bin){
+				sx = bin+1;	ex = hist_value_drag_start;
+			}else if(hist_value_drag_start < bin){
+				ex = bin-1;	sx = hist_value_drag_start;
 			}
 
 			if(sx<ex)

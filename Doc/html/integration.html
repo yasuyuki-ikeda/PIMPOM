@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>外部連携と拡張 - PIMPOM 仕様書</title>
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+<div class="layout">
+<nav class="side">
+<div class="brand"><a href="index.html">PIMPOM 仕様書</a></div>
+<div class="sub">PIMPOM2022.sln（コード解析版）</div>
+<ol>
+<li><a href="index.html">1. 概要</a></li>
+<li><a href="architecture.html">2. システム構成</a></li>
+<li><a href="data.html">3. データ構造</a></li>
+<li><a href="main_window.html">4. メイン画面とメニュー</a></li>
+<li><a href="windows.html">5. 各ウィンドウ</a></li>
+<li><a href="processing.html">6. 画像処理機能</a></li>
+<li><a href="script.html">7. スクリプト</a></li>
+<li><a href="integration.html" class="current">8. 外部連携と拡張</a><ul class="toc"><li><a href="#custom">カスタムファンクション（ユーザー DLL）</a></li><li><a href="#batch">バッチ実行</a></li><li><a href="#external">外部プログラムとの画像データ受け渡し</a></li><li><a href="#python">Python 連携</a></li><li><a href="#socket">TCP/IP 通信</a></li></ul></li>
+<li><a href="api.html">9. API リファレンス概要</a></li>
+<li><a href="files.html">10. ファイル形式と設定</a></li>
+<li><a href="appendix.html">11. 付録（ソース一覧・資料との差異）</a></li>
+</ol>
+</nav>
+<main>
+<!-- title: 外部連携と拡張 -->
+<h1>8. 外部連携と拡張</h1>
+<p class="lead">PIMPOM の機能を外から使う・拡張する仕組みとして、カスタムファンクション（ユーザー DLL）、バッチ実行、外部 C++ プログラムからの画像転送、Python 連携、TCP/IP 通信がある。</p>
+
+<div class="cards">
+<div class="card"><h3><a href="#custom">カスタムファンクション</a></h3><p>DLL にモードレスダイアログを実装し、API で全機能を使う</p></div>
+<div class="card"><h3><a href="#batch">バッチ実行</a></h3><p>画像ファイル一覧に対してスクリプト・Python・DLL を順に実行</p></div>
+<div class="card"><h3><a href="#external">外部プログラム連携</a></h3><p>共有メモリ＋ウィンドウメッセージで画像やコマンドを送受信</p></div>
+<div class="card"><h3><a href="#python">Python 連携</a></h3><p>Pimpom.py／Pimpom.pyd と Python バッチ</p></div>
+<div class="card"><h3><a href="#socket">TCP/IP 通信</a></h3><p>テキストの送受信。処理は DLL で実装</p></div>
+</div>
+
+<h2 id="custom">カスタムファンクション（ユーザー DLL）</h2>
+<p>ユーザーが追加するモードレスダイアログを持つ MFC 拡張 DLL。PIMPOM はこれを読み込み、メニューから開き、マウスや描画などのイベントを転送する。DLL からは <code>CPimpomAPI</code> を通じて PIMPOM の全機能と OpenCV を使える。</p>
+<h3>登録と読み込み</h3>
+<ul>
+<li>exe と同じフォルダの <code>custom_func.ini</code> に、1 行 1 件で <code>プロジェクト名=キャプション</code> を書く（最大 <code>CUSTOM_FUNC_MAX</code> = 10 件）。</li>
+<li>起動時に <code>プロジェクト名.dll</code> を <code>AfxLoadLibrary</code> で読み込む（通常の DLL 検索順＝実質 exe フォルダ）。見つからなければ「xxx.dll が見つかりません」と表示する。</li>
+<li>読み込めたものを「カスタムファンクション」メニュー（メインメニューの 6 番目）に <code>"番号 キャプション"</code>、ID 9999+i で追加する。選ぶと <code>UserDialogOpen(i)</code>。</li>
+<li>pimpom.ini の <code>[SETTING] DEFEULT_USER_DLG</code> がキャプションの先頭と一致すれば、起動時に自動で開く。</li>
+<li>追加・変更後は PIMPOM の再起動が必要。</li>
+</ul>
+<h3>エクスポート関数</h3>
+<p>PIMPOM は次の関数を名前で <code>GetProcAddress</code> して呼ぶ（呼ぶたびに解決）。見つからない関数は無視されるので、必須なのは <code>OpenUserDlg</code> だけ。雛形は <code>extern "C" __declspec(dllexport)</code> で公開し、ダイアログの表示中だけ <code>CUserDlgEx</code> に転送する。</p>
+<table class="fit">
+<tr><th>関数</th><th>引数</th><th>呼ばれるとき</th></tr>
+<tr><td><code>OpenUserDlg</code></td><td><code>CPimpomAPI*</code></td><td>メニュー選択・自動起動</td></tr>
+<tr><td><code>DestroyUserDlg</code></td><td>なし</td><td>終了時（その後 <code>AfxFreeLibrary</code>）</td></tr>
+<tr><td><code>OnDrawMainImage_UserDlg</code></td><td>画像番号</td><td>メイン画面の描画の最後</td></tr>
+<tr><td><code>OnMouseDown_UserDlg</code></td><td>画像座標</td><td>メイン画面で左ボタン押下</td></tr>
+<tr><td><code>OnMouseRDown_UserDlg</code></td><td>画像座標</td><td>右ボタン押下（雛形には未実装）</td></tr>
+<tr><td><code>OnMouseDrug_UserDlg</code></td><td>始点、現在点</td><td>ドラッグ中</td></tr>
+<tr><td><code>OnFinishMouseDrug_UserDlg</code></td><td>始点、終点</td><td>ドラッグ終了</td></tr>
+<tr><td><code>OnBatchExecute_UserDlg</code></td><td><code>BATCH_INPUT*</code>, <code>BATCH_OUTPUT*</code></td><td>バッチ実行の各件</td></tr>
+<tr><td><code>OnReceive_UserDlg</code></td><td>受信データ、長さ</td><td>TCP/IP でデータを受信したとき</td></tr>
+</table>
+<h3>雛形（CustomFunc/UserDlgTemplate）</h3>
+<ul>
+<li>MFC 拡張 DLL（<code>AfxInitExtensionModule</code>＋<code>CDynLinkLibrary</code>）。出力先は <code>..\..\bin\$(Platform)\$(Configuration)\</code>、<code>PIMPOM_Core.lib</code> をリンク。</li>
+<li><code>CUserDlgEx</code>: ダイアログ <code>IDD_USER_DLG_EX</code>（400）、キャプション <code>custom_function_caption</code>。初回だけ生成して表示する。イベントハンドラは空実装。</li>
+<li><code>GetAPI()</code> をエクスポートし、<code>#define API (*GetAPI())</code> で DLL 内から <code>API.xxx()</code> と書ける。</li>
+<li>DLL から使える本体のクラス（<code>PIMPOM_EXT</code>）: <code>CPimpomAPI</code>、<code>CDataUnit</code>、<code>CWorkArea</code>、<code>CMark</code>、<code>CImageField</code>、<code>CConfirmDlg</code>、<code>CCalcDlg</code>、<code>CCalculate</code>、<code>CPIMPOMDlg</code>、<code>CSocketCtrl</code>、<code>CSerialCtrl</code>。</li>
+</ul>
+
+<h3 id="clone">カスタムファンクション追加（CloneUserDlg.exe）</h3>
+<div class="fig-side">
+<div>
+<p>メニュー「カスタムファンクション → 追加」で起動する別プログラム。雛形を複製して新しいカスタムファンクションの開発環境を作る。</p>
+<ol>
+<li>キャプションとプロジェクト名（半角英数のみ）を入力し、Visual Studio のバージョンを選んで「開発環境生成」を押す。</li>
+<li><code>CustomFunc\UserDlgTemplate\files.txt</code> の一覧に従って <code>CustomFunc\&lt;プロジェクト名&gt;\</code> に複製する。ファイル名と中身の <code>UserDlgTemplate</code> をプロジェクト名に、<code>custom_function_caption</code> をキャプションに置換する（.lib／.dll はバイナリコピー）。</li>
+<li>リソース ID が他の DLL と重ならないよう、<code>Resource.h</code> を番号 n でずらす（<code>IDD_USER_DLG_EX</code> = n×50+400 など）。番号は custom_func.ini の有効行数で決まる。</li>
+<li>Debug と Release 両方の <code>custom_func.ini</code> に <code>プロジェクト名=キャプション</code> を追記する。</li>
+<li>ソリューションを Visual Studio で開く。ビルドすると <code>bin\x64\&lt;構成&gt;\プロジェクト名.dll</code> ができ、PIMPOM を再起動するとメニューに現れる。</li>
+</ol>
+<p>「custom_func.ini 編集」でテキストエディタを開ける。</p>
+</div>
+<figure><img src="img/clone.png" alt="カスタムファンクション追加ダイアログ"><figcaption>カスタムファンクション追加ダイアログ</figcaption></figure>
+</div>
+<div class="warn">CloneUserDlg は exe が <code>bin\x64\Release</code> などにあることを前提に相対パスで雛形を探す。ProjectGuid を置換しないため、複製したプロジェクトは同じ GUID になる。キャプションを <code>fprintf</code> の書式文字列として使うため、<code>%</code> を含むと ini が壊れる。</div>
+
+<h2 id="batch">バッチ実行</h2>
+<p>バッチ実行ウィンドウ（<a href="windows.html#batch">5 章</a>）、ライブ実行、外部プログラムからの BATCH_EXECUTE コマンドは、いずれも <code>CPimpomAPI::BatchExecute(BATCH_INPUT*, BATCH_OUTPUT*)</code> を呼ぶ。</p>
+<pre><code>struct BATCH_INPUT  { char param[5][1024]; char imae_file_path[2048]; int image_number; bool AutoExecFlg; };
+struct BATCH_OUTPUT { char result[15][1024]; int state; };   // state: 0 通常, 1 スキップ, 2 リトライ, 3 停止, 4 待機</code></pre>
+<ol>
+<li>画像パスがあれば <code>SelectAndLoadImageFile(image_number, path)</code> で読み込み、表示する。</li>
+<li>実行ルールが 1 以外なら、スクリプトウィンドウ → Python バッチウィンドウの順に実行する（それぞれ表示中のときのみ）。</li>
+<li>実行ルールが 0 か 1 なら、カスタムファンクション 0〜9 の <code>OnBatchExecute_UserDlg</code> を順に呼び、出力を連結する。</li>
+<li>実行ルールが 1 なら、ここでスクリプト → Python を実行する。</li>
+</ol>
+<p>実行ルール: 0 = スクリプト → カスタムファンクション（既定）、1 = カスタムファンクション → スクリプト、2 = スクリプトのみ。スクリプトからは <code>GetBatchInput(i)</code>／<code>SetBatchOutput(i, v)</code> で入出力パラメータを扱う。</p>
+
+<h2 id="external">外部プログラムとの画像データ受け渡し</h2>
+<p>別に起動している PIMPOM.exe に、外部 C++ プログラムから画像・図形・テキスト・コマンドを送る（または画像を受け取る）。外部プログラムは <code>PIMPOM_Core\include\pimpom_plot.h</code> をインクルードするだけで使える（ヘッダのみ）。サンプルは <code>external_data_transfer_sample\data_transfer_spl</code>。</p>
+<h3>通信方式</h3>
+<div class="diagram">
+<svg viewBox="0 0 860 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="外部連携の通信方式">
+<defs><marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#888"/></marker></defs>
+<rect class="box" x="20" y="50" width="200" height="100" rx="8"/><text x="120" y="80" text-anchor="middle" font-weight="700">外部プログラム</text><text x="120" y="102" text-anchor="middle" font-size="12">pimpom_plot.h</text><text x="120" y="120" text-anchor="middle" font-size="12">Pimpom.py / Pimpom.pyd</text>
+<rect class="box hl" x="320" y="60" width="220" height="80" rx="8"/><text x="430" y="92" text-anchor="middle" font-weight="700">共有メモリ</text><text x="430" y="114" text-anchor="middle" font-size="12">"PIMPOM_SHAREDMEM"</text>
+<rect class="box" x="640" y="50" width="200" height="100" rx="8"/><text x="740" y="80" text-anchor="middle" font-weight="700">PIMPOM.exe</text><text x="740" y="102" text-anchor="middle" font-size="12">CPIMPOMDlg</text><text x="740" y="120" text-anchor="middle" font-size="12">OnMessageExt*</text>
+<path class="arr" d="M220 90 H318" marker-end="url(#ah3)"/><text x="270" y="82" text-anchor="middle" font-size="11" class="muted">①作成・書込</text>
+<path class="arr" d="M220 30 C 400 0, 500 0, 700 48" marker-end="url(#ah3)"/><text x="450" y="18" text-anchor="middle" font-size="11" class="muted">②SendMessage(WM_USER+100/101/102)</text>
+<path class="arr" d="M638 100 H542" marker-end="url(#ah3)"/><text x="590" y="92" text-anchor="middle" font-size="11" class="muted">③読込／書戻し</text>
+<path class="arr" d="M320 130 C 260 170, 200 170, 160 152" marker-end="url(#ah3)"/><text x="250" y="180" text-anchor="middle" font-size="11" class="muted">④結果を読み解放</text>
+</svg>
+</div>
+<ul>
+<li>送信側が名前付き共有メモリ <code>PIMPOM_SHAREDMEM</code> を <code>CreateFileMapping</code> で作ってデータを書き、PIMPOM のウィンドウに <code>SendMessage</code>（同期）してから解放する。</li>
+<li>送り先は、タイトルに <code>" - PIMPOM  "</code>（ID 0）または <code>" - PIMPOM n"</code>（ID n）を含むダイアログ。PIMPOM は起動時に 0〜9 の空き ID を取り、タイトル末尾に付ける。<code>setTargetID</code> で複数起動中の PIMPOM を選べる。</li>
+</ul>
+<table class="fit">
+<tr><th>メッセージ</th><th>ハンドラ</th><th>内容</th></tr>
+<tr><td><code>WM_USER+100</code>（入力）</td><td><code>OnMessageExtInput</code></td><td>共有メモリの画像を指定番号の画像メモリに作成・上書きし、表示する。グラフ形式なら <code>PlotDataToChart</code></td></tr>
+<tr><td><code>WM_USER+101</code>（処理）</td><td><code>OnMessageExtProcess</code></td><td>図形描画・メッセージ・マーク・グラフ・バッチ実行・コマンド実行（下表）</td></tr>
+<tr><td><code>WM_USER+102</code>（出力）</td><td><code>OnMessageExtOutput</code></td><td>指定した画像メモリを指定形式で共有メモリに書き出す（<code>Get*Image</code> 用）</td></tr>
+</table>
+<h3>データ構造</h3>
+<pre><code>struct SHEAREMEM_PLOT_IMAGE { int format, image_num, width, height, page, channel, size; BYTE pData[]; };
+// format: 0 BYTE, 1 SHORT, 2 WORD, 3 LONG, 4 DWORD, 5 FLOAT, 10 3D, 11 F3D, 20 RGB, 21 MASK,
+//         30-33 1D グラフ(float/double/int/BYTE), 40-43 2D グラフ
+
+struct SHEAREMEM_EXT_PROC { int type, image_num, x0, y0, x1, y1, size; BYTE red, green, blue; int copy_src; char message[5000]; };</code></pre>
+<table class="fit">
+<tr><th>type</th><th>処理</th><th>type</th><th>処理</th></tr>
+<tr><td>0</td><td>描画準備（copy_src を RGB 化してコピー）</td><td>11 / 12</td><td>メッセージ追記／新規</td></tr>
+<tr><td>1</td><td>画像の再描画</td><td>13</td><td>マーク追加</td></tr>
+<tr><td>2〜6</td><td>点・線・矩形・円・十字の描画</td><td>20 / 21 / 22</td><td>グラフ追加／散布図追加／グラフクリア</td></tr>
+<tr><td>10</td><td>テキスト描画</td><td>30</td><td>バッチ実行（画像パスと IN0〜4 を渡し OUT0〜14 と state を受け取る）</td></tr>
+<tr><td colspan="2"></td><td>100</td><td>スクリプト 1 行の実行（<code>ExecuteCommand</code>。結果文字列とエラーを返す）</td></tr>
+</table>
+<h3>pimpom_plot.h の主な関数</h3>
+<table class="fit">
+<tr><th>分類</th><th>関数</th></tr>
+<tr><td>画像送信</td><td><code>PlotByteImage</code>、<code>PlotShortImage</code>、<code>PlotWordImage</code>、<code>PlotLongImage</code>、<code>PlotDwordImage</code>、<code>PlotFloatImage</code>、<code>Plot3DImage</code>、<code>PlotF3DImage</code>、<code>PlotRGBImage</code>、<code>SetMaskImage</code></td></tr>
+<tr><td>画像取得</td><td><code>GetByteImage</code>、<code>GetFloatImage</code>、<code>Get3DImage</code>、<code>GetF3DImage</code>、<code>GetRGBImage</code>、<code>GetMaskImage</code></td></tr>
+<tr><td>描画・表示</td><td><code>PrepareDrawing</code>、点・線・矩形・円・十字・テキスト描画、<code>DrawImage</code>、<code>ShowMessage</code>、マーク追加</td></tr>
+<tr><td>グラフ</td><td><code>PlotDataToChart</code>、<code>PlotDataToChart2</code>、クリア</td></tr>
+<tr><td>実行</td><td><code>ExecuteCommand</code>（スクリプト 1 行）、<code>BatchExecute</code>、<code>GetDataTypeSize</code>、<code>Get/SetWorkArea</code></td></tr>
+<tr><td>対象選択</td><td><code>setTargetID</code>、<code>getTargetIDs</code></td></tr>
+<tr><td>非同期</td><td><code>InitAysnc</code>、<code>EnableAysnc</code>、<code>WaitAysnc</code>、<code>ReturnAysnc</code>（名前付きイベントを使う。本体側には受け手が無い）</td></tr>
+</table>
+
+<h2 id="python">Python 連携</h2>
+<p>PIMPOM は Python インタプリタを埋め込まない。Python 側のモジュールが外部プログラム連携と同じ共有メモリ＋メッセージで PIMPOM と通信し、PIMPOM 側は Python スクリプトを外部プロセスとして起動する。</p>
+<h3>Python モジュール（2 系統）</h3>
+<table class="fit">
+<tr><th>モジュール</th><th>実体</th><th>内容</th></tr>
+<tr><td><code>python/Pimpom.py</code></td><td>純 Python（Python 3.8 以上、pywin32、numpy）</td><td><code>multiprocessing.shared_memory</code> で共有メモリを作り <code>SendMessage</code>。<code>ShowMessage</code>、<code>PlotByteImage</code>／<code>PlotShortImage</code>／<code>PlotWordImage</code>／<code>PlotLongImage</code>／<code>PlotDwordImage</code>／<code>PlotFloatImage</code>／<code>Plot3DImage</code>／<code>PlotF3DImage</code>／<code>PlotRGBImage</code>（CHW 配列）。送信のみ</td></tr>
+<tr><td><code>Pimpom.pyd</code></td><td>Boost.Python 製拡張（<code>Tool/PimpomPlotPy</code>、Python 3.10 用）</td><td><code>pimpom_plot.h</code> のラッパー。Plot 系、Get 系、マスク、作業領域、グラフ、<code>ExecuteCommand</code>、非同期。さらに全マクロを Python 関数として公開（<code>PimpomCommandExtract</code> が <code>CCalculate</code> の定義から自動生成）</td></tr>
+</table>
+<pre><code>import numpy as np
+import Pimpom
+img = np.zeros((480, 640), dtype=np.uint8)
+Pimpom.PlotByteImage(0, img)        # 画像メモリ 0 に表示
+Pimpom.ShowMessage("done")</code></pre>
+<h3 id="pybatch">Python スクリプトウィンドウ</h3>
+<div class="fig-side">
+<div>
+<p><code>CPythonBatchDlg</code>。指定した .py を <code>CreateProcess("python ファイル")</code> で起動し（作業フォルダはファイルの場所、ウィンドウ非表示）、標準出力・標準エラーをパイプで出力欄に表示する。</p>
+<ul>
+<li>ファイルパスは pimpom.ini の <code>[SETTING] PYTHON_BATCH_FILE</code> に保存。</li>
+<li>「編集」で関連付けアプリを開き、「実行」で 1 回実行、強制終了は <code>TerminateProcess</code>。同時に 1 つだけ実行できる。</li>
+<li>「Python 環境チェック」は exe フォルダの <code>vercheck.py</code> で <code>python.exe</code> の場所とバージョンを表示する。</li>
+<li>表示中はバッチ実行の各件で実行される（スクリプトの後）。バッチの入出力パラメータは Python に渡さない。</li>
+</ul>
+</div>
+<figure><img src="img/python.png" alt="Python スクリプトウィンドウ"><figcaption>Python スクリプトウィンドウ</figcaption></figure>
+</div>
+<div class="warn"><code>python</code> が PATH にあることが前提。パスを引用符で囲まないため、空白を含むパスの .py は起動に失敗する。</div>
+
+<h2 id="socket">TCP/IP 通信</h2>
+<table class="fit">
+<tr><th>項目</th><th>仕様</th></tr>
+<tr><td>実装</td><td><code>CSocketCtrl</code>（<code>CAsyncSocket</code> 派生）。種別 0 = サーバー、1 = クライアント、2 = サーバーの接続用サブソケット</td></tr>
+<tr><td>既定値</td><td>クライアント、<code>localhost</code>、ポート 9876</td></tr>
+<tr><td>サーバー</td><td><code>Create(port)</code> → <code>Listen</code>。接続を受けるとサブソケットを作る。接続は 1 本だけで、新しい接続が来ると古い接続を閉じる</td></tr>
+<tr><td>クライアント</td><td><code>Create()</code> → <code>Connect(host, port)</code></td></tr>
+<tr><td>データ</td><td>テキストのみ。区切り文字 CRLF（既定）／CR／LF でメッセージを区切る</td></tr>
+<tr><td>送信</td><td><code>API.SendString(msg)</code> またはマクロ <code>SendString(str)</code>。区切り文字を付けて送る</td></tr>
+<tr><td>受信</td><td>1000 B ずつ読み、区切り文字までを受信バッファ（10000 B）に溜める。区切りを見つけたらコールバック（最大 2 個）を呼ぶ。ウィンドウはログに表示し、全カスタムファンクションの <code>OnReceive_UserDlg</code> を呼ぶ</td></tr>
+<tr><td>API</td><td><code>OpenSocket(type, port, host, …)</code>、<code>SendString</code>、<code>CloseSocket</code>、<code>GetSocketStatus</code></td></tr>
+</table>
+<p>受信した文字列をスクリプトとして実行する仕組みは無い。受信内容の解釈はカスタムファンクションで実装する。</p>
+<div class="note"><code>CSerialCtrl</code>（RS-232C）はソースに存在するが、どこからも使われていない。</div>
+
+<footer class="pager"><a href="script.html">← 7. スクリプト</a><a href="api.html">9. API リファレンス概要 →</a></footer>
+</main>
+</div>
+</body>
+</html>

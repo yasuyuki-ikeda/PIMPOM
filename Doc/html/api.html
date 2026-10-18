@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API リファレンス概要 - PIMPOM 仕様書</title>
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+<div class="layout">
+<nav class="side">
+<div class="brand"><a href="index.html">PIMPOM 仕様書</a></div>
+<div class="sub">PIMPOM2022.sln（コード解析版）</div>
+<ol>
+<li><a href="index.html">1. 概要</a></li>
+<li><a href="architecture.html">2. システム構成</a></li>
+<li><a href="data.html">3. データ構造</a></li>
+<li><a href="main_window.html">4. メイン画面とメニュー</a></li>
+<li><a href="windows.html">5. 各ウィンドウ</a></li>
+<li><a href="processing.html">6. 画像処理機能</a></li>
+<li><a href="script.html">7. スクリプト</a></li>
+<li><a href="integration.html">8. 外部連携と拡張</a></li>
+<li><a href="api.html" class="current">9. API リファレンス概要</a><ul class="toc"><li><a href="#usage">使い方と規約</a></li><li><a href="#data">データ管理（api_manage_data.cpp）</a></li><li><a href="#convert">形式変換・幾何変換・画素演算</a></li><li><a href="#fileio">ファイル入出力（file_io/）</a></li><li><a href="#filter">フィルタ・2 値化・解析（filter/、api_binalize*.cpp ほか）</a></li><li><a href="#graphic">描画（api_graphic*.cpp）</a></li><li><a href="#dialog">ダイアログ・UI（api_manage_dialog.cpp）</a></li><li><a href="#misc">OpenCV 連携・通信・キャプチャ・その他</a></li></ul></li>
+<li><a href="files.html">10. ファイル形式と設定</a></li>
+<li><a href="appendix.html">11. 付録（ソース一覧・資料との差異）</a></li>
+</ol>
+</nav>
+<main>
+<!-- title: API リファレンス概要 -->
+<h1>9. API リファレンス概要</h1>
+<p class="lead"><code>CPimpomAPI</code>（<code>include/PIMPOM_API.h</code>）の関数を分類ごとにまとめる。公開メンバ関数の宣言は 286（オーバーロード込み）、関数名は 233 種類。個々の引数の詳細は <code>PIMPOM_API.h</code> と <code>Doc/PIMPOM_APIリファレンス.docx</code> を参照（同資料は改訂 1.5 時点で、現行と差異がある。<a href="appendix.html#diff">付録</a>）。</p>
+
+<h2 id="usage">使い方と規約</h2>
+<ul>
+<li>グローバルオブジェクト <code>API</code>（<code>PIMPOM_Core.cpp</code> で定義）を通じて呼ぶ。カスタムファンクションでは雛形の <code>#define API (*GetAPI())</code> を使う。</li>
+<li>画像番号に <code>CURRENT_IMAGE</code>（-1）を渡すと選択中の画像。ただし <code>CopyDataUnit</code>、2 値化・ラベリングの dst、DFT の dst、<code>LoadIFZ</code> などは -1 を受け付けない。</li>
+<li>多くの関数は bool を返し、失敗理由は返さない（<code>CalcDataValue</code>／<code>CalcMaskValue</code> のみエラー文字列を返す）。数値を返す関数（大津閾値、ハフ、ラベリング）は失敗時 0。</li>
+<li>一部の関数は確認ダイアログやメッセージボックスを出す（<code>show</code> 引数など）。無人実行では止まる原因になる。</li>
+<li>処理後に画面を更新するには <code>API.DrawImage(n)</code> を呼ぶ。</li>
+</ul>
+<pre><code>// 例: 画像 0 にガウシアンをかけて 1 に出力し、大津法で 2 値化して 2 に出力
+API.FilterGauss(0, 1, 5, 0, 1, false);
+double th = API.BinalizeThresholdOtsu(1);
+API.Binalize(1, 2, th, 999999, false);
+API.DrawImage(2);
+API.ShowMessage(true, 1, false, "threshold = %f", th);</code></pre>
+
+<h2 id="data">データ管理（api_manage_data.cpp）</h2>
+<table>
+<tr><th>関数</th><th>概要</th></tr>
+<tr><td><code>GetDataUnitNumber</code> / <code>GetCurrentImageNumber</code> / <code>SetCurrentImageNumber</code></td><td>画像メモリ数、選択中の番号の取得・設定（Set は再描画しない）</td></tr>
+<tr><td><code>GetDataUnit(n)</code></td><td><code>CDataUnit*</code> を返す（空なら NULL）</td></tr>
+<tr><td><code>GetDataTypeSize</code> / <code>GetDataMinMax</code> / <code>SetDispPage</code> / <code>SetDispChannel</code></td><td>型とサイズ、最小最大、表示ページ・チャネル</td></tr>
+<tr><td><code>Get{Byte,Float,3D,F3D,Complex,XY,XYZ,Short,Word,Long,Dword,RGB,RGB3D}Memory(n, size[, page], clear)</code></td><td>型ごとのデータ先頭ポインタ。無ければその型で確保（同型・同サイズで clear=false なら再利用）。失敗時 NULL</td></tr>
+<tr><td><code>GetMaskMemory</code> / <code>GetSrcFilePathName</code>・<code>Path</code>・<code>Name</code>・<code>Title</code></td><td>マスクの先頭、読込元パス</td></tr>
+<tr><td><code>FormatDataUnit(n, type, size, page, clear)</code></td><td>指定形式でメモリ確保</td></tr>
+<tr><td><code>CopyDataUnit(src, dst, show)</code> / 項目指定版</td><td>コピー。show で項目選択ダイアログ</td></tr>
+<tr><td><code>DeleteDataUnit</code> / <code>BackupDataUnit</code> / <code>RecoverDataUnit</code></td><td>削除、バックアップ（1 面共通）への退避と復元</td></tr>
+<tr><td><code>SetWorkArea</code> / <code>GetWorkArea</code></td><td>作業領域図形（0〜9）の設定・取得（RECT／LINE／ELLIPSE／CIRCLE／ARC、OR/NOT）</td></tr>
+<tr><td><code>AddMark</code> / <code>AddLineMark</code> / <code>DeleteMark</code> / <code>ClearMark</code> / <code>GetMarkNumber</code> / <code>GetMarkVal</code></td><td>マーク操作（座標は float、属性 3 個）。追加時にマーク表示を ON にする</td></tr>
+<tr><td><code>CalcDataValue</code> / <code>CalcMaskValue</code></td><td>数式による画素値・マスクの生成（<a href="processing.html#calc">6 章</a>）</td></tr>
+</table>
+
+<h2 id="convert">形式変換・幾何変換・画素演算</h2>
+<table>
+<tr><th>関数</th><th>概要</th></tr>
+<tr><td><code>ConvertDataUnit(n, CONVERT_DATA_OPTION, show)</code> / 展開版</td><td>型変換</td></tr>
+<tr><td><code>ConvertDispToByte</code> / <code>ConvertMaskToByte</code></td><td>表示画像・マスクを BYTE 化</td></tr>
+<tr><td><code>ResizeDataUnit</code></td><td>サイズ変換（伸縮／貼り付け、縮小は平均・最大・最小）</td></tr>
+<tr><td><code>PerspectiveTransDataUnit</code>（係数版・撮像条件版）/ <code>IsoTransDataUnit</code> / <code>PerspectiveTransCoor</code></td><td>射影変換、等長変換、座標変換</td></tr>
+<tr><td><code>ClipDataUnit</code></td><td>矩形切り出し</td></tr>
+<tr><td><code>Calc2DataUnit</code>、<code>Linear2DataUnit</code>、<code>Sum</code>／<code>Subtract</code>／<code>SubAbs</code>／<code>Multiply</code>／<code>DivideDataUnit</code>、<code>LinearDataUnit</code>、<code>AbsDataUnit</code></td><td>画像間・画像単体の演算</td></tr>
+</table>
+
+<h2 id="fileio">ファイル入出力（file_io/）</h2>
+<table>
+<tr><th>関数</th><th>概要</th></tr>
+<tr><td><code>SelectAndLoadImageFile(n, path)</code> / <code>SelectAndSaveImageFile</code></td><td>拡張子で形式を判定して読み書き（<a href="files.html#formats">10 章</a>）</td></tr>
+<tr><td><code>LoadByteImage</code>・<code>LoadFloatImage</code> など型別の Load／Save、ポインタ版</td><td>生バイナリ形式の入出力</td></tr>
+<tr><td><code>LoadBitmap</code> / <code>LoadSizedBitmap</code> / <code>SaveViewAsBitmap</code> / <code>SaveViewAsRaw</code></td><td>BMP 読込、表示画像の BMP／RAW 保存</td></tr>
+<tr><td><code>LoadArchivedImage</code> / <code>SaveArchivedImage</code></td><td>.pim アーカイブ</td></tr>
+<tr><td><code>LoadIFZ</code> / <code>LoadBFZ</code> / <code>LoadAnyImage</code></td><td>.ifz、.bfz（BMP フォルダ）、OpenCV で読める形式</td></tr>
+<tr><td><code>OpenFileDialog</code> / <code>SaveFileDialog</code> / <code>FolderDialog</code> / <code>GetFileList</code> / <code>GetDefaultPath</code></td><td>ファイル選択、フォルダ選択、ファイル列挙、exe フォルダ</td></tr>
+</table>
+
+<h2 id="filter">フィルタ・2 値化・解析（filter/、api_binalize*.cpp ほか）</h2>
+<p>シグネチャは <code>(src, dst, パラメータ…, toMultiImage)</code> の形にそろっている。一覧と仕様は <a href="processing.html#filter">6 章</a>。</p>
+<table>
+<tr><th>分類</th><th>関数</th></tr>
+<tr><td>平滑化・順位</td><td><code>FilterSmooth</code>、<code>FilterGauss</code>、<code>FilterMedian</code>、<code>FilterErosion</code>、<code>FilterDilation</code>、<code>FilterOpening</code>、<code>FilterClosing</code>、<code>FilterBilateral</code></td></tr>
+<tr><td>エッジ・特徴</td><td><code>FilterEdgeSobel</code>、<code>FilterLaplaceGauss</code>、<code>FilterEdgeLog</code>、<code>FilterEdgeCanny</code>、<code>FilterEdgeSigmoid</code>、<code>FilterGabor</code></td></tr>
+<tr><td>濃度・その他</td><td><code>FilterGaussUnshade</code>、<code>FilterConvolution</code>、<code>FilterCLAHE</code>、<code>FilterLocalContrast</code>、<code>FilterLocalContrastPatch</code>、<code>FilterDFT</code>、<code>FilterMirror</code>、<code>FilterNega</code></td></tr>
+<tr><td>2 値化</td><td><code>Binalize</code>（画像出力／マスク出力）、<code>BinalizeThresholdOtsu</code>、<code>BinalizeThresholdPTile</code>、<code>BinalizeLocalGauss</code>、<code>BinalizeLocalLaplaceGauss</code>、<code>BinalizeNick</code></td></tr>
+<tr><td>解析</td><td><code>Label</code>、<code>HoughLines</code>、<code>BlendPoisson</code></td></tr>
+</table>
+
+<h2 id="graphic">描画（api_graphic*.cpp）</h2>
+<table>
+<tr><th>分類</th><th>関数</th></tr>
+<tr><td>画像メモリへの描画</td><td><code>PrepeareDrawing</code>、<code>DrawLineOnImage</code>（2 点版・直線式版）、<code>DrawCursorOnImage</code>、<code>DrawCircleOnImage</code>、<code>DrawRectOnImage</code>、<code>DrawPointOnImage</code>、<code>DrawTextOnImage</code>、<code>FloodFillOnImage</code>、<code>FillWorkAreaOnImage</code>、<code>DrawImageOnImage</code>、マスク版（<code>DrawPointOnMask</code>、<code>FloodFillOnMask</code>、<code>FillWorkAreaOnMask</code>）</td></tr>
+<tr><td>表示</td><td><code>DrawImage</code>、<code>DrawCurrentImageFast</code>、<code>ScaleImage</code>（0.01〜100）、<code>SetDispRange</code>、<code>SetDispRangeAuto</code>、<code>ChangePalette</code></td></tr>
+<tr><td>メイン画面への GDI 描画</td><td><code>DrawLine</code>、<code>DrawCursor</code>、<code>DrawRect</code>、<code>DrawCircle</code>、<code>DrawEllipse</code>、<code>DrawText</code></td></tr>
+<tr><td>座標・幾何</td><td><code>ClipSegment</code>、<code>ClipSegmentF</code>、<code>GetSrcCoor</code>、<code>GetDestCoor</code></td></tr>
+<tr><td>グラフ</td><td><code>AddDataToChart</code>、<code>AddDataToChart2</code>、<code>PlotDataToChart</code>（float／double／int／BYTE）、<code>PlotDataToChart2</code>、<code>ClearChart</code></td></tr>
+</table>
+
+<h2 id="dialog">ダイアログ・UI（api_manage_dialog.cpp）</h2>
+<table>
+<tr><th>関数</th><th>概要</th></tr>
+<tr><td><code>GetEditValue</code> / <code>SetEditValue</code> / <code>GetCheck</code> / <code>SetCheck</code> / <code>Get/SetDialogItemRect</code></td><td>ダイアログ部品とのデータのやり取り（カスタムファンクション用）</td></tr>
+<tr><td><code>ShowMessage(clear, tab, force, format, …)</code> / <code>MessageBox(format, …)</code></td><td>メッセージタブ出力、メッセージボックス（printf 形式、5000 B）</td></tr>
+<tr><td><code>CopyToClipbord</code> / <code>PasteFromClipbord</code></td><td>クリップボード</td></tr>
+<tr><td><code>DialogOpen(IDD, show)</code> / <code>DialogDelete</code></td><td>モードレスダイアログの表示・破棄（15 種）</td></tr>
+<tr><td><code>Get/SetMarkEditMode</code>、<code>Get/SetWorkAreaEditMode</code>、<code>Get/SetRulerToolMode</code>、<code>Get/SetDataPickEditType</code>、<code>Get/SetCalcToolMode</code>、<code>Get/SetHistgramToolMode</code>、<code>Get/SetVideoCaptureThroughMode</code></td><td>メイン画面の各モード（相互に排他制御）</td></tr>
+<tr><td><code>UserDialogOpen</code>、<code>UserDialog*</code>（イベント転送）、<code>BatchExecute</code></td><td>カスタムファンクションとバッチ（<a href="integration.html">8 章</a>）</td></tr>
+</table>
+
+<h2 id="misc">OpenCV 連携・通信・キャプチャ・その他</h2>
+<table>
+<tr><th>分類</th><th>関数</th><th>概要</th></tr>
+<tr><td>OpenCV</td><td><code>ConvertToCvImage</code> / <code>ConvertFromCvImage</code>（2 種）</td><td>PIMPOM ⇔ <code>cv::Mat</code>。BYTE/3D ⇔ 8UC1、RGB ⇔ 8UC3（BGR）、SHORT ⇔ 16SC1、WORD ⇔ 16UC1、FLOAT/F3D ⇔ 32FC1、XY/XYZ/COMPLEX → 32FC2/3/4。LONG/DWORD は未対応</td></tr>
+<tr><td>通信</td><td><code>OpenSocket</code>、<code>SendString</code>、<code>CloseSocket</code>、<code>GetSocketStatus</code></td><td>TCP/IP</td></tr>
+<tr><td>キャプチャ</td><td><code>CaptureInit</code>、<code>CaptureOne</code>、<code>CaptureDeInit</code>、<code>IsCaptureOpened</code></td><td>カメラ 0 から取り込み</td></tr>
+<tr><td>数学</td><td><code>calc_mod</code>、<code>calc_float_max/min</code>、<code>calc_random</code>、<code>calc_gaus</code>（Box–Muller）、<code>calc_dist</code>、<code>calc_lsm</code>（最小二乗）、<code>calc_dft</code></td><td>数値計算</td></tr>
+<tr><td>設定</td><td><code>GetProfile</code>、<code>WriteProfile</code>、<code>InitSettingFromProfile</code></td><td>pimpom.ini の読み書き</td></tr>
+<tr><td>その他</td><td><code>SetBGProcID</code>／<code>GetBGProcID</code>、<code>GetVersion</code>、<code>ToString</code>、<code>ToNumber</code>、<code>Tick</code></td><td>背景処理、バージョン、文字列変換、ms タイマー</td></tr>
+</table>
+
+<footer class="pager"><a href="integration.html">← 8. 外部連携と拡張</a><a href="files.html">10. ファイル形式と設定 →</a></footer>
+</main>
+</div>
+</body>
+</html>
