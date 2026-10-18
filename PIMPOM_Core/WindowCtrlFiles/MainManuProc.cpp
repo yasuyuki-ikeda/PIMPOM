@@ -1082,7 +1082,7 @@ void CPIMPOMDlg::OnToolPythonBatch()
 
 void CPIMPOMDlg::OnHelpSpecificationSheet()
 {
-	ShellExecute(NULL, "open", API.GetDefaultPath() + "..\\..\\..\\Doc\\PIMPOMソフトウェア仕様書.pptx", NULL, NULL, SW_SHOWNORMAL);
+	ShellExecute(NULL, "open", API.GetDefaultPath() + "..\\..\\..\\Doc\\html\\index.html", NULL, NULL, SW_SHOWNORMAL);//HTML 版の仕様書を既定のブラウザで開く
 }
 
 void CPIMPOMDlg::OnHelpApireference()

@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>付録 - PIMPOM 仕様書</title>
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+<div class="layout">
+<nav class="side">
+<div class="brand"><a href="index.html">PIMPOM 仕様書</a></div>
+<div class="sub">PIMPOM2022.sln（コード解析版）</div>
+<ol>
+<li><a href="index.html">1. 概要</a></li>
+<li><a href="architecture.html">2. システム構成</a></li>
+<li><a href="data.html">3. データ構造</a></li>
+<li><a href="main_window.html">4. メイン画面とメニュー</a></li>
+<li><a href="windows.html">5. 各ウィンドウ</a></li>
+<li><a href="processing.html">6. 画像処理機能</a></li>
+<li><a href="script.html">7. スクリプト</a></li>
+<li><a href="integration.html">8. 外部連携と拡張</a></li>
+<li><a href="api.html">9. API リファレンス概要</a></li>
+<li><a href="files.html">10. ファイル形式と設定</a></li>
+<li><a href="appendix.html" class="current">11. 付録（ソース一覧・資料との差異）</a><ul class="toc"><li><a href="#folders">フォルダ構成</a></li><li><a href="#sources">ソースファイル一覧</a></li><li><a href="#diff">既存資料と現行コードの差異</a></li><li><a href="#bugs">不具合の候補</a></li><li><a href="#deadcode">未使用・ビルド対象外のコード</a></li></ul></li>
+</ol>
+</nav>
+<main>
+<!-- title: 付録 -->
+<h1>11. 付録</h1>
+<p class="lead">ソースファイル一覧、既存資料と現行コードの差異、コード解析で見つかった不具合の候補をまとめる。不具合の候補はソースの静的な読解によるもので、実行して確かめたものではない。</p>
+
+<h2 id="folders">フォルダ構成</h2>
+<pre><code>PIMPOM/
+├─ PIMPOM2022.sln            … 本書の対象（PIMPOM2015.sln / PIMPOM2019.sln は旧版用）
+├─ PIMPOM_EXE/               … PIMPOM.exe（起動のみ）
+├─ PIMPOM_Core/              … 本体 DLL
+│   ├─ API/                  … CPimpomAPI の実装
+│   │   ├─ file_io/          … ファイル入出力
+│   │   └─ filter/(template/)… フィルタ（型別テンプレート実装）
+│   ├─ DataWrapper/          … CDataUnit・CWorkArea・CImageField・CCalculate・通信
+│   ├─ WindowCtrlFiles/      … メイン画面と各ダイアログ
+│   ├─ include/              … ヘッダ
+│   └─ res/                  … アイコン・ビットマップ
+├─ CustomFunc/UserDlgTemplate/ … カスタムファンクションの雛形
+├─ Tool/CloneUserDlg/        … カスタムファンクション追加ツール
+├─ Tool/PimpomPlotPy/        … Pimpom.pyd（Boost.Python）とコマンド抽出ツール
+├─ external_data_transfer_sample/ … 外部連携サンプル
+├─ python/                   … Pimpom.py
+├─ OpenCV/                   … OpenCV 4.4.0
+├─ bin/x64/{Debug,Release}/  … 実行フォルダ
+└─ Doc/                      … 資料（本書は Doc/html）</code></pre>
+
+<h2 id="sources">ソースファイル一覧</h2>
+<p>stdafx・targetver・resource.h を除く。行数は改行数。</p>
+<table><tr><th>フォルダ</th><th>ファイル</th><th>行数</th><th>内容</th></tr>
+<tr><td rowspan="6"><code>CustomFunc/UserDlgTemplate</code></td><td><code>Resource.h</code></td><td>16</td><td></td></tr>
+<tr><td><code>UserDlgEx.cpp</code></td><td>98</td><td>雛形のユーザーダイアログ</td></tr>
+<tr><td><code>UserDlgEx.h</code></td><td>38</td><td></td></tr>
+<tr><td><code>UserDlgTemplate.cpp</code></td><td>117</td><td>雛形のエクスポート関数</td></tr>
+<tr><td><code>UserDlgTemplate.h</code></td><td>37</td><td></td></tr>
+<tr><td><code>dllmain.cpp</code></td><td>58</td><td>DLL エントリポイント</td></tr>
+<tr><td rowspan="3"><code>PIMPOM_Core</code></td><td><code>PIMPOM_Core.cpp</code></td><td>12</td><td>グローバル CPimpomAPI API の実体</td></tr>
+<tr><td><code>dllmain.cpp</code></td><td>65</td><td>DLL エントリポイント</td></tr>
+<tr><td><code>vercheck.py</code></td><td>7</td><td></td></tr>
+<tr><td rowspan="18"><code>PIMPOM_Core/API</code></td><td><code>api_binalize.cpp</code></td><td>990</td><td>2 値化・閾値決定・ラベリング</td></tr>
+<tr><td><code>api_binalize_nick.cpp</code></td><td>532</td><td>NICK 法 2 値化</td></tr>
+<tr><td><code>api_blend.cpp</code></td><td>186</td><td>ポアソンブレンド</td></tr>
+<tr><td><code>api_convert_image_format.cpp</code></td><td>509</td><td>型変換</td></tr>
+<tr><td><code>api_func.cpp</code></td><td>789</td><td>コンストラクタ・設定読込・カスタムファンクション読込・数学など</td></tr>
+<tr><td><code>api_giometric_transform.cpp</code></td><td>1224</td><td>サイズ変換・射影変換・切り出し</td></tr>
+<tr><td><code>api_graphic.cpp</code></td><td>920</td><td>表示・メイン画面への描画・グラフ</td></tr>
+<tr><td><code>api_graphic_on_image.cpp</code></td><td>1559</td><td>画像メモリへの描画</td></tr>
+<tr><td><code>api_hough.cpp</code></td><td>162</td><td>ハフ変換</td></tr>
+<tr><td><code>api_manage_data.cpp</code></td><td>1455</td><td>画像メモリ管理・作業領域・マーク・数式評価</td></tr>
+<tr><td><code>api_manage_dialog.cpp</code></td><td>1873</td><td>ダイアログ操作・モード・バッチ</td></tr>
+<tr><td><code>api_math.cpp</code></td><td>246</td><td>数学関数</td></tr>
+<tr><td><code>api_network.cpp</code></td><td>182</td><td>TCP/IP</td></tr>
+<tr><td><code>api_pixwise_calc.cpp</code></td><td>400</td><td>画像間演算</td></tr>
+<tr><td><code>api_support_opencv.cpp</code></td><td>504</td><td>cv::Mat との相互変換</td></tr>
+<tr><td><code>api_video_capture.cpp</code></td><td>188</td><td>ビデオキャプチャ</td></tr>
+<tr><td><code>global_confirm_box.cpp</code></td><td>87</td><td>未使用（ビルド対象外）</td></tr>
+<tr><td><code>resize_data.h</code></td><td>363</td><td>リサイズのテンプレート</td></tr>
+<tr><td rowspan="5"><code>PIMPOM_Core/API/file_io</code></td><td><code>api_file_io.cpp</code></td><td>1672</td><td>形式判定・生バイナリ・汎用入出力</td></tr>
+<tr><td><code>api_file_io_archived.cpp</code></td><td>510</td><td>.pim アーカイブ</td></tr>
+<tr><td><code>api_file_io_avi.cpp</code></td><td>216</td><td>AVI 読込（未接続）</td></tr>
+<tr><td><code>api_file_io_bmp.cpp</code></td><td>539</td><td>BMP 入出力</td></tr>
+<tr><td><code>api_file_io_ifz.cpp</code></td><td>539</td><td>.ifz／.bfz 読込</td></tr>
+<tr><td rowspan="16"><code>PIMPOM_Core/API/filter</code></td><td><code>api_filter_bilateral.cpp</code></td><td>235</td><td>フィルタ（bilateral）</td></tr>
+<tr><td><code>api_filter_dft.cpp</code></td><td>369</td><td>フィルタ（dft）</td></tr>
+<tr><td><code>api_filter_dilation.cpp</code></td><td>243</td><td>旧実装（ビルド対象外）</td></tr>
+<tr><td><code>api_filter_edge_canny.cpp</code></td><td>210</td><td>フィルタ（edge_canny）</td></tr>
+<tr><td><code>api_filter_edge_sigmoid.cpp</code></td><td>204</td><td>フィルタ（edge_sigmoid）</td></tr>
+<tr><td><code>api_filter_edge_sobel.cpp</code></td><td>177</td><td>フィルタ（edge_sobel）</td></tr>
+<tr><td><code>api_filter_erosion.cpp</code></td><td>260</td><td>旧実装（ビルド対象外）</td></tr>
+<tr><td><code>api_filter_gabor.cpp</code></td><td>203</td><td>フィルタ（gabor）</td></tr>
+<tr><td><code>api_filter_gauss.cpp</code></td><td>320</td><td>フィルタ（gauss）</td></tr>
+<tr><td><code>api_filter_histgram.cpp</code></td><td>229</td><td>フィルタ（histgram）</td></tr>
+<tr><td><code>api_filter_local_contrast.cpp</code></td><td>316</td><td>フィルタ（local_contrast）</td></tr>
+<tr><td><code>api_filter_log.cpp</code></td><td>315</td><td>フィルタ（log）</td></tr>
+<tr><td><code>api_filter_median.cpp</code></td><td>174</td><td>フィルタ（median）</td></tr>
+<tr><td><code>api_filter_misc.cpp</code></td><td>408</td><td>フィルタ（misc）</td></tr>
+<tr><td><code>api_filter_morph.cpp</code></td><td>250</td><td>膨張・収縮・オープニング・クロージング</td></tr>
+<tr><td><code>api_filter_smooth.cpp</code></td><td>180</td><td>フィルタ（smooth）</td></tr>
+<tr><td rowspan="12"><code>PIMPOM_Core/API/filter/template</code></td><td><code>filter_bilateral.h</code></td><td>235</td><td>フィルタのテンプレート実装</td></tr>
+<tr><td><code>filter_convolution.h</code></td><td>314</td><td>フィルタのテンプレート実装</td></tr>
+<tr><td><code>filter_erosion_dilation.h</code></td><td>210</td><td>フィルタのテンプレート実装</td></tr>
+<tr><td><code>filter_gabor.h</code></td><td>216</td><td>フィルタのテンプレート実装</td></tr>
+<tr><td><code>filter_gauss.h</code></td><td>458</td><td>フィルタのテンプレート実装</td></tr>
+<tr><td><code>filter_local_contrast.h</code></td><td>475</td><td>フィルタのテンプレート実装</td></tr>
+<tr><td><code>filter_log.h</code></td><td>448</td><td>フィルタのテンプレート実装</td></tr>
+<tr><td><code>filter_ma.h</code></td><td>210</td><td>フィルタのテンプレート実装</td></tr>
+<tr><td><code>filter_median.h</code></td><td>204</td><td>フィルタのテンプレート実装</td></tr>
+<tr><td><code>filter_misc.h</code></td><td>198</td><td>フィルタのテンプレート実装</td></tr>
+<tr><td><code>filter_sigmoid.h</code></td><td>192</td><td>フィルタのテンプレート実装</td></tr>
+<tr><td><code>filter_sobel.h</code></td><td>258</td><td>フィルタのテンプレート実装</td></tr>
+<tr><td rowspan="8"><code>PIMPOM_Core/DataWrapper</code></td><td><code>Calculate.cpp</code></td><td>3299</td><td>CCalculate（字句解析・評価）</td></tr>
+<tr><td><code>CalculateMacro.cpp</code></td><td>2882</td><td>CCalculate（マクロ定義・実行）</td></tr>
+<tr><td><code>DataUnit.cpp</code></td><td>2121</td><td>CDataUnit（画像メモリ）</td></tr>
+<tr><td><code>DataUnitConvert.cpp</code></td><td>567</td><td>CDataUnit の型変換</td></tr>
+<tr><td><code>ImageField.cpp</code></td><td>609</td><td>CImageField（表示）</td></tr>
+<tr><td><code>SerialCtrl.cpp</code></td><td>157</td><td>CSerialCtrl（未使用）</td></tr>
+<tr><td><code>SocketCtrl.cpp</code></td><td>382</td><td>CSocketCtrl（TCP/IP）</td></tr>
+<tr><td><code>WorkArea.cpp</code></td><td>800</td><td>CWorkArea（作業領域）</td></tr>
+<tr><td rowspan="23"><code>PIMPOM_Core/WindowCtrlFiles</code></td><td><code>BatchDlg.cpp</code></td><td>1260</td><td>バッチ実行ウィンドウ</td></tr>
+<tr><td><code>BinalizeDlg.cpp</code></td><td>730</td><td>2 値化ウィンドウ</td></tr>
+<tr><td><code>C3DImgDispDlg.cpp</code></td><td>732</td><td>3D 画像一覧</td></tr>
+<tr><td><code>CalcDlg1.cpp</code></td><td>503</td><td>数式ウィンドウ</td></tr>
+<tr><td><code>ChartDlg.cpp</code></td><td>1974</td><td>チャートウィンドウ</td></tr>
+<tr><td><code>CommandPromptDlg.cpp</code></td><td>2069</td><td>スクリプトウィンドウ</td></tr>
+<tr><td><code>ConfirmDlg.cpp</code></td><td>539</td><td>汎用データ入力ダイアログ</td></tr>
+<tr><td><code>ConvertDataDlg.cpp</code></td><td>817</td><td>型変換ダイアログ</td></tr>
+<tr><td><code>DataDlg.cpp</code></td><td>1003</td><td>データウィンドウ</td></tr>
+<tr><td><code>DataPickDlg.cpp</code></td><td>732</td><td>フリーハンド編集ウィンドウ</td></tr>
+<tr><td><code>FilterCtrlDlg.cpp</code></td><td>1228</td><td>汎用フィルタウィンドウ</td></tr>
+<tr><td><code>HistgramDlg.cpp</code></td><td>1278</td><td>ヒストグラムウィンドウ</td></tr>
+<tr><td><code>IO3DDlg.cpp</code></td><td>900</td><td>動画ファイル入出力ダイアログ</td></tr>
+<tr><td><code>MainManuProc.cpp</code></td><td>1128</td><td>メインメニューのハンドラ</td></tr>
+<tr><td><code>MarkDlg.cpp</code></td><td>1128</td><td>マークウィンドウ</td></tr>
+<tr><td><code>MultiImageDispDlg.cpp</code></td><td>1218</td><td>複数画像同時表示</td></tr>
+<tr><td><code>PIMPOMDlg.cpp</code></td><td>3177</td><td>メインウィンドウ・外部連携受信・背景スレッド</td></tr>
+<tr><td><code>PointCloudDlg.cpp</code></td><td>691</td><td>3D 点群表示ダイアログ</td></tr>
+<tr><td><code>PythonBatchDlg.cpp</code></td><td>493</td><td>Python スクリプトウィンドウ</td></tr>
+<tr><td><code>ResizeDataDlg.cpp</code></td><td>370</td><td>サイズ変換ダイアログ</td></tr>
+<tr><td><code>SocketCtrlDlg.cpp</code></td><td>396</td><td>TCP/IP 通信ウィンドウ</td></tr>
+<tr><td><code>TransformDlg.cpp</code></td><td>288</td><td>幾何変換ダイアログ</td></tr>
+<tr><td><code>WorkAreaDlg.cpp</code></td><td>1646</td><td>作業領域ウィンドウ</td></tr>
+<tr><td rowspan="34"><code>PIMPOM_Core/include</code></td><td><code>BatchDlg.h</code></td><td>103</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>BinalizeDlg.h</code></td><td>85</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>C3DImgDispDlg.h</code></td><td>107</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>CalcDlg1.h</code></td><td>82</td><td></td></tr>
+<tr><td><code>Calculate.h</code></td><td>274</td><td>CCalculate の宣言・上限値</td></tr>
+<tr><td><code>ChartDlg.h</code></td><td>140</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>CommandPromptDlg.h</code></td><td>154</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>ConfirmDlg.h</code></td><td>105</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>ConvertDataDlg.h</code></td><td>96</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>DataDlg.h</code></td><td>94</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>DataPickDlg.h</code></td><td>93</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>DataUnit.h</code></td><td>207</td><td>CDataUnit・CWorkArea・CMark</td></tr>
+<tr><td><code>FilterCtrlDlg.h</code></td><td>137</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>HistgramDlg.h</code></td><td>114</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>IO3DDlg.h</code></td><td>93</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>ImageField.h</code></td><td>79</td><td></td></tr>
+<tr><td><code>Labeling.h</code></td><td>808</td><td>ラベリング（井村誠孝氏、BSD）</td></tr>
+<tr><td><code>MarkDlg.h</code></td><td>97</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>MultiImageDispDlg.h</code></td><td>98</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>PIMPOMDlg.h</code></td><td>214</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>PIMPOM_API.h</code></td><td>536</td><td>CPimpomAPI の宣言</td></tr>
+<tr><td><code>PointCloudDlg.h</code></td><td>100</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>PythonBatchDlg.h</code></td><td>82</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>ResizeDataDlg.h</code></td><td>71</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>SerialCtrl.h</code></td><td>57</td><td></td></tr>
+<tr><td><code>SocketCtrl.h</code></td><td>95</td><td></td></tr>
+<tr><td><code>SocketCtrlDlg.h</code></td><td>76</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>TransformDlg.h</code></td><td>69</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>WorkAreaDlg.h</code></td><td>107</td><td>ダイアログクラスの宣言</td></tr>
+<tr><td><code>global_define.h</code></td><td>244</td><td>定数・マクロ</td></tr>
+<tr><td><code>global_typedef.h</code></td><td>187</td><td>構造体</td></tr>
+<tr><td><code>opencv_headers.h</code></td><td>46</td><td>OpenCV のインクルードとリンク</td></tr>
+<tr><td><code>pimpom_plot.h</code></td><td>1824</td><td>外部プログラム連携（ヘッダのみ）</td></tr>
+<tr><td><code>resource_core.h</code></td><td>767</td><td>リソース ID</td></tr>
+<tr><td rowspan="3"><code>PIMPOM_EXE</code></td><td><code>PIMPOM.cpp</code></td><td>128</td><td>アプリケーションクラス（起動）</td></tr>
+<tr><td><code>PIMPOM.h</code></td><td>58</td><td></td></tr>
+<tr><td><code>resource1.h</code></td><td>17</td><td></td></tr>
+<tr><td rowspan="1"><code>external_data_transfer_sample/data_transfer_spl</code></td><td><code>data_transfer_spl.cpp</code></td><td>346</td><td>外部連携サンプル</td></tr>
+<tr><td rowspan="2"><code>python</code></td><td><code>Pimpom.py</code></td><td>313</td><td>Python 送信モジュール（純 Python）</td></tr>
+<tr><td><code>test.py</code></td><td>41</td><td>Pimpom.py のテスト</td></tr>
+</table>
+
+<h2 id="diff">既存資料と現行コードの差異</h2>
+<h3>ソフトウェア仕様書（pptx, Ver 1.5.0）</h3>
+<table>
+<tr><th>項目</th><th>資料の記述</th><th>現行コード</th></tr>
+<tr><td>画像メモリ数</td><td>既定で最大 30</td><td>既定 100、上限 1000</td></tr>
+<tr><td>開発環境</td><td>Visual Studio 2015</td><td>Visual Studio 2022（v143）</td></tr>
+<tr><td>マーク数</td><td>最大 255／256</td><td>最大 2000（実質 1999）</td></tr>
+<tr><td>作業領域の図形</td><td>矩形・直線・楕円・円周</td><td>円弧・多角形も定義あり（内外判定は未実装）</td></tr>
+<tr><td>汎用フィルタ</td><td>モーダル、種類が少ない</td><td>モードレス、25 種。パディング・全ページ対象・カーネル表示を追加</td></tr>
+<tr><td>2 値化 NICK 法</td><td>未実装</td><td>実装済み</td></tr>
+<tr><td>2 値化結果の型</td><td>BYTE</td><td>THREE_D（ラベル画像は FLOAT_3D）</td></tr>
+<tr><td>型変換ダイアログ</td><td>変換先ボタン方式</td><td>コンボ方式。マスク・疑似カラーからの変換を追加</td></tr>
+<tr><td>複数画像同時表示</td><td>2〜4 枚</td><td>2／4／6 枚</td></tr>
+<tr><td>フリーハンド編集</td><td>ピック・ペイントの 2 モード</td><td>塗りつぶしを加えた 3 モード＋元に戻す</td></tr>
+<tr><td>幾何変換の撮像素子サイズ初期値</td><td>7.3 μm</td><td>7.4 μm</td></tr>
+<tr><td>3D 画像一覧</td><td>記載なし</td><td>あり</td></tr>
+<tr><td>数式ウィンドウ</td><td>サブ数式 P1〜P3、変数「x または I」</td><td>P 欄は無い（関数は残るが未使用）。座標変数は i/x と j/y</td></tr>
+<tr><td>シェーディング除去の式</td><td>(255 − f(X) + offset) × contrast</td><td>(I − Gauss(I) + offset) × contrast</td></tr>
+<tr><td>バッチ実行の条件</td><td>カスタムファンクションのウィンドウが開いているときのみ有効</td><td>スクリプト・Python のウィンドウだけでも動く</td></tr>
+<tr><td>TCP/IP の接続失敗表示</td><td>「通信失敗」</td><td>「接続失敗」</td></tr>
+<tr><td>Python 機能</td><td>Pimpom.pyd をコピーして使う</td><td>Pimpom.pyd と Pimpom.py の 2 系統が並存</td></tr>
+<tr><td>ファイル形式</td><td>.ifz／.bfz／JPEG 以外の形式の記載なし</td><td>.ifz、.bfz、OpenCV で読める形式に対応</td></tr>
+<tr><td>ファイル名</td><td>api_geometric_transform.cpp、api_manage_dialpg.cpp</td><td>api_giometric_transform.cpp、api_manage_dialog.cpp</td></tr>
+</table>
+<h3>API リファレンス（docx, 改訂 1.5）</h3>
+<table>
+<tr><th>項目</th><th>資料の記述</th><th>現行コード</th></tr>
+<tr><td>マスク定数</td><td>MASKED と UNMASKED の値が逆</td><td>MASKED_PIXEL = 1、UNMASKED = 0</td></tr>
+<tr><td>関数名</td><td>ConvertToByte、FilterThinLog、FilterThinCanny、IsoTarnsDataUnit、CConfirmDlg::DoModel</td><td>ConvertDispToByte、FilterEdgeLog、FilterEdgeCanny、IsoTransDataUnit、DoModal</td></tr>
+<tr><td>フィルタのシグネチャ</td><td>1 画像版</td><td>すべて (src, dst, …, toMultiImage)</td></tr>
+<tr><td>Label</td><td>閾値付き、出力 WORD</td><td>2 値化済み画像を入力、出力 FLOAT_3D</td></tr>
+<tr><td>SetWorkArea / GetWorkArea</td><td>引数順が異なる</td><td>(n, 図形番号, 図形, ornot)</td></tr>
+<tr><td>AddMark / GetMarkVal</td><td>CPoint</td><td>float 座標</td></tr>
+<tr><td>戻り値の型</td><td>SetCurrentImageNumber・DeleteDataUnit・SetDispRange 系は void</td><td>bool。各 Mode 系・AddDataToChart は int</td></tr>
+<tr><td>2 値化</td><td>マスク OFF の画素のみ処理</td><td>マスクは考慮しない</td></tr>
+<tr><td>NICK の式</td><td>「+ ave²」</td><td>T = m + k·√((ΣP² − m²)/NP)</td></tr>
+<tr><td>未掲載</td><td>—</td><td>約 130 関数（ガボール、CLAHE、DFT、画像間演算、OpenCV 変換、通信など）</td></tr>
+</table>
+<h3>スクリプトマニュアル・マクロ説明</h3>
+<table>
+<tr><th>項目</th><th>資料の記述</th><th>現行コード</th></tr>
+<tr><td>演算子</td><td>「剰余算 * /」、<code>||</code> と <code>&amp;&amp;</code> に優先差、真は 1</td><td>乗除算。<code>||</code> と <code>&amp;&amp;</code> は同順位で左から。非 0 が真</td></tr>
+<tr><td>マクロ名</td><td>FloodFillOnMask、GetWorkAreaOrNot、IsoTarnsDataUnit、ChangePallete</td><td>存在しない（GetWorkAreaOrnot、IsoTransDataUnit、ChangePalette。大文字小文字を区別）</td></tr>
+<tr><td>引数の数</td><td>A(n,x,y)、FilterCLAHE 3 引数、SetBatchInput 1 引数、GetBatchOutput 2 引数、min/max 2〜10 個</td><td>A は 5 引数、FilterCLAHE 6 引数、SetBatchInput 2 引数、GetBatchOutput 1 引数、min/max 2〜11 個</td></tr>
+<tr><td>一覧に無いマクロ</td><td>—</td><td>A、M、rand、AddLineMark、ClearMark、CalcMaskValue、CaptureOne、CheckFileExist、ClipSegment(F)、FillWorkAreaOnMask、FilterDFT、FilterLocalContrastPatch、GetDataTypeSize、SendString、UseWorkArea、Wait など 19 種</td></tr>
+<tr><td>macro_help.txt</td><td>ceil は切り下げ、floor は切り上げ</td><td>逆（C 標準どおり）</td></tr>
+<tr><td>空行の表示</td><td>「--」</td><td>「---」</td></tr>
+</table>
+<h3>PimpomPy・外部プログラム受け渡しマニュアル</h3>
+<table>
+<tr><th>項目</th><th>資料の記述</th><th>現行コード</th></tr>
+<tr><td>PlotRGBImage（Pimpom.py）</td><td>(num, data, rgb_order)、HWC 配列</td><td>(num, data)、CHW 配列</td></tr>
+<tr><td>Plot3DImage</td><td>[row][col][ch]</td><td>[page][row][col]</td></tr>
+<tr><td>Pimpom.py の関数</td><td>PlotDataToChart あり、ShowMessage 記載なし</td><td>PlotDataToChart なし、ShowMessage あり</td></tr>
+<tr><td>Plot*Image の表示</td><td>表示しないので DrawImage を呼ぶ</td><td>受信時に表示まで行う</td></tr>
+<tr><td>未掲載</td><td>—</td><td>ExecuteCommand、BatchExecute、Get/SetMaskImage、Get/SetWorkArea、GetDataTypeSize、非同期 API、setTargetID</td></tr>
+</table>
+
+<h2 id="bugs">不具合の候補</h2>
+<p>静的読解による候補。重大度は影響範囲からの目安。</p>
+<table>
+<tr><th>重大度</th><th>内容</th><th>場所</th></tr>
+<tr><td>高</td><td>WORD 画像の 2 値化（閾値手入力・ローカル 2 手法・NICK）で NULL の <code>pDwordData</code> を参照する</td><td><code>api_binalize.cpp</code>、<code>api_binalize_nick.cpp</code></td></tr>
+<tr><td>高</td><td>XY 型のサイズ変換・射影変換・切り出しで出力ポインタが未初期化</td><td><code>api_giometric_transform.cpp</code></td></tr>
+<tr><td>高</td><td>LONG／DWORD の <code>cv::Mat</code> 変換が未初期化ポインタを返す</td><td><code>api_support_opencv.cpp</code></td></tr>
+<tr><td>高</td><td>.pim で COMPLEX／XY／XYZ の保存量と読込量が合わない。マスク使用フラグが未初期化で保存される</td><td><code>api_file_io_archived.cpp</code></td></tr>
+<tr><td>高</td><td><code>IMG_NUM</code> に上限チェックが無く、1000 超で配列外を使う</td><td><code>api_func.cpp</code></td></tr>
+<tr><td>中</td><td>.comp／.xy／.xyz の保存が第 1 チャネルだけ</td><td><code>api_file_io.cpp</code></td></tr>
+<tr><td>中</td><td>Mat → PIMPOM 変換が XY／XYZ／COMPLEX の成功時にも false を返す。ROI 書き戻しの判定が 1 画素ずれる</td><td><code>api_support_opencv.cpp</code></td></tr>
+<tr><td>中</td><td>畳み込み系フィルタの上書き＋作業領域で、処理矩形の外が 0 になる</td><td><code>filter_convolution.h</code> ほか</td></tr>
+<tr><td>中</td><td>バイラテラル・CLAHE で <code>DispChannel</code> の代わりに <code>DispPage</code> を設定している</td><td><code>filter/*.cpp</code></td></tr>
+<tr><td>中</td><td>アルファ付き PNG と 16bit カラー画像が読めない。BMP 読込で未対応ビット深度のとき未初期化ポインタ</td><td><code>api_file_io.cpp</code>、<code>api_file_io_bmp.cpp</code></td></tr>
+<tr><td>中</td><td>P タイル法の閾値が 0〜255 の段階番号のまま返る</td><td><code>api_binalize.cpp</code></td></tr>
+<tr><td>中</td><td>作業領域: 幅つき直線の水平・垂直が常に外側、円弧・多角形の内外判定が未実装</td><td><code>WorkArea.cpp</code></td></tr>
+<tr><td>中</td><td>型変換で XY・RGB3D への変換値が移らない。色相が未実装</td><td><code>DataUnitConvert.cpp</code></td></tr>
+<tr><td>中</td><td>メニュー「画像メモリ一括読み込み」のハンドラが未接続</td><td><code>PIMPOMDlg.cpp</code></td></tr>
+<tr><td>中</td><td>コマンドライン引数を ini パスと起動画像の両方に使っている</td><td><code>PIMPOM.cpp</code>、<code>PIMPOMDlg.cpp</code></td></tr>
+<tr><td>中</td><td>スクリプト: 制御構文と同じ行の文が無条件に実行される。<code>AbsDataUnit</code> 未実装。<code>FilterLocalContrastPatch</code>・<code>CalcMaskValue</code> の引数の扱い</td><td><code>Calculate.cpp</code>、<code>CalculateMacro.cpp</code></td></tr>
+<tr><td>低</td><td><code>CDataUnit::Compare</code> が <code>page == page</code> でページ数を比べていない</td><td><code>DataUnit.cpp</code></td></tr>
+<tr><td>低</td><td>切り出しの範囲判定が <code>j &lt; cy</code>（y のはず）</td><td><code>api_giometric_transform.cpp</code></td></tr>
+<tr><td>低</td><td>TCP/IP の CRLF 区切りで次のメッセージの先頭に LF が残る</td><td><code>SocketCtrl.cpp</code></td></tr>
+<tr><td>低</td><td>ヒストグラムの度数上限 ▼ ボタンが値を増やす。右ドラッグの新レンジに <code>BrightMin</code> を足していない</td><td><code>HistgramDlg.cpp</code></td></tr>
+<tr><td>低</td><td>汎用フィルタの Canny 初期化で強閾値を上書きしている</td><td><code>FilterCtrlDlg.cpp</code></td></tr>
+<tr><td>低</td><td>3D 画像一覧の <code>GetDataMinMax</code> の引数が逆</td><td><code>C3DImgDispDlg.cpp</code></td></tr>
+<tr><td>低</td><td>CloneUserDlg: キャプションを書式文字列に使用、ProjectGuid を置換しない</td><td><code>Tool/CloneUserDlg</code></td></tr>
+<tr><td>低</td><td>フォント設定でダイアログが 2 回開く。マウス処理で <code>SetCapture</code> ではなく <code>GetCapture</code></td><td><code>MainManuProc.cpp</code>、<code>PIMPOMDlg.cpp</code></td></tr>
+<tr><td>低</td><td>Python バッチでパスを引用符で囲まない</td><td><code>PythonBatchDlg.cpp</code></td></tr>
+</table>
+
+<h2 id="deadcode">未使用・ビルド対象外のコード</h2>
+<table class="fit">
+<tr><th>ファイル・要素</th><th>状態</th></tr>
+<tr><td><code>API/filter/api_filter_dilation.cpp</code>、<code>api_filter_erosion.cpp</code></td><td>ビルド対象外の旧実装（現役は <code>api_filter_morph.cpp</code>）</td></tr>
+<tr><td><code>API/filter/template/filter_bilateral.h</code></td><td>ビルド対象外。<code>api_filter_bilateral.cpp</code> と同一内容</td></tr>
+<tr><td><code>API/global_confirm_box.cpp</code></td><td>ビルド対象外。<code>CConfirmBox</code> の宣言が無い</td></tr>
+<tr><td><code>API/file_io/api_file_io_avi.cpp</code>（<code>LoadAvi</code>）</td><td>ビルドされるが呼び出し元が無い（作成途中）</td></tr>
+<tr><td><code>DataWrapper/SerialCtrl.cpp</code></td><td>どこからも使われていない</td></tr>
+<tr><td><code>CCalculate::ExtendSubCommands</code></td><td>サブ数式 P1〜P3 の名残。未使用</td></tr>
+<tr><td>非同期連携（<code>InitAysnc</code> ほか）</td><td>pimpom_plot.h／Pimpom.pyd 側のみで、本体に受け手が無い</td></tr>
+</table>
+
+<footer class="pager"><a href="files.html">← 10. ファイル形式と設定</a><span></span></footer>
+</main>
+</div>
+</body>
+</html>

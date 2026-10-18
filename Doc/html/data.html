@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>データ構造 - PIMPOM 仕様書</title>
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+<div class="layout">
+<nav class="side">
+<div class="brand"><a href="index.html">PIMPOM 仕様書</a></div>
+<div class="sub">PIMPOM2022.sln（コード解析版）</div>
+<ol>
+<li><a href="index.html">1. 概要</a></li>
+<li><a href="architecture.html">2. システム構成</a></li>
+<li><a href="data.html" class="current">3. データ構造</a><ul class="toc"><li><a href="#memory">画像メモリ</a></li><li><a href="#types">データ型</a></li><li><a href="#dataunit">CDataUnit のメンバ</a></li><li><a href="#display">表示画像の生成</a></li><li><a href="#workarea">作業領域（CWorkArea）</a></li><li><a href="#mask">マスク</a></li><li><a href="#mark">マーク（CMark）</a></li><li><a href="#flow">表示までのデータの流れ</a></li><li><a href="#limits">主な定数</a></li></ul></li>
+<li><a href="main_window.html">4. メイン画面とメニュー</a></li>
+<li><a href="windows.html">5. 各ウィンドウ</a></li>
+<li><a href="processing.html">6. 画像処理機能</a></li>
+<li><a href="script.html">7. スクリプト</a></li>
+<li><a href="integration.html">8. 外部連携と拡張</a></li>
+<li><a href="api.html">9. API リファレンス概要</a></li>
+<li><a href="files.html">10. ファイル形式と設定</a></li>
+<li><a href="appendix.html">11. 付録（ソース一覧・資料との差異）</a></li>
+</ol>
+</nav>
+<main>
+<!-- title: データ構造 -->
+<h1>3. データ構造</h1>
+<p class="lead">画像メモリ（<code>CDataUnit</code>）を中心に、データ型、マスク、作業領域、マーク、表示パラメータ、表示までのデータの流れを示す。定数は <code>include/global_define.h</code>、構造体は <code>include/global_typedef.h</code> にある。</p>
+
+<h2 id="memory">画像メモリ</h2>
+<ul>
+<li><code>CPimpomAPI</code> が <code>CDataUnit*</code> の配列 <code>pp_data_unit</code> を持つ。配列は上限 <code>DATA_NUMBER_MAX</code> = <b>1000</b> 個分確保され、実際に使う数 <code>data_number</code> は既定 <code>DATA_NUMBER_DEFAULT</code> = <b>100</b>（pimpom.ini の <code>[SETTING] IMG_NUM</code> で変更）。</li>
+<li>空の画像メモリはポインタが NULL。画像を読み込む・生成するときに <code>Format</code> で確保する。</li>
+<li>番号は 0 始まり。API では <code>CURRENT_IMAGE</code> = <b>-1</b> を渡すと現在選択中の画像メモリを指す。</li>
+<li>バックアップメモリは全画像メモリで共通の <b>1 面</b>。上書き・削除・処理の前に <code>BackupDataUnit(n)</code> で退避し、<code>RecoverDataUnit</code>（編集メニュー「画像データ復元」）で戻す。</li>
+</ul>
+<div class="warn"><code>IMG_NUM</code> に上限チェックが無く、1000 を超える値を設定すると配列の範囲外を使う。既存仕様書の「画像メモリは既定で最大 30」は現行コードの既定値 100 と一致しない。</div>
+
+<h2 id="types">データ型</h2>
+<p>画像メモリのデータ型は 13 種類。型 ID は <code>CDataUnit::DataType</code> に格納され、ファイル入出力・API・スクリプトで共通に使われる。</p>
+<table>
+<tr><th>ID</th><th>定数</th><th>表示名</th><th>要素型</th><th>ページ</th><th>チャネル</th><th>チャネルの意味</th><th>値域</th><th>1 画素のバイト数</th></tr>
+<tr><td>0</td><td><code>BYTE_FORMAT</code></td><td>BYTE</td><td>unsigned char</td><td>1</td><td>1</td><td>—</td><td>0〜255</td><td>1</td></tr>
+<tr><td>1</td><td><code>FLOAT_FORMAT</code></td><td>FLOAT</td><td>float</td><td>1</td><td>1</td><td>—</td><td>±FLT_MAX</td><td>4</td></tr>
+<tr><td>2</td><td><code>COMPLEX_FORMAT</code></td><td>COMPLEX</td><td>float</td><td>1</td><td>4</td><td>実部・虚部・絶対値・偏角</td><td>±FLT_MAX</td><td>16</td></tr>
+<tr><td>3</td><td><code>THREE_D_FORMAT</code></td><td>3D</td><td>unsigned char</td><td>N</td><td>1</td><td>—</td><td>0〜255</td><td>1×N</td></tr>
+<tr><td>4</td><td><code>FLOAT_3D_FORMAT</code></td><td>FLOAT 3D</td><td>float</td><td>N</td><td>1</td><td>—</td><td>±FLT_MAX</td><td>4×N</td></tr>
+<tr><td>5</td><td><code>XY_FORMAT</code></td><td>PHASE XY</td><td>float</td><td>1</td><td>2</td><td>X・Y</td><td>±FLT_MAX</td><td>8</td></tr>
+<tr><td>6</td><td><code>XYZ_FORMAT</code></td><td>3D SHAPE</td><td>float</td><td>1</td><td>3</td><td>X・Y・Z</td><td>±FLT_MAX</td><td>12</td></tr>
+<tr><td>7</td><td><code>RGB_FORMAT</code></td><td>RGB COLOR</td><td>unsigned char</td><td>1</td><td>3</td><td>R・G・B</td><td>0〜255</td><td>3</td></tr>
+<tr><td>8</td><td><code>WORD_FORMAT</code></td><td>WORD</td><td>unsigned short</td><td>1</td><td>1</td><td>—</td><td>0〜65535</td><td>2</td></tr>
+<tr><td>9</td><td><code>LONG32_FORMAT</code></td><td>LONG</td><td>long</td><td>1</td><td>1</td><td>—</td><td>LONG_MIN〜LONG_MAX</td><td>4</td></tr>
+<tr><td>10</td><td><code>RGB_3D_FORMAT</code></td><td>RGB 3D</td><td>unsigned char</td><td>N</td><td>3</td><td>R・G・B</td><td>0〜255</td><td>3×N</td></tr>
+<tr><td>11</td><td><code>SHORT16_FORMAT</code></td><td>SHORT</td><td>short</td><td>1</td><td>1</td><td>—</td><td>±32767</td><td>2</td></tr>
+<tr><td>12</td><td><code>DWORD_FORMAT</code></td><td>DWORD</td><td>unsigned long</td><td>1</td><td>1</td><td>—</td><td>0〜ULONG_MAX</td><td>4</td></tr>
+</table>
+<h3>メモリ配置</h3>
+<p>すべての型で、画素 (x, y)・ページ p・チャネル c の要素は次の位置にある（W=幅、H=高さ、Ch=チャネル数）。チャネルはプレーン単位で並び、RGB も R 面・G 面・B 面の順に格納される。</p>
+<pre><code>index = x + y*W + W*H*(p*Ch + c)</code></pre>
+<p>型ごとのポインタ（<code>pByteData</code>、<code>pFloatData</code>、<code>pShortData</code>、<code>pWordData</code>、<code>pLongData</code>、<code>pDwordData</code>）のうち、その型で使う 1 本だけが確保され、残りは NULL。</p>
+<h3>複素数（COMPLEX）</h3>
+<p>実部・虚部（直交成分）と絶対値・偏角（極成分）の 4 面を持つ。<code>CreateComplexPolarComponents</code> で実部・虚部から絶対値（<code>complex_image_power_log</code> が真なら対数）と <code>atan2</code> の偏角を作り、<code>CreateComplexDescartesComponents</code> で逆に戻す。</p>
+
+<h2 id="dataunit">CDataUnit のメンバ</h2>
+<table>
+<tr><th>分類</th><th>メンバ</th><th>内容・既定値</th></tr>
+<tr><td rowspan="5">データ</td><td><code>DataType</code></td><td>型 ID（上表）</td></tr>
+<tr><td><code>DataName</code> / <code>SrcFilePath</code></td><td>データ名（ファイル読込直後はファイル名）／読込元パス</td></tr>
+<tr><td><code>DataSize</code>, <code>PageNumber</code>, <code>ChannelNumber</code></td><td>幅×高さ、ページ数、チャネル数</td></tr>
+<tr><td><code>p*Data</code></td><td>型別の画像データ配列</td></tr>
+<tr><td><code>Average</code>, <code>Stdiv</code></td><td>表示中のページ・チャネルの平均と標準偏差（処理範囲内・非マスク画素で計算）</td></tr>
+<tr><td rowspan="4">表示</td><td><code>pDispBuffer</code></td><td>8bit 表示画像（DIB、下から上、行は 4 バイト境界）＋ 256 色パレット付き <code>BITMAPINFO</code></td></tr>
+<tr><td><code>pDispBufferRGB</code></td><td>24bit 表示画像（BGR 順。RGB 系の型のみ）</td></tr>
+<tr><td><code>DispPage</code>, <code>DispChannel</code>, <code>DispRGB</code></td><td>表示するページ（0）、チャネル（0）、RGB カラー表示か（true）</td></tr>
+<tr><td><code>BrightMax</code>, <code>BrightMin</code>, <code>DispScale</code>, <code>DataDispOffset</code>, <code>BrightLevel[256]</code></td><td>表示濃度レンジ（256 / 0）、表示倍率（1）、表示位置オフセット（0,0）、表示画像のヒストグラム</td></tr>
+<tr><td rowspan="2">作業領域</td><td><code>WorkArea</code></td><td><code>CWorkArea</code>。初期状態は図形 0 が画像全体の矩形</td></tr>
+<tr><td><code>DoUseWorkArea</code></td><td>作業領域を使うか（false）</td></tr>
+<tr><td rowspan="2">マスク</td><td><code>pMaskData</code></td><td>画素ごとの BYTE。1 = <code>MASKED</code>、0 = <code>UNMASKED</code>。初期は全画素 0</td></tr>
+<tr><td><code>DoUseMask</code></td><td>マスクを使うか（<b>true</b>）</td></tr>
+<tr><td>マーク</td><td><code>MarkNum</code>, <code>pMarkMap[2000]</code></td><td>マークの数と配列（必要時に確保）</td></tr>
+</table>
+<h3>主なメソッド</h3>
+<table>
+<tr><th>メソッド</th><th>内容</th></tr>
+<tr><td><code>Format(type, size, page)</code></td><td>引数検査 → 型別にデータ確保・0 クリア → 表示バッファ・グレーパレット・RGB バッファ・マスクを用意</td></tr>
+<tr><td><code>Destroy()</code></td><td>確保したメモリを解放</td></tr>
+<tr><td><code>Copy(src, data, mask, workarea, range, mark, pos_scale)</code></td><td>項目を選んでコピー。データは型・サイズ・ページ・チャネルが一致するときだけ、マスクと表示位置・倍率はサイズが一致するときだけコピーする</td></tr>
+<tr><td><code>Convert(option)</code></td><td>型変換（<a href="processing.html#convert">6 章</a>）。複製を作り、<code>Format</code> し直してから値を移し、名前・作業領域・表示位置・マークを戻す</td></tr>
+<tr><td><code>UpdateDispBuffer()</code></td><td>データ → 表示画像の生成と、ヒストグラム・統計の再計算</td></tr>
+<tr><td><code>GetDataValue(x, y, page, ch)</code></td><td>整数座標版と双一次補間版。範囲外は 0。RGB 表示中は輝度 (299R+587G+114B)/1000</td></tr>
+<tr><td><code>SetDataValue(…, satulate)</code></td><td>型の上下限で飽和して書き込む。RGB 表示中に ch=-1 なら 3 チャネルすべてに書く</td></tr>
+<tr><td><code>GetDataMinMax</code> / <code>SetDispRange</code> / <code>SetDispRangeAuto</code></td><td>処理範囲・非マスク画素の最小最大／表示レンジ設定（max&lt;min は不可）／自動設定（0: 最小〜最大、1: 平均±2σ）</td></tr>
+<tr><td><code>SetDispScale</code>, <code>SetDispPage</code>, <code>MoveDispPage</code>, <code>SetDispChannel</code></td><td>表示倍率（オフセットを 0 に戻す）、表示ページ（範囲外は false）、表示チャネル（-1 で RGB 表示）</td></tr>
+<tr><td><code>Get/SetMaskValue</code>, <code>ClearMask</code>, <code>SetMaskByWorkArea</code></td><td>マスクの読み書き、全解除、作業領域の外をマスク</td></tr>
+<tr><td><code>GetRectArea()</code></td><td>処理範囲の矩形。作業領域使用時はその外接矩形を画像内に切り詰めたもの、未使用時は画像全体</td></tr>
+<tr><td><code>AddMark</code>, <code>DeleteMark</code>, <code>ClearMark</code>, <code>GetMark</code>, <code>SetMark</code></td><td>マーク操作</td></tr>
+<tr><td><code>GetMinLimitValue</code> / <code>GetMaxLimitValue</code></td><td>型の値域</td></tr>
+</table>
+
+<h2 id="display">表示画像の生成</h2>
+<h3>濃度変換</h3>
+<p>画像データ値を次式で 8bit の表示濃度に変換する（<code>calc_bright</code>）。<code>BrightMax − BrightMin ≦ 0</code> のときは係数 0。マスクが有効で MASKED の画素は黒になる。</p>
+<pre><code>disp = clamp( 256 / (BrightMax - BrightMin) * (data - BrightMin), 0, 255 )</code></pre>
+<p>RGB 系の型でカラー表示のときは 24bit バッファに R・G・B 各面を同じ式で変換する。ヒストグラムと統計（<code>calc_hist_and_stat</code>）は処理範囲内で、マスクされておらず作業領域内にある画素を集計する。</p>
+<h3>カラーパレット</h3>
+<p>8bit 表示画像の各階調に割り当てる色。表示メニューで切り替える（RGB カラー表示中は変更しない）。</p>
+<table class="fit">
+<tr><th>ID</th><th>名称</th><th>内容（i = 0〜255）</th></tr>
+<tr><td>0</td><td>グレースケール（ポジ）</td><td>(i, i, i)</td></tr>
+<tr><td>1</td><td>グレースケール（ネガ）</td><td>(255−i, 255−i, 255−i)</td></tr>
+<tr><td>2</td><td>虹色</td><td>4 区間で B→G→R に変化</td></tr>
+<tr><td>3</td><td>虹色（0 を黒）</td><td>虹色で i=0 のみ黒</td></tr>
+<tr><td>4</td><td>コサイン</td><td>127.5·cos(2πi/255)+127.5</td></tr>
+<tr><td>5</td><td>青→黄（メニュー表記「黄色→青」）</td><td>R=G=i、B=255−i</td></tr>
+<tr><td>6</td><td>緑→赤</td><td>R=i、G=255−i</td></tr>
+<tr><td>7</td><td>ラベル</td><td>0 は黒、それ以外は 6 色を i%6 で循環（ラベル番号が見分けやすい）</td></tr>
+</table>
+<h3>CImageField（表示領域）</h3>
+<ul>
+<li>保持するのはウィンドウハンドル、表示領域のサイズと位置だけ。倍率とオフセットは <code>CDataUnit</code> 側にあるため、画像メモリごとに表示状態が保存される。</li>
+<li>描画は <code>StretchDIBits</code>（HALFTONE）。画像外の余白は RGB(190,190,190)、データが無いときは黒で塗る。</li>
+<li>倍率は 0.01〜100 に制限（<code>API.ScaleImage</code>）。<code>ScaleImage</code> は表示中心を保って倍率を変え、<code>DrawAdjustedImage</code> は縦横比を保って領域に内接させる。</li>
+<li>座標変換: <code>画像座標 = (画面座標 − 領域位置) / scale + offset − 0.5</code>、逆は <code>画面座標 = (画像座標 + 0.5 − offset) × scale + 領域位置</code>。</li>
+</ul>
+
+<h2 id="workarea">作業領域（CWorkArea）</h2>
+<p>処理や統計の対象範囲を表す図形の集合。1 画像あたり最大 <code>WORKAREA_FIG_NUM</code> = <b>10</b> 図形。各図形は種類・OR/NOT・座標・編集モードを持つ。</p>
+<table>
+<tr><th>種類（ID）</th><th>パラメータ</th><th>内外判定</th><th>マウス編集</th></tr>
+<tr><td>矩形（0）</td><td>left, top, right, bottom</td><td>あり</td><td>あり</td></tr>
+<tr><td>幅つき直線（1）</td><td>x1, y1, x2, y2, 幅 w</td><td>4 頂点の外積で判定</td><td>あり</td></tr>
+<tr><td>楕円（2）</td><td>中心 cx, cy、半径 rx, ry（回転なし）</td><td>(dx/rx)²+(dy/ry)² ≦ 1</td><td>あり</td></tr>
+<tr><td>幅つき円周（3）</td><td>中心 cx, cy、半径 r、幅 w</td><td>円環の内側</td><td>あり</td></tr>
+<tr><td>円弧（4）</td><td>cx, cy, r, 始点角, 終点角, 幅</td><td>未実装（常に外側）</td><td>なし</td></tr>
+<tr><td>多角形（5）</td><td>頂点数, 頂点[10]</td><td>未実装（常に外側）</td><td>なし</td></tr>
+</table>
+<p>ある画素が作業領域に含まれるかは、「NOT 図形のどれかに入っていれば外。そうでなく OR 図形のどれかに入っていれば内」で決まる。作業領域は次に使われる。</p>
+<ul>
+<li>ヒストグラム・平均・標準偏差の集計範囲</li>
+<li>処理範囲の矩形 <code>GetRectArea()</code>（フィルタ・2 値化・数式などは全図形の外接矩形内を処理する）</li>
+<li>作業領域外の自動マスク生成 <code>SetMaskByWorkArea()</code>、作業領域内の塗りつぶし、クリッピング</li>
+</ul>
+<div class="warn">幅つき直線は判定条件の誤りにより、水平・垂直の線が常に外側と判定される。円弧と多角形は内外判定が未実装。</div>
+
+<h2 id="mask">マスク</h2>
+<p>画素単位のフラグ（BYTE、1 = MASKED）。<code>DoUseMask</code> が真のとき、マスクされた画素は表示で黒く塗られ、ヒストグラム・統計・最小最大の計算から除外される。マスクはフリーハンド編集（マスク編集モード）、作業領域からの自動生成、数式（演算結果からマスク生成）、API・スクリプトで作られる。型変換するとクリアされる。</p>
+
+<h2 id="mark">マーク（CMark）</h2>
+<table class="fit">
+<tr><th>項目</th><th>内容</th></tr>
+<tr><td>上限</td><td><code>MARK_NUMBER_MAX</code> = 2000（<code>AddMark</code> で追加できるのは実質 1999）。旧形式は 256</td></tr>
+<tr><td>種類</td><td>点（0）／線（1）</td></tr>
+<tr><td>座標</td><td>点: (x, y)、線: 始点・終点。サブピクセル（double）で持つ</td></tr>
+<tr><td>属性</td><td><code>attrib[MARK_ATTRIB_NUM]</code>、3 個の数値。2 値化のラベリングでは attrib0 に面積が入る</td></tr>
+<tr><td>表示</td><td>メイン画面に緑の十字、選択中は赤。番号表示も可能</td></tr>
+</table>
+
+<h2 id="flow">表示までのデータの流れ</h2>
+<p>画像が変わったら <code>API.DrawImage()</code> を呼ぶことが、各ウィンドウを更新させる約束事になっている（メッセージ通知は使わない）。</p>
+<div class="diagram">
+<svg viewBox="0 0 900 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="表示処理の流れ">
+<defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#888"/></marker></defs>
+<rect class="box" x="10" y="80" width="190" height="110" rx="8"/><text x="105" y="104" text-anchor="middle" font-weight="700">CDataUnit</text><text x="105" y="126" text-anchor="middle" font-size="12">画像データ・マスク</text><text x="105" y="144" text-anchor="middle" font-size="12">表示レンジ・ページ/チャネル</text><text x="105" y="162" text-anchor="middle" font-size="12">パレット</text>
+<rect class="box hl" x="240" y="95" width="170" height="80" rx="8"/><text x="325" y="125" text-anchor="middle" font-weight="700">UpdateDispBuffer</text><text x="325" y="147" text-anchor="middle" font-size="12">濃度変換・統計</text>
+<rect class="box" x="450" y="20" width="200" height="70" rx="8"/><text x="550" y="46" text-anchor="middle" font-weight="700">メイン画面</text><text x="550" y="66" text-anchor="middle" font-size="12">CImageField＋作業領域・マーク</text><text x="550" y="82" text-anchor="middle" font-size="12">・ルーラー・カスタム描画</text>
+<rect class="box" x="450" y="105" width="200" height="60" rx="8"/><text x="550" y="130" text-anchor="middle" font-weight="700">データウィンドウ</text><text x="550" y="150" text-anchor="middle" font-size="12">サムネイル</text>
+<rect class="box" x="450" y="180" width="200" height="60" rx="8"/><text x="550" y="205" text-anchor="middle" font-weight="700">ヒストグラム</text><text x="550" y="225" text-anchor="middle" font-size="12">度数・平均・標準偏差</text>
+<rect class="box" x="690" y="60" width="200" height="150" rx="8"/><text x="790" y="86" text-anchor="middle" font-weight="700">その他</text><text x="790" y="110" text-anchor="middle" font-size="12">マークウィンドウ（値一覧）</text><text x="790" y="130" text-anchor="middle" font-size="12">複数画像同時表示</text><text x="790" y="150" text-anchor="middle" font-size="12">3D 画像一覧</text><text x="790" y="170" text-anchor="middle" font-size="12">カスタムファンクション</text><text x="790" y="190" text-anchor="middle" font-size="12">（OnDrawMainImage）</text>
+<path class="arr" d="M200 135 H238" marker-end="url(#ah2)"/>
+<path class="arr" d="M410 125 L448 60" marker-end="url(#ah2)"/><path class="arr" d="M410 135 H448" marker-end="url(#ah2)"/><path class="arr" d="M410 145 L448 205" marker-end="url(#ah2)"/>
+<path class="arr" d="M650 135 H688" marker-end="url(#ah2)"/>
+</svg>
+</div>
+<ol>
+<li>データウィンドウの選択を切り替える（選択が変わったら動画再生を止める）。</li>
+<li><code>UpdateDispBuffer</code> で表示画像・ヒストグラム・統計を作り直す。必要なら領域に合わせて倍率を調整。</li>
+<li>メイン画面の描画: スクロールバー・ボタン状態 → タイトルバー → 画像 → ルーラー線 → 作業領域 → マーク → 各カスタムファンクションの <code>OnDrawMainImage_UserDlg</code>。</li>
+<li>データウィンドウのサムネイル、ヒストグラム、マーク値一覧、複数画像同時表示、3D 画像一覧を更新。</li>
+</ol>
+<p>タイトルバーの書式: <code>データ名[型名 表示ページ/ページ数](幅×高さ) - PIMPOM</code>（多重起動時は末尾に起動番号）。</p>
+
+<h2 id="limits">主な定数</h2>
+<table>
+<tr><th>定数</th><th>値</th><th>意味</th></tr>
+<tr><td><code>DATA_NUMBER_DEFAULT</code> / <code>DATA_NUMBER_MAX</code></td><td>100 / 1000</td><td>画像メモリ数の既定値／上限</td></tr>
+<tr><td><code>MARK_NUMBER_MAX</code> / <code>MARK_ATTRIB_NUM</code></td><td>2000 / 3</td><td>マーク数上限／属性数</td></tr>
+<tr><td><code>WORKAREA_FIG_NUM</code> / <code>WORKAREA_EDIT_MARGIN</code></td><td>10 / 10</td><td>作業領域図形数／編集時の掴み幅 [px]</td></tr>
+<tr><td><code>CUSTOM_FUNC_MAX</code> / <code>CUSTOM_MENU_ID</code></td><td>10 / 9999</td><td>カスタムファンクション数／メニュー ID の先頭</td></tr>
+<tr><td><code>FILE_IO_LOG_MAX</code> / <code>FILE_IO_LOG_MENU_ID</code></td><td>10 / 9900</td><td>最近使ったファイル数／メニュー ID の先頭</td></tr>
+<tr><td><code>FILE_PATH_LEN_MAX</code> / <code>MULTI_FILE_PATH_BUFFER</code></td><td>2048 / 500000</td><td>パス長／複数ファイル選択のバッファ</td></tr>
+<tr><td><code>MAIN_W</code>×<code>MAIN_H</code></td><td>640×480</td><td>メイン画像表示領域の既定サイズ</td></tr>
+<tr><td><code>SMALL_W</code>×<code>SMALL_H</code> / <code>SMALL_COLUM</code></td><td>40×30 / 20</td><td>サムネイルのサイズ／列数</td></tr>
+<tr><td>データ／ヒストグラム／マーク／作業領域ウィンドウ</td><td>1150×200 / 340×320 / 330×280 / 330×280</td><td>各ウィンドウの既定サイズ</td></tr>
+<tr><td><code>CHART_NUM</code> / <code>CHART_DATA_NUM</code></td><td>10 / 10000</td><td>グラフ数／1 グラフのデータ数上限</td></tr>
+<tr><td>BATCH 入力／出力パラメータ数</td><td>5 / 15</td><td><code>BATCH_INPUT.param</code>／<code>BATCH_OUTPUT.result</code></td></tr>
+<tr><td>畳み込み／順位フィルタの最大サイズ</td><td>61 / 21</td><td>フィルタサイズ上限</td></tr>
+<tr><td><code>BINALIZE_LABEL_MAX</code></td><td>9999</td><td>ラベル数上限</td></tr>
+<tr><td><code>RECIVE_BUFFER_SIZE</code></td><td>10000</td><td>TCP/IP 受信バッファ</td></tr>
+<tr><td>共有メモリ</td><td><code>"PIMPOM_SHAREDMEM"</code></td><td>外部プログラム連携の共有メモリ名（ヘッダ 20 バイト）</td></tr>
+</table>
+<p>列挙値: 背景処理 ID（0 なし、1 キャプチャ、2 動画再生、3 バッチ）、バッチ状態（0 通常、1 スキップ、2 リトライ、3 停止、4 待機）。</p>
+
+<footer class="pager"><a href="architecture.html">← 2. システム構成</a><a href="main_window.html">4. メイン画面とメニュー →</a></footer>
+</main>
+</div>
+</body>
+</html>

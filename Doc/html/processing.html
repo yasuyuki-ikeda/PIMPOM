@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>画像処理機能 - PIMPOM 仕様書</title>
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+<div class="layout">
+<nav class="side">
+<div class="brand"><a href="index.html">PIMPOM 仕様書</a></div>
+<div class="sub">PIMPOM2022.sln（コード解析版）</div>
+<ol>
+<li><a href="index.html">1. 概要</a></li>
+<li><a href="architecture.html">2. システム構成</a></li>
+<li><a href="data.html">3. データ構造</a></li>
+<li><a href="main_window.html">4. メイン画面とメニュー</a></li>
+<li><a href="windows.html">5. 各ウィンドウ</a></li>
+<li><a href="processing.html" class="current">6. 画像処理機能</a><ul class="toc"><li><a href="#common">共通規則</a></li><li><a href="#filter">汎用フィルタ</a></li><li><a href="#binalize">2 値化とラベリング</a></li><li><a href="#convert">型変換</a></li><li><a href="#resize">サイズ変換</a></li><li><a href="#transform">幾何変換（射影変換）</a></li><li><a href="#calc">数式による画像生成</a></li><li><a href="#pixwise">画像間演算</a></li><li><a href="#others">その他の処理</a></li></ul></li>
+<li><a href="script.html">7. スクリプト</a></li>
+<li><a href="integration.html">8. 外部連携と拡張</a></li>
+<li><a href="api.html">9. API リファレンス概要</a></li>
+<li><a href="files.html">10. ファイル形式と設定</a></li>
+<li><a href="appendix.html">11. 付録（ソース一覧・資料との差異）</a></li>
+</ol>
+</nav>
+<main>
+<!-- title: 画像処理機能 -->
+<h1>6. 画像処理機能</h1>
+<p class="lead">汎用フィルタ、2 値化とラベリング、型変換、サイズ変換、幾何変換、数式による画像生成、画像間演算の仕様を示す。UI は各ダイアログ、処理本体は <code>CPimpomAPI</code>（<code>API/</code>）にある。</p>
+
+<h2 id="common">共通規則</h2>
+<table class="fit">
+<tr><th>項目</th><th>規則</th></tr>
+<tr><td>画像の指定</td><td>src／dst に画像メモリ番号。-1（<code>CURRENT_IMAGE</code>）は選択中の画像（2 値化の dst など一部の関数は -1 不可）</td></tr>
+<tr><td>処理範囲</td><td><code>GetRectArea()</code>。作業領域使用時は全図形の外接矩形（右・下端を含む）、未使用時は画像全体</td></tr>
+<tr><td>ページ・チャネル</td><td><code>toMultiImage</code>（UI の「全ページ/チャネルを対象」）が偽なら表示中の 1 平面だけ処理する</td></tr>
+<tr><td>出力先</td><td>src ≠ dst のときは src を dst にコピーしてから dst 上で処理する</td></tr>
+<tr><td>値域</td><td>出力値は型の上下限で飽和させる</td></tr>
+<tr><td>パディング</td><td><code>pad_type</code>: 0 = ゼロ、1 = 外周画素の延長、2 = 折り返し</td></tr>
+<tr><td>実装</td><td>多くは自前のテンプレート実装（<code>filter/template/*.h</code>）で、BYTE・SHORT・WORD・LONG・DWORD・FLOAT の各型を扱う。一部は OpenCV を使う</td></tr>
+<tr><td>Undo</td><td>ダイアログからの実行は処理前に <code>BackupDataUnit</code> で退避する</td></tr>
+<tr><td>戻り値</td><td>bool（成功／失敗）。失敗理由は返さない</td></tr>
+</table>
+
+<h2 id="filter">汎用フィルタ</h2>
+<div class="fig-side">
+<div>
+<p><code>CFilterCtrlDlg</code>（モードレス）。フィルタの種類を選び、サイズ・方向・円形マスク・パディング・パラメータ 0〜6（フィルタごとにラベルが変わる）を設定して実行する。格納先は「現在の画像に上書き」または「原画像 → 結果画像」。実行後、使ったカーネルの形状（61×61 と中心線プロファイル）を表示する。</p>
+</div>
+<figure><img src="img/filter.png" alt="汎用フィルタ"><figcaption>汎用フィルタウィンドウ（旧版の画面）</figcaption></figure>
+</div>
+<table>
+<tr><th>#</th><th>フィルタ</th><th>API</th><th>アルゴリズム</th><th>サイズ・主なパラメータ</th><th>実装</th></tr>
+<tr><td>0</td><td>移動平均</td><td><code>FilterSmooth</code></td><td>周辺の平均</td><td>3〜61</td><td>自前</td></tr>
+<tr><td>1</td><td>移動平均（最大・最小除去）</td><td><code>FilterSmooth(…, true)</code></td><td>最大・最小を除いた平均（ごま塩ノイズに強い）</td><td>3〜61</td><td>自前</td></tr>
+<tr><td>2</td><td>ガウシアン</td><td><code>FilterGauss</code></td><td>2D ガウシアン、σ=(サイズ−1)/6、正規化</td><td>奇数 3〜61、方向（両方／横／縦）</td><td>自前</td></tr>
+<tr><td>3</td><td>メディアン</td><td><code>FilterMedian</code></td><td>中央値</td><td>2×2・3〜21、円形マスク</td><td>自前</td></tr>
+<tr><td>4〜7</td><td>膨張／収縮／オープニング／クロージング</td><td><code>FilterDilation</code> 他</td><td>最大値／最小値／収縮→膨張／膨張→収縮</td><td>2×2・3〜21、円形マスク</td><td>自前</td></tr>
+<tr><td>8</td><td>バイラテラル</td><td><code>FilterBilateral</code></td><td><code>cv::bilateralFilter</code></td><td>3〜21、値σ=10、距離σ=10</td><td>OpenCV</td></tr>
+<tr><td>9</td><td>エッジ抽出（Sobel）</td><td><code>FilterEdgeSobel</code></td><td>固定係数、(|Gx|+|Gy|)/scale</td><td>3／5／7／9、閾値 100、方向</td><td>自前</td></tr>
+<tr><td>10</td><td>LoG</td><td><code>FilterLaplaceGauss</code></td><td>σ=(サイズ−1)/(4√2)、conv×contrast＋offset</td><td>奇数 3〜61、offset 128、contrast 1</td><td>自前</td></tr>
+<tr><td>11</td><td>ガボール</td><td><code>FilterGabor</code></td><td>σ=(サイズ−1)/6、λ=サイズ/周波数、平均 0</td><td>扁平率 0.3、周波数 2、回転角、位相</td><td>自前</td></tr>
+<tr><td>12</td><td>シグモイド（エッジ）</td><td><code>FilterEdgeSigmoid</code></td><td>1/(1+e^(−k·x))−0.5 の方向性カーネル</td><td>k、回転角、offset、contrast</td><td>自前</td></tr>
+<tr><td>13</td><td>エッジ細線化（LoG ゼロクロス）</td><td><code>FilterEdgeLog</code></td><td>LoG 後に右・下の隣と符号が反転し差が閾値超の画素を 255</td><td>1〜61、閾値</td><td>自前</td></tr>
+<tr><td>14</td><td>Canny</td><td><code>FilterEdgeCanny</code></td><td><code>cv::Canny</code></td><td>3／5／7、強閾値・弱閾値。BYTE／3D のみ</td><td>OpenCV</td></tr>
+<tr><td>15</td><td>シェーディング除去（ガウシアン自己差分）</td><td><code>FilterGaussUnshade</code></td><td>(I − Gauss(I) + offset) × contrast</td><td>奇数 3〜61、offset、contrast</td><td>自前</td></tr>
+<tr><td>16</td><td>濃度反転</td><td><code>FilterNega</code></td><td>255 − x</td><td>—</td><td>自前</td></tr>
+<tr><td>17〜19</td><td>左右／上下／180° 反転</td><td><code>FilterMirror(0/1/2)</code></td><td>—</td><td>—</td><td>自前</td></tr>
+<tr><td>20</td><td>コンボリューション</td><td><code>FilterConvolution</code></td><td>任意カーネル（「,」と改行で区切った正方行列）</td><td>offset、contrast、パディング</td><td>自前</td></tr>
+<tr><td>21</td><td>CLAHE</td><td><code>FilterCLAHE</code></td><td><code>cv::createCLAHE</code></td><td>clip 40、分割 8×8。BYTE／3D のみ</td><td>OpenCV</td></tr>
+<tr><td>22</td><td>局所コントラスト（σ）</td><td><code>FilterLocalContrast</code></td><td>積分画像で局所平均 m・標準偏差 σ を求め 255·(x−(m−sσ))/(2sσ)</td><td>窓 200、s=3</td><td>自前</td></tr>
+<tr><td>23</td><td>局所コントラスト（min-max）</td><td><code>FilterLocalContrastPatch</code></td><td>n×n の max/min を縮小→双線形拡大→255(x−min)/(max−min+1)</td><td>n=8</td><td>自前</td></tr>
+<tr><td>24</td><td>DFT</td><td><code>FilterDFT</code></td><td><code>cv::dft</code>＋象限入れ替え。順変換で COMPLEX（実・虚・パワー・位相）、逆変換で実数</td><td>逆変換の有無。src ≠ dst</td><td>OpenCV</td></tr>
+</table>
+<div class="warn">畳み込み系（ガウシアン、LoG、ガボール、シグモイド、コンボリューション、シェーディング除去）を上書きで実行し作業領域を使うと、処理矩形の外側が 0 になる。OpenCV 系のフィルタは作業領域使用時に結果が ROI サイズの画像になることがある（判定が 1 画素ずれている）。</div>
+
+<h2 id="binalize">2 値化とラベリング</h2>
+<div class="fig-side">
+<div>
+<p><code>CBinalizeDlg</code>（モードレス）。原画像を 2 値化して結果画像に出力し、必要ならラベリングする。閾値スライダの操作や大津・P タイルの選択で即座に実行され、プレビューとして使える。</p>
+<ul>
+<li>結果は <b>THREE_D 型</b>（1 ページなら BYTE と同じ見え方）で、前景 255・背景 0。反転指定可。</li>
+<li>RGB カラー表示中は輝度 (299R+587G+114B)/1000 で処理する。</li>
+<li>作業領域使用時は処理矩形の内部だけ処理する。</li>
+<li>結果先・ラベル先が原画像と同じ番号のときはエラー。実行前に結果先をバックアップする。</li>
+</ul>
+</div>
+<figure><img src="img/binalize.png" alt="2 値化ウィンドウ"><figcaption>2 値化ウィンドウ</figcaption></figure>
+</div>
+<table>
+<tr><th>区分</th><th>手法</th><th>API</th><th>内容</th><th>パラメータ</th></tr>
+<tr><td rowspan="3">グローバル</td><td>閾値手入力</td><td><code>Binalize</code></td><td>min ≦ v ≦ max の画素を前景にする</td><td>閾値（0〜255、初期 128）</td></tr>
+<tr><td>判別分析（大津法）</td><td><code>BinalizeThresholdOtsu</code></td><td>最小〜最大を 256 段階にし、クラス間／クラス内分散比が最大の閾値を求めて表示</td><td>—</td></tr>
+<tr><td>P タイル法</td><td><code>BinalizeThresholdPTile</code></td><td>累積度数が指定 % に達する閾値</td><td>%（0〜100、初期 50）</td></tr>
+<tr><td rowspan="3">ローカル</td><td>ガウシアン自己差分</td><td><code>BinalizeLocalGauss</code></td><td>I − Gauss(I) + offset ≧ 0 を前景。シェーディングを打ち消す</td><td>サイズ 3〜61、offset −128〜128</td></tr>
+<tr><td>ラプラシアンオブガウシアン</td><td><code>BinalizeLocalLaplaceGauss</code></td><td>LoG 応答 ≧ offset を前景。一定幅の線を強調</td><td>同上</td></tr>
+<tr><td>NICK 法</td><td><code>BinalizeNick</code></td><td>窓 (2w+1)² で T = m + k·√((ΣP² − m²)/NP)、P ≧ T を前景</td><td>窓サイズ、k（−1〜0、初期 −0.03）</td></tr>
+</table>
+<h3>ラベリング</h3>
+<p>「ラベリングする」を ON にすると、2 値化結果に対して <code>Label</code>（<code>cv::connectedComponentsWithStats</code>、8 連結）を行い、ラベル画像を別の画像メモリ（既定は原画像＋2）に出力する。</p>
+<ul>
+<li>最小面積（初期 10）未満のラベルは数えない。ラベル数の上限は 9999。戻り値は最小面積以上のラベル数。</li>
+<li>ラベル画像は FLOAT_3D 型の生ラベル番号で、パレットを「ラベル」（6 色循環）にして見分けやすくする。</li>
+<li>1 ページの場合は各ラベルの重心にマークを追加し、属性 0 に面積を入れる。</li>
+</ul>
+<div class="warn">WORD 型の画像を 2 値化すると、閾値手入力・ローカル 2 手法・NICK で NULL ポインタを参照する不具合がある。P タイル法の閾値はデータのスケールに戻さず 0〜255 の段階番号で返る。</div>
+
+<h2 id="convert">型変換</h2>
+<div class="fig-side">
+<div>
+<p><code>CConvertDataDlg</code>（モーダル）。選択中の画像メモリの型を変換する（<code>ConvertDataUnit</code>、本体は <code>CDataUnit::Convert</code>）。</p>
+<table class="fit">
+<tr><th>設定</th><th>選択肢</th></tr>
+<tr><td>変換元</td><td>表示画像／データ／マスク／疑似カラー</td></tr>
+<tr><td>変換元の成分</td><td>RGB: 明度・彩度・色相・R・G・B ／ COMPLEX: 実部・虚部・パワー・位相 ／ XY・XYZ: 成分 ／ 3D 系: ページ</td></tr>
+<tr><td>変換先の型</td><td>表示画像 → BYTE（RGB 系は RGB）／データ → BYTE・RGB・SHORT・WORD・LONG・DWORD・FLOAT・XYZ・COMPLEX・3D・F3D ／マスク → BYTE ／疑似カラー → RGB</td></tr>
+<tr><td>変換先の成分</td><td>RGB: 全成分・R・G・B ／ COMPLEX: 実部・虚部 ／ 3D 系: ページ数・オフセット</td></tr>
+<tr><td>上下限超過時</td><td>飽和（初期 ON）／折り返し</td></tr>
+</table>
+</div>
+<figure><img src="img/convert.png" alt="型変換ダイアログ"><figcaption>型変換ダイアログ（旧版のボタン方式）</figcaption></figure>
+</div>
+<ul>
+<li>変換元は表示中のページ・チャネルで、RGB カラー表示中は輝度に変換してから移す。</li>
+<li>名前・作業領域・表示位置と倍率・マークは引き継ぐ。マスクはクリアされる。</li>
+<li>XYZ への変換では Z にデータ、X = i − W/2、Y = −j + H/2 を入れる。</li>
+<li>変換オプションは構造体 <code>CONVERT_DATA_OPTION</code>（<code>type_to</code>、<code>rgb_to</code>、<code>comp_to</code>、<code>satulate</code>、<code>byte_from</code>、<code>color_gray_method</code>、<code>threeD_page</code>、<code>threeD_offset</code>）で渡す。</li>
+</ul>
+<div class="warn">XY 型・RGB3D 型への変換は値が移らず 0 のまま（UI の候補からも外されている）。色相による灰色化は未実装。</div>
+
+<h2 id="resize">サイズ変換</h2>
+<div class="fig-side">
+<div>
+<p><code>CResizeDataDlg</code>（モーダル）。<code>ResizeDataUnit</code> を呼ぶ。実行後もダイアログは閉じない。</p>
+<table class="fit">
+<tr><th>設定</th><th>内容</th></tr>
+<tr><td>格納先</td><td>現在の画像に上書き／原画像 → 結果画像</td></tr>
+<tr><td>幅・高さ</td><td>変換後のサイズ（/2・×2 ボタンあり）</td></tr>
+<tr><td>オフセット X・Y</td><td>伸縮しないときの貼り付け位置</td></tr>
+<tr><td>伸縮</td><td>OFF: 拡大縮小せず、オフセット位置に貼る（はみ出しは切り捨て、余白は黒）。ON: 画像を新サイズに伸縮</td></tr>
+<tr><td>縮小アルゴリズム</td><td>面積平均／最大／最小</td></tr>
+</table>
+<p>伸縮は x→y の分離処理で、拡大は双線形補間、縮小は面積積分。マスクも同様に変換され、表示コントラストの設定は保持される。</p>
+</div>
+<figure><img src="img/resize.png" alt="サイズ変換ダイアログ"><figcaption>画像サイズ変換ダイアログ</figcaption></figure>
+</div>
+
+<h2 id="transform">幾何変換（射影変換）</h2>
+<div class="fig-side">
+<div>
+<p><code>CTransformDlg</code>（モーダル）。<code>PerspectiveTransDataUnit</code>（撮像条件版）を呼ぶ。XYZ 空間の XY 面に元画像が 1 pix = 1 mm で貼られていると想定し、仮想カメラで撮影したときの見え方に変換する。仮想カメラは視野が元画像の高さになり、光軸上に原点が来る位置に置く。</p>
+<table class="fit">
+<tr><th>パラメータ</th><th>初期値</th><th>効果</th></tr>
+<tr><td>焦点距離 f [mm]</td><td>16</td><td>大きいほど傾けたときの台形歪みが小さい</td></tr>
+<tr><td>撮像素子サイズ a [μm]</td><td>7.4</td><td>大きいほど台形歪みが大きい</td></tr>
+<tr><td>撮像素子ずれ TI, TJ [pix]</td><td>0, 0</td><td>画像の位置が変わる</td></tr>
+<tr><td>回転 θ(Z), Ψ(Y), φ(X) [deg]</td><td>0, 0, 0</td><td>回転・台形変形</td></tr>
+<tr><td>撮像面内移動 TX, TY [mm]</td><td>0, 0</td><td>画像の位置が変わる（TI, TJ と逆向き）</td></tr>
+<tr><td>はみ出した画素を埋める</td><td>—</td><td>ON: 範囲外を端の画素で埋める／OFF: 書かない（黒）</td></tr>
+</table>
+</div>
+<figure><img src="img/transform.png" alt="幾何変換ダイアログ"><figcaption>幾何変換ダイアログ</figcaption></figure>
+</div>
+<p>内部では f[pix] = f[mm] / (a[μm]/1000·√2)、回転行列 R = R1(θ)·R2(φ)·R3(ψ) から射影行列 H を作り（SVD による逆行列）、逆写像</p>
+<pre><code>x = (p0·i + p1·j + p2) / D,  y = (p3·i + p4·j + p5) / D,  D = p6·i + p7·j + 1</code></pre>
+<p>を双線形補間で評価する。全ページ・チャネルが対象で、マスクも補間後に 2 値化して変換される。関連 API: <code>PerspectiveTransDataUnit(p[8])</code>（係数直接指定）、<code>IsoTransDataUnit</code>（平行移動・回転・倍率。内部では f=16 mm、7.4 μm の仮想カメラで射影変換を呼ぶ）、<code>PerspectiveTransCoor</code>（座標の変換）、<code>ClipDataUnit</code>（切り出し）。</p>
+<div class="warn">XY 型に対するサイズ変換・射影変換・切り出しは出力ポインタが未初期化のまま使われる不具合がある。</div>
+
+<h2 id="calc">数式による画像生成</h2>
+<div class="fig-side">
+<div>
+<p><code>CCalcDlg</code>（数式ウィンドウ）。画素ごとの値を表す式を入力し、画像やマスクを生成する。式の文法は <a href="script.html">7 章</a>。</p>
+<table class="fit">
+<tr><th>設定</th><th>内容</th></tr>
+<tr><td>数式</td><td>コンボボックス。過去 10 件の履歴を pimpom.ini の <code>[CALCLATION]</code> に保存</td></tr>
+<tr><td>上下限超過時</td><td>飽和（ON）／折り返し（OFF）</td></tr>
+<tr><td>格納先</td><td>新規画像メモリ取得（幅・高さと型 BYTE／SHORT／WORD／LONG／DWORD／FLOAT／RGB を指定）／現在の画像に上書き（マスク・作業領域は保持）／演算結果からマスク生成</td></tr>
+<tr><td>マスク生成の範囲</td><td>演算結果が [min, max]（既定 0〜256）に入る画素を非マスク、外をマスク</td></tr>
+<tr><td>マクロ一覧</td><td><code>Doc\macro_help.txt</code> を開く</td></tr>
+</table>
+</div>
+<figure><img src="img/calc.png" alt="数式ウィンドウ"><figcaption>数式で画像を生成ウィンドウ</figcaption></figure>
+</div>
+<p>実行時は (1,1) で試し評価して式を検査してから、処理矩形内の各画素（マスク画素・作業領域外は除く）について式を評価する。RGB を生成するときは R・G・B に同じ値が入る。実行前に格納先をバックアップする。</p>
+
+<h2 id="pixwise">画像間演算</h2>
+<p><code>Calc2DataUnit</code>（<code>api_pixwise_calc.cpp</code>）と、その別名関数で画像同士の演算を行う。dst は指定した型で作り直され、3 つとも RGB 系ならチャネルごとに計算する。作業領域とマスクは考慮しない。</p>
+<table class="fit">
+<tr><th>関数</th><th>計算</th></tr>
+<tr><td><code>Linear2DataUnit(A, B, dst, type, wA, wB, bias, sat)</code></td><td>A·wA + B·wB + bias</td></tr>
+<tr><td><code>SumDataUnit</code> / <code>SubtractDataUnit</code> / <code>SubAbsDataUnit</code></td><td>A+B ／ A−B ／ |A−B|</td></tr>
+<tr><td><code>MultiplyDataUnit</code> / <code>DivideDataUnit</code></td><td>A×B ／ A÷B（B=0 なら bias）</td></tr>
+<tr><td><code>LinearDataUnit(n, dst, type, w, bias, sat)</code></td><td>n·w + bias</td></tr>
+<tr><td><code>AbsDataUnit</code></td><td>|n|（スクリプトからは未実装で失敗する）</td></tr>
+</table>
+<div class="warn">dst を src と同じ番号にすると、作り直しで入力が失われる。</div>
+
+<h2 id="others">その他の処理</h2>
+<table class="fit">
+<tr><th>機能</th><th>API</th><th>内容</th></tr>
+<tr><td>ハフ変換</td><td><code>HoughLines</code></td><td><code>cv::HoughLinesP</code>（ρ 刻み、θ 刻み[deg]、投票閾値、最小長、最大ギャップ）。BYTE のみ。検出線をマークを全消去してから線マークとして登録（最大 2000）。戻り値は本数</td></tr>
+<tr><td>ポアソンブレンド</td><td><code>BlendPoisson</code></td><td><code>cv::seamlessClone</code>（0 NORMAL、1 MIXED、2 MONOCHROME_TRANSFER）。合成範囲はブレンド画像の非マスク画素。BYTE／RGB</td></tr>
+<tr><td>画像上への描画</td><td><code>DrawLineOnImage</code> 他</td><td>線（0.5px 刻み）、円、矩形、十字、点、テキスト（<code>cv::putText</code>、ASCII のみ）、塗りつぶし、作業領域塗りつぶし、画像の重ね合わせ（max／min／平均）。<code>PrepeareDrawing</code> で RGB に変換してから色付きで描く</td></tr>
+<tr><td>ビデオキャプチャ</td><td><code>CaptureInit</code> / <code>CaptureOne</code></td><td><code>cv::VideoCapture(0)</code> 固定。指定した画像メモリへ 1 フレームずつ取り込む</td></tr>
+</table>
+
+<footer class="pager"><a href="windows.html">← 5. 各ウィンドウ</a><a href="script.html">7. スクリプト →</a></footer>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>各ウィンドウ - PIMPOM 仕様書</title>
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+<div class="layout">
+<nav class="side">
+<div class="brand"><a href="index.html">PIMPOM 仕様書</a></div>
+<div class="sub">PIMPOM2022.sln（コード解析版）</div>
+<ol>
+<li><a href="index.html">1. 概要</a></li>
+<li><a href="architecture.html">2. システム構成</a></li>
+<li><a href="data.html">3. データ構造</a></li>
+<li><a href="main_window.html">4. メイン画面とメニュー</a></li>
+<li><a href="windows.html" class="current">5. 各ウィンドウ</a><ul class="toc"><li><a href="#common">共通の仕組み</a></li><li><a href="#data">データウィンドウ モードレス</a></li><li><a href="#histogram">ヒストグラムウィンドウ モードレス</a></li><li><a href="#mark">マークウィンドウ モードレス</a></li><li><a href="#workarea">作業領域ウィンドウ モードレス</a></li><li><a href="#chart">チャート（グラフ）ウィンドウ モードレス</a></li><li><a href="#batch">バッチ実行ウィンドウ モードレス</a></li><li><a href="#pick">フリーハンド編集ウィンドウ モードレス</a></li><li><a href="#socket">TCP/IP 通信ウィンドウ モードレス</a></li><li><a href="#multi">複数画像同時表示ウィンドウ モードレス</a></li><li><a href="#img3d">3D 画像一覧ウィンドウ モードレス</a></li><li><a href="#pointcloud">3D 点群表示ダイアログ モーダル</a></li><li><a href="#io3d">動画ファイル入出力ダイアログ モーダル</a></li><li><a href="#confirm">汎用データ入力ダイアログ モーダル</a></li><li><a href="#others">その他のウィンドウ</a></li></ul></li>
+<li><a href="processing.html">6. 画像処理機能</a></li>
+<li><a href="script.html">7. スクリプト</a></li>
+<li><a href="integration.html">8. 外部連携と拡張</a></li>
+<li><a href="api.html">9. API リファレンス概要</a></li>
+<li><a href="files.html">10. ファイル形式と設定</a></li>
+<li><a href="appendix.html">11. 付録（ソース一覧・資料との差異）</a></li>
+</ol>
+</nav>
+<main>
+<!-- title: 各ウィンドウ -->
+<h1>5. 各ウィンドウ</h1>
+<p class="lead">メインウィンドウ以外の各ダイアログの目的・操作・連携を示す。画像処理系のダイアログ（汎用フィルタ、2 値化、型変換、サイズ変換、幾何変換、数式）は処理内容を<a href="processing.html">6 章</a>で詳しく扱う。</p>
+
+<h2 id="common">共通の仕組み</h2>
+<h3>生成と管理</h3>
+<table class="fit">
+<tr><th>区分</th><th>生成方法</th></tr>
+<tr><td><span class="tag modeless">モードレス</span></td><td><code>CPimpomAPI::DialogOpen(IDD, show)</code> が初回だけ <code>new</code>＋<code>Create</code> し、以後は表示／非表示を切り替える。ポインタは <code>API.pDataDlg</code> などのメンバに保持</td></tr>
+<tr><td><span class="tag modal">モーダル</span></td><td>呼び出し元がローカル変数で生成し <code>DoModal()</code></td></tr>
+</table>
+<p>データ・ヒストグラム・作業領域・マークの 4 ウィンドウは起動時に生成され、常に存在する前提で <code>API.DrawImage()</code> から呼ばれる。</p>
+<h3>ウィンドウ間の連携</h3>
+<ul>
+<li>メッセージ通知は使わず、<code>API</code> 経由の直接呼び出しで連携する。画像が変わったら <code>API.DrawImage()</code> を呼ぶと、メイン・データ・ヒストグラム・マーク・複数画像表示・3D 画像一覧が更新される。</li>
+<li>メイン画面のマウス操作は、<code>CPIMPOMDlg</code> が画像座標に変換してから、作業領域・マーク・フリーハンド編集の各ウィンドウとカスタムファンクションに配る。受け手は自分が非表示なら無視する。</li>
+<li>多くのウィンドウは <kbd>Enter</kbd>／<kbd>Esc</kbd> で閉じない。データ・マーク・作業領域・フリーハンド・複数画像表示では矢印キーでマウスカーソルが 1px 動く。</li>
+<li>「原画像 → 結果画像」型の画面（汎用フィルタ、2 値化、サイズ変換、幾何変換）は、初期値で原画像＝選択中の番号、結果＝その次の番号。「表示画像を原画像にする」で設定し直す。処理前に結果側を <code>BackupDataUnit</code> で退避する（汎用フィルタの別メモリ出力を除く）。</li>
+</ul>
+
+<h2 id="data">データウィンドウ <span class="tag modeless">モードレス</span></h2>
+<figure><img src="img/data.png" alt="データウィンドウ"><figcaption>データウィンドウ</figcaption></figure>
+<p><code>CDataDlg</code>（<code>IDD_DATA_DLG</code>）。全画像メモリのサムネイル（既定 40×30）を一覧表示し、選択・コピー・削除・変換の入口になる。コントロールは無く、すべて自前描画。各サムネイルに番号（右上）、データ名（下）、型ラベル（左上、型ごとに色分け）を描き、選択中は黒枠で囲む。メインウィンドウの下に追従する。</p>
+<table>
+<tr><th>操作</th><th>動作</th></tr>
+<tr><td>左クリック</td><td>その画像メモリを選択</td></tr>
+<tr><td>別のサムネイルへドラッグ</td><td>画像メモリをコピー（<code>CopyDataUnit</code>）。コピー先が空でなければ、上書きする項目（画像データ、マスク、マーク、表示レンジ、作業領域、表示位置）を選ぶ</td></tr>
+<tr><td>右クリック</td><td>選択してからメニュー: ビットマップ保存、名前変更、型変換、サイズ変換、削除、復元、3D 画像一覧表示</td></tr>
+<tr><td>ファイルをドロップ</td><td>ドロップ先の番号から順に読み込む（既存データは確認後バックアップ）</td></tr>
+<tr><td><kbd>Delete</kbd></td><td>確認後に削除（メニューと異なりバックアップしない）</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>Ctrl</kbd>+<kbd>V</kbd></td><td>表示画像コピー／確認→バックアップ→貼り付け</td></tr>
+</table>
+
+<h2 id="histogram">ヒストグラムウィンドウ <span class="tag modeless">モードレス</span></h2>
+<div class="fig-side">
+<div>
+<p><code>CHistgramDlg</code>（<code>IDD_HISTGRAM_DLG</code>「濃度ヒストグラム」）。表示画像のヒストグラム（<code>BrightLevel[256]</code>）を 256×150 で表示し、表示濃度レンジ（コントラスト）を調整する。下にカラーバー（現在のパレット）を描く。RGB カラー表示時は輝度、作業領域使用時は領域内、マスク使用時は非マスク画素で集計する。</p>
+<table class="fit">
+<tr><th>コントロール</th><th>動作</th></tr>
+<tr><td>度数上限</td><td>縦軸の最大（初期 3000）。▲▼・×2・÷2</td></tr>
+<tr><td>min / max / mid / ±幅</td><td>表示レンジ。min・max を変えると mid・幅が連動し、逆も同様。Enter か「反映」で <code>SetDispRange</code></td></tr>
+<tr><td>プリセット</td><td>min-max（データの最小最大）、ave±sdv2（平均±2σ）、0-256、-π〜π</td></tr>
+<tr><td>平均・標準偏差</td><td>表示中のページ・チャネルの統計</td></tr>
+<tr><td>マウス移動</td><td>ポイントした位置の濃度範囲と度数を表示</td></tr>
+<tr><td>右ドラッグ</td><td>範囲を反転表示し、確認後にその範囲を表示レンジにする</td></tr>
+</table>
+</div>
+<figure><img src="img/hist.png" alt="ヒストグラムウィンドウ"><figcaption>ヒストグラムウィンドウ</figcaption></figure>
+</div>
+
+<h2 id="mark">マークウィンドウ <span class="tag modeless">モードレス</span></h2>
+<div class="fig-side">
+<div>
+<p><code>CMarkDlg</code>（<code>IDD_MARK_DLG</code>）。選択中画像のマーク一覧を表示・編集する。リストの列は ID、Type（P=点／L=線）、x、y、x2、y2、pt.val（点の画素値）、attrib0〜2。</p>
+<table class="fit">
+<tr><th>操作</th><th>動作</th></tr>
+<tr><td>点追加モードでクリック</td><td><code>AddMark</code>（サブピクセル座標）し、最寄りのマークを選択</td></tr>
+<tr><td>線追加モードでドラッグ</td><td>ラバーバンドを描き、離すと <code>AddLineMark</code></td></tr>
+<tr><td>リストをクリック</td><td>メイン画面で赤く強調し、座標固定時はその画素値を表示</td></tr>
+<tr><td>見出しをクリック</td><td>昇順／降順ソート</td></tr>
+<tr><td>右クリック／編集ボタン</td><td>座標と属性を汎用入力ダイアログで編集</td></tr>
+<tr><td>削除／全削除／番号表示</td><td>選択マークの削除、全削除、メイン画面へのマーク番号表示</td></tr>
+</table>
+</div>
+<figure><img src="img/mark.png" alt="マークウィンドウ"><figcaption>マークウィンドウ</figcaption></figure>
+</div>
+
+<h2 id="workarea">作業領域ウィンドウ <span class="tag modeless">モードレス</span></h2>
+<div class="fig-side">
+<div>
+<p><code>CWorkAreaDlg</code>（<code>IDD_WORKAREA_DLG</code>）。作業領域の図形（最大 10）を編集する。図形の仕様は <a href="data.html#workarea">3 章</a>。</p>
+<table class="fit">
+<tr><th>コントロール／操作</th><th>動作</th></tr>
+<tr><td>編集（チェック）</td><td>ON でメイン画面のドラッグにより図形を作成・編集。未初期化の図形は 2 点から生成、既存図形は端点から 10px 以内で変形、それ以外で全体移動</td></tr>
+<tr><td>追加</td><td>種類（矩形・直線・楕円・円周など）を選んで図形を追加し、編集モードにする</td></tr>
+<tr><td>削除／全領域化</td><td>選択図形を削除（後続を詰める）／全図形を消して画像全体の矩形 1 つにする</td></tr>
+<tr><td>図形リスト・NOT 領域</td><td>選択すると座標と OR/NOT を表示し、メイン画面で太線にする。NOT にチェックで除外領域</td></tr>
+<tr><td>パラメータ 1〜6</td><td>図形の座標。スピンは即時反映、手入力は「反映」で反映</td></tr>
+<tr><td>自動マスク生成</td><td>ON で編集後に作業領域外を自動でマスク</td></tr>
+<tr><td>マスククリア／クリッピング／拡大表示</td><td>全マスク解除／全図形の外接矩形で画像を切り抜き／選択図形の外接矩形に合わせて表示倍率を設定</td></tr>
+</table>
+<p>OR 図形は緑、NOT 図形は赤で描き、メッセージ 1 に寸法を表示する。</p>
+</div>
+<figure><img src="img/workarea.png" alt="作業領域ウィンドウ"><figcaption>作業領域ウィンドウ</figcaption></figure>
+</div>
+
+<h2 id="chart">チャート（グラフ）ウィンドウ <span class="tag modeless">モードレス</span></h2>
+<figure><img src="img/chart.png" alt="チャートウィンドウ" style="width:640px"><figcaption>チャートウィンドウ（1 次元表示）</figcaption></figure>
+<p><code>CChartDlg</code>（<code>IDD_CHART_DLG</code>）。数値データ系列を 1D 折れ線または 2D 散布図で表示する。グラフは 10 本（タブ 0〜9）で、それぞれ最大 10000 点。2D は x, y を交互に格納し、異なる次元のデータを追加すると既存データはクリアされる。</p>
+<table class="fit">
+<tr><th>コントロール</th><th>動作</th></tr>
+<tr><td>タブ</td><td>表示するグラフ番号（0〜9）</td></tr>
+<tr><td>グラフ種類</td><td>データ／ヒストグラム（分割数 10〜499、初期 30）／スペクトラム（DFT。周波数 3 以上、周期で表示）。2D では無効</td></tr>
+<tr><td>軸範囲</td><td>X・Y の min／max と「自動」。「設定」で中央±幅を入力</td></tr>
+<tr><td>グラフ重畳表示</td><td>複数のグラフを色分けして重ねる。対象は「重畳表示設定」で選ぶ（初期は 0〜8）</td></tr>
+<tr><td>データ表示</td><td>ID / x / y のリスト。右クリックで値を編集</td></tr>
+<tr><td>データクリア／CSV 出力</td><td>表示中グラフの消去／CSV ファイルへの保存</td></tr>
+<tr><td>グラフ上クリック</td><td>50px 以内の最寄り点を赤で強調し値を表示</td></tr>
+</table>
+<p>データの供給元: API の <code>AddDataToChart</code>／<code>PlotDataToChart</code> 系、スクリプトマクロ、外部プログラム（共有メモリ）、メイン画面のルーラー＋濃度グラフ（グラフ 9 に線上の画素値を送る）。</p>
+<div class="fig-row">
+<figure><img src="img/chart_hist.png" alt="ヒストグラム表示" style="width:360px"><figcaption>ヒストグラム表示</figcaption></figure>
+<figure><img src="img/chart2d.png" alt="2D 散布図" style="width:360px"><figcaption>2 次元分布</figcaption></figure>
+</div>
+
+<h2 id="batch">バッチ実行ウィンドウ <span class="tag modeless">モードレス</span></h2>
+<figure><img src="img/batch.png" alt="バッチ実行ウィンドウ" style="width:640px"><figcaption>バッチ実行ウィンドウ</figcaption></figure>
+<p><code>CBatchDlg</code>。画像ファイルの一覧に対して、画像を読み込んではスクリプト・Python・カスタムファンクションを実行することを繰り返す。リストの列は ID、画像ファイル、入力パラメータ IN0〜4、出力パラメータ OUT0〜14。</p>
+<table class="fit">
+<tr><th>コントロール／操作</th><th>動作</th></tr>
+<tr><td>追加／削除／クリア</td><td>ファイルダイアログで追加（複数可）、選択行削除、全消去</td></tr>
+<tr><td>CSV から入力／CSV へ出力</td><td>1 行 = <code>パス,IN0..IN4,OUT0..OUT14</code></td></tr>
+<tr><td>ドラッグ＆ドロップ</td><td>画像ファイルはパスとして、CSV は内容として追加。.txt は区切り文字（カンマ／スペース／コロン）を選んで読み込む</td></tr>
+<tr><td>読み込み先画像メモリ番号</td><td>画像を展開する番号</td></tr>
+<tr><td>ルートパス</td><td>各パスの前に連結するフォルダ</td></tr>
+<tr><td>実行ルール</td><td>0: スクリプト→カスタムファンクション、1: カスタムファンクション→スクリプト、2: スクリプトのみ（ini には保存しない）</td></tr>
+<tr><td>実行／前／次／一斉実行</td><td>選択行、前の行、次の行を実行／先頭から全行を順に実行（もう一度押すと中断）</td></tr>
+<tr><td>ダブルクリック／右クリック／見出しクリック</td><td>その行を実行／入力パラメータの編集／ソート</td></tr>
+</table>
+<p>一斉実行はワーカースレッド（<code>BatchThread</code>）が 10 ms 間隔で 1 件ずつ <code>API.BatchExecute</code> を呼ぶ。各件の出力の <code>state</code> が 3（STOP）なら終了、2（RETRY）なら同じ行を再実行、それ以外は次の行へ進む。処理順の詳細は <a href="integration.html#batch">8 章</a>。</p>
+
+<h2 id="pick">フリーハンド編集ウィンドウ <span class="tag modeless">モードレス</span></h2>
+<div class="fig-side">
+<div>
+<p><code>CDataPickDlg</code>（<code>IDD_DATAPICK_DLG</code>）。画像データやマスクをペイントブラシのように直接編集する。操作が有効なのはこのウィンドウの表示中のみ。</p>
+<table class="fit">
+<tr><th>モード／コントロール</th><th>動作</th></tr>
+<tr><td>ピック</td><td>クリック位置の値（RGB は 3 成分）とマスク状態を取得</td></tr>
+<tr><td>ペイント</td><td>クリック・ドラッグ位置にドットサイズ（1〜100）の円で値を書く（<code>DrawPointOnImage</code>／<code>DrawPointOnMask</code>）。押下時にバックアップ</td></tr>
+<tr><td>塗りつぶし</td><td>クリック位置を含む同値領域を塗る（<code>FloodFillOnImage</code>／<code>FloodFillOnMask</code>）</td></tr>
+<tr><td>マスクを編集</td><td>ON で画像データの代わりにマスク（ON/OFF）を編集</td></tr>
+<tr><td>データ</td><td>書き込む値（RGB は左から R・G・B）</td></tr>
+<tr><td>作業領域内塗りつぶし</td><td>作業領域内部を同一値で塗る</td></tr>
+<tr><td>元に戻す</td><td><code>RecoverDataUnit</code></td></tr>
+</table>
+<p>ペイント・塗りつぶし時はカーソル形状が変わる。作業領域使用時は領域内だけが対象。</p>
+</div>
+<figure><img src="img/pick.png" alt="フリーハンド編集ウィンドウ"><figcaption>フリーハンド編集ウィンドウ</figcaption></figure>
+</div>
+
+<h2 id="socket">TCP/IP 通信ウィンドウ <span class="tag modeless">モードレス</span></h2>
+<div class="fig-side">
+<div>
+<p><code>CSocketCtrlDlg</code>。TCP/IP の接続を確立し、テキストの送受信を確認する。通信内容の処理はカスタムファンクションで実装する想定で、ウィンドウを閉じても接続は続く。</p>
+<table class="fit">
+<tr><th>コントロール</th><th>動作</th></tr>
+<tr><td>クライアント／サーバー</td><td>種別（既定クライアント）</td></tr>
+<tr><td>ホスト名／ポート番号</td><td>既定 <code>localhost</code> / <code>9876</code></td></tr>
+<tr><td>Open</td><td>サーバー: 待ち受け開始。クライアント: 接続。状態はメッセージ領域に表示（失敗時「接続失敗」）</td></tr>
+<tr><td>区切り文字</td><td>CRLF（既定）／CR／LF</td></tr>
+<tr><td>送信</td><td>文字列を区切り文字付きで送る</td></tr>
+<tr><td>受信</td><td>受信した文字列を "->" 付きで順次表示</td></tr>
+</table>
+<p>プロトコルの詳細は <a href="integration.html#socket">8 章</a>。</p>
+</div>
+<figure><img src="img/socket.png" alt="TCP/IP 通信ウィンドウ"><figcaption>TCP/IP 通信ウィンドウ</figcaption></figure>
+</div>
+
+<h2 id="multi">複数画像同時表示ウィンドウ <span class="tag modeless">モードレス</span></h2>
+<figure><img src="img/multi.png" alt="複数画像同時表示" style="width:640px"><figcaption>複数画像同時表示ウィンドウ</figcaption></figure>
+<p><code>CMultiImageDispDlg</code>。2／4／6 枚の画像を並べて比較する。初期状態では画面 i に画像メモリ i を表示する。</p>
+<ul>
+<li>「表示画像変更」ON の間は、選択中の画面にメイン画面で選んだ画像メモリが割り当てられる。</li>
+<li>左・中ドラッグでスクロール、ホイールで 10% 拡大縮小、×2・/2 で倍率変更。</li>
+<li>同じサイズの画像同士は表示位置と倍率が同期する。これは各 <code>CDataUnit</code> の表示状態を直接書き換えるため、メイン画面の表示にも反映される。</li>
+<li>カーソル位置について全画面の <code>I(n)=値</code> を 1 行で表示する。</li>
+</ul>
+
+<h2 id="img3d">3D 画像一覧ウィンドウ <span class="tag modeless">モードレス</span></h2>
+<p><code>C3DImgDispDlg</code>。3D／FLOAT3D／RGB3D の全ページ（最大 384 枚）をタイル表示し、クリックしたページをメイン画面に表示する。表示中のページは太枠、平均 0 かつ標準偏差 0 のページは赤枠（オプション）。倍率（×2・/2）、ページ範囲スライダ、全ページの最小最大でレンジを揃える「min-max」、濃度 min/max を持つ。表示メニューまたはデータウィンドウの右クリックから開く。</p>
+
+<h2 id="pointcloud">3D 点群表示ダイアログ <span class="tag modal">モーダル</span></h2>
+<div class="fig-side">
+<div>
+<p><code>CPointCloudDlg</code>（<code>IDD_POINT_CLOUD_DLG</code>）。XYZ 型の画像を 3 次元点群として表示する。メイン画面の表示データ選択ボタン 4（XYZ 型のとき）で開く。</p>
+<ul>
+<li>X/Y/Z・輝度・マスクをコピーし、1000×740 の画面に、非マスクの点を Z バッファ付きの正投影で描く。右下に縮尺（mm）を表示。</li>
+<li>左ドラッグの動作をボタンで切り替える: 回転／拡大縮小（上で拡大・下で縮小）／平行移動。中ドラッグで平行移動、ホイールで 10% 拡大縮小。</li>
+<li>ドラッグ中は 6 点おきに間引いて描く。</li>
+</ul>
+</div>
+<figure><img src="img/pointcloud.png" alt="3D 点群表示"><figcaption>3D 点群表示ダイアログ</figcaption></figure>
+</div>
+
+<h2 id="io3d">動画ファイル入出力ダイアログ <span class="tag modal">モーダル</span></h2>
+<div class="fig-row">
+<figure><img src="img/io3d_open.png" alt="読込" style="width:420px"><figcaption>複数ファイルを動画データとして開く</figcaption></figure>
+<figure><img src="img/io3d_save.png" alt="保存" style="width:420px"><figcaption>動画データを複数ファイルとして保存</figcaption></figure>
+</div>
+<p><code>CIO3DDlg</code>（<code>IDD_IO_3D_DLG</code>）。3D／FLOAT3D／RGB3D 型と複数の画像ファイルを相互に変換する。</p>
+<table class="fit">
+<tr><th>方向</th><th>仕様</th></tr>
+<tr><td>読込</td><td>「参照」（最大 1000 件）かドラッグ＆ドロップでファイル一覧を作る（名前順）。先頭ファイルから幅・高さ・チャネルを決め、全ファイルが同じ形式・サイズであること。読込型 8bit → 3D（カラーなら RGB3D）、float → FLOAT3D。8bit は <code>cv::imread</code>、float は <code>LoadFloatImage</code> で読む</td></tr>
+<tr><td>保存</td><td>フォルダと連続名を指定し、<code>連続名＋3 桁連番＋拡張子</code>（例 <code>img_000.bmp</code>）で書く。3D → RAW／BMP、FLOAT3D → FLOAT、RGB3D → BMP</td></tr>
+</table>
+<p>ファイルメニューから開く。保存は 2 ページ以上のときのみ。</p>
+
+<h2 id="confirm">汎用データ入力ダイアログ <span class="tag modal">モーダル</span></h2>
+<p><code>CConfirmDlg</code>（<code>IDD_MULTI_CONFIRM_DLG</code>）。数値・文字列・ON/OFF・ラジオの入力欄を、登録した数（各最大 20）だけ並べて自動でレイアウトする汎用入力ダイアログ。<code>PIMPOM_EXT</code> で公開されており、カスタムファンクションから使える。</p>
+<pre><code>CConfirmDlg dlg;
+dlg.SetTitle("パラメータ");
+dlg.RegistVar("しきい値", &amp;th);      // int/short/float/double/CString/bool*
+dlg.RegistVar("反転", &amp;inverse);     // bool はチェックボックス
+if (dlg.DoModal() == IDOK) { /* 値が書き戻される */ }</code></pre>
+<p>本体内でも、名前変更、マーク編集、作業領域の種類選択、チャートの設定などで使われる。</p>
+
+<h2 id="others">その他のウィンドウ</h2>
+<table class="fit">
+<tr><th>ウィンドウ</th><th>説明</th><th>参照</th></tr>
+<tr><td>数式（画像生成）ウィンドウ</td><td>数式で画像やマスクを生成</td><td><a href="processing.html#calc">6 章</a></td></tr>
+<tr><td>2 値化ウィンドウ</td><td>2 値化とラベリング</td><td><a href="processing.html#binalize">6 章</a></td></tr>
+<tr><td>汎用フィルタウィンドウ</td><td>25 種のフィルタ</td><td><a href="processing.html#filter">6 章</a></td></tr>
+<tr><td>型変換／サイズ変換／幾何変換ダイアログ</td><td>データ型・サイズ・射影変換</td><td><a href="processing.html#convert">6 章</a></td></tr>
+<tr><td>スクリプトウィンドウ</td><td>スクリプトの編集・実行</td><td><a href="script.html#window">7 章</a></td></tr>
+<tr><td>Python スクリプトウィンドウ</td><td>Python プログラムの実行</td><td><a href="integration.html#python">8 章</a></td></tr>
+<tr><td>カスタムファンクション追加ダイアログ</td><td>CloneUserDlg.exe</td><td><a href="integration.html#clone">8 章</a></td></tr>
+</table>
+
+<footer class="pager"><a href="main_window.html">← 4. メイン画面とメニュー</a><a href="processing.html">6. 画像処理機能 →</a></footer>
+</main>
+</div>
+</body>
+</html>

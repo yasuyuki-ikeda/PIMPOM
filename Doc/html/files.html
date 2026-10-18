@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ファイル形式と設定 - PIMPOM 仕様書</title>
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+<div class="layout">
+<nav class="side">
+<div class="brand"><a href="index.html">PIMPOM 仕様書</a></div>
+<div class="sub">PIMPOM2022.sln（コード解析版）</div>
+<ol>
+<li><a href="index.html">1. 概要</a></li>
+<li><a href="architecture.html">2. システム構成</a></li>
+<li><a href="data.html">3. データ構造</a></li>
+<li><a href="main_window.html">4. メイン画面とメニュー</a></li>
+<li><a href="windows.html">5. 各ウィンドウ</a></li>
+<li><a href="processing.html">6. 画像処理機能</a></li>
+<li><a href="script.html">7. スクリプト</a></li>
+<li><a href="integration.html">8. 外部連携と拡張</a></li>
+<li><a href="api.html">9. API リファレンス概要</a></li>
+<li><a href="files.html" class="current">10. ファイル形式と設定</a><ul class="toc"><li><a href="#formats">画像ファイル形式</a></li><li><a href="#ini">pimpom.ini</a></li><li><a href="#customini">custom_func.ini</a></li><li><a href="#others">その他のファイル</a></li></ul></li>
+<li><a href="appendix.html">11. 付録（ソース一覧・資料との差異）</a></li>
+</ol>
+</nav>
+<main>
+<!-- title: ファイル形式と設定 -->
+<h1>10. ファイル形式と設定</h1>
+<p class="lead">読み書きできる画像ファイル形式、PIMPOM 独自形式の構造、設定ファイル（pimpom.ini、custom_func.ini）を示す。実装は <code>API/file_io/</code> と <code>api_func.cpp</code>。</p>
+
+<h2 id="formats">画像ファイル形式</h2>
+<p><code>SelectAndLoadImageFile</code> が拡張子で形式を判定する。複数ファイルを選ぶと選択中の番号から順に展開する。</p>
+<table>
+<tr><th>形式</th><th>拡張子</th><th>読込</th><th>保存</th><th>画像メモリの型</th><th>備考</th></tr>
+<tr><td>Windows Bitmap</td><td>.bmp</td><td>○</td><td>○</td><td>8bit → BYTE、24/32bit → RGB</td><td>自前の読込処理（他のビット深度は OpenCV へ回す）。保存はデータではなく<b>表示画像</b>（RGB 表示なら 24bit、それ以外は 8bit＋パレット）</td></tr>
+<tr><td>8bit 符号なし整数</td><td>.raw</td><td>○</td><td>○</td><td>BYTE</td><td rowspan="6">生データ＋16 B フッタ（下記）</td></tr>
+<tr><td>16bit 符号付き整数</td><td>.short</td><td>○</td><td>○</td><td>SHORT</td></tr>
+<tr><td>16bit 符号なし整数</td><td>.word</td><td>○</td><td>○</td><td>WORD</td></tr>
+<tr><td>32bit 符号付き整数</td><td>.long</td><td>○</td><td>○</td><td>LONG</td></tr>
+<tr><td>32bit 符号なし整数</td><td>.dword</td><td>○</td><td>○</td><td>DWORD</td></tr>
+<tr><td>32bit 浮動小数点</td><td>.float</td><td>○</td><td>○</td><td>FLOAT</td></tr>
+<tr><td>複素数／2 次元分布／3 次元分布</td><td>.comp / .xy / .xyz</td><td>○</td><td>△</td><td>COMPLEX / XY / XYZ</td><td>読込は 4／2／3 チャネル。保存は第 1 チャネルしか書かれず、読み戻せない</td></tr>
+<tr><td>8bit 動画／浮動小数動画</td><td>.3d / .f3d</td><td>○</td><td>○</td><td>3D / FLOAT3D</td><td>生データ × ページ数</td></tr>
+<tr><td>PIMPOM アーカイブ</td><td>.pim</td><td>○</td><td>○</td><td>全型</td><td>画像メモリの全状態を保存（下記）</td></tr>
+<tr><td>IFZ</td><td>.ifz</td><td>○</td><td>×</td><td>ベイヤー → RGB、モノクロ → BYTE</td><td>カメラ画像の独自形式（下記）</td></tr>
+<tr><td>BFZ</td><td>.bfz</td><td>○</td><td>×</td><td>—</td><td>パスをフォルダとみなし、中の *.bmp を最大 100 枚、連番の画像メモリへ読む</td></tr>
+<tr><td>その他（JPEG、PNG、TIFF など）</td><td>.jpg 他</td><td>条件付き</td><td>×</td><td>8UC1 → BYTE、8UC3 → RGB、16UC1 → WORD、16SC1 → SHORT、32FC1 → FLOAT</td><td><code>cv::imread(path, -1)</code>。アルファ付き（8UC4）、16bit カラー、32bit 整数、64bit 浮動小数は読めない</td></tr>
+</table>
+<p>3D／FLOAT3D／RGB3D と連番ファイルの相互変換は動画ファイル入出力ダイアログで行う（<a href="windows.html#io3d">5 章</a>）。最近使ったファイルは最大 10 件を pimpom.ini に記録する。</p>
+
+<h3>生バイナリ形式</h3>
+<p>.raw／.short／.word／.long／.dword／.float／.comp／.xy／.xyz／.3d／.f3d は共通構造。データは平面順（ページ → チャネル → 行 → 列）。</p>
+<pre><code>[画像データ  sizeof(要素) × W × H × ページ数 × チャネル数]
+[フッタ      long × 4 = { W, H, ページ数, チャネル数 }]   // 16 バイト</code></pre>
+<p>読込時、フッタから求めたサイズがファイルサイズと一致すればフッタを使い、一致しなければ幅・高さ・ページ数を尋ねる（初期値 640×480×1）。フッタの無い生データも読める。</p>
+
+<h3>PIMPOM アーカイブ（.pim）</h3>
+<p>画像メモリ 1 面の全状態を保存し、読み込むと保存時の状態を再現する。構造体 <code>DATA_UNIT_INFO</code> をそのまま書き出す。</p>
+<table class="fit">
+<tr><th>順</th><th>ブロック</th><th>内容</th></tr>
+<tr><td>1</td><td>ヘッダ</td><td>型、データ名（1024 B）、幅、高さ、ページ数、チャネル数、表示ページ・チャネル、RGB 表示フラグ、旧形式マーク（数と座標 256 個）、表示濃度最大・最小、表示倍率、表示オフセット、作業領域（図形種別・OR/NOT・座標 × 10）、作業領域使用フラグ、マスク使用フラグ</td></tr>
+<tr><td>2</td><td>表示画像</td><td>8bit 表示バッファ（RGB 系は 24bit）</td></tr>
+<tr><td>3</td><td>マスク</td><td>W × H バイト</td></tr>
+<tr><td>4</td><td>画像データ</td><td>型に応じたデータ</td></tr>
+<tr><td>5</td><td>マーク</td><td>個数のあと、1 個ごとに種別（short）と座標（<code>FIGURE_UNION</code>）。ヘッダのマーク数が 2000 なら新形式</td></tr>
+</table>
+<p>メニュー「画像メモリ一括保存」は全画像メモリを <code>images\bk%03d.pim</code> に保存し、次回起動時に復元できる。</p>
+<div class="warn">COMPLEX／XY／XYZ 型は 1 平面だけ保存して読込時に 2〜4 平面読むため、往復で壊れる。マスク使用フラグはヘッダを書いた後に代入されており、未初期化の値が保存される。</div>
+
+<h3>IFZ（.ifz）</h3>
+<pre><code>{ long id = -2; long cam_connect; }                  // bit0-3 が接続カメラ
+カメラごとに:
+{ long format, sizeX, sizeY, grabX, grabY, grabW, grabH, size; }  // IFZ_HEADER
+[画像データ]</code></pre>
+<p>format 0〜3: 8bit ベイヤー（周囲 1px の余白あり、平均補間でカラー化）、101〜104: ベイヤー（余白なし）、10／11／100: モノクロ。複数カメラは連番の画像メモリに展開する。</p>
+
+<h2 id="ini">pimpom.ini</h2>
+<p>exe と同じフォルダ（<code>bin\x64\Release</code> など）に置く。起動時のコマンドライン引数で別のパスを指定できる。<code>InitSettingFromProfile</code> が読み、各処理が必要に応じて書く。</p>
+<table>
+<tr><th>セクション</th><th>キー</th><th>内容</th><th>既定値</th></tr>
+<tr><td rowspan="11"><code>[SETTING]</code></td><td><code>IMG_NUM</code></td><td>画像メモリ数（1 未満なら既定値。上限チェックなし）</td><td>100</td></tr>
+<tr><td><code>DEFAULT_CURRENT_IMAGE</code></td><td>起動時に選択する画像メモリ番号</td><td>0</td></tr>
+<tr><td><code>MAIN_IMG_W</code> / <code>MAIN_IMG_H</code></td><td>メイン画像表示領域のサイズ</td><td>640 / 480</td></tr>
+<tr><td><code>DATA_WIN_W</code></td><td>データウィンドウの幅</td><td>1150</td></tr>
+<tr><td><code>THUMBNEIL_COLMN</code></td><td>サムネイルの列数（読むだけで書かれない）</td><td>—</td></tr>
+<tr><td><code>SMALL_IMG_W</code> / <code>SMALL_IMG_H</code></td><td>サムネイルのサイズ</td><td>40 / 30</td></tr>
+<tr><td><code>FONT_SIZE</code></td><td>直接描画用フォントのサイズ</td><td>11</td></tr>
+<tr><td><code>DEFEULT_USER_DLG</code></td><td>起動時に開くカスタムファンクション（キャプションの先頭一致。綴りはこのまま）</td><td>—</td></tr>
+<tr><td><code>INVISIBLE</code></td><td>0 以外で画面を表示しない</td><td>0</td></tr>
+<tr><td><code>PYTHON_BATCH_FILE</code></td><td>Python スクリプトウィンドウのファイルパス</td><td>—</td></tr>
+<tr><td colspan="3" class="src">環境設定（表示メニュー）で変更した値は再起動後に有効</td></tr>
+<tr><td><code>[DEFAULT_IMAGE]</code></td><td><code>IMGn</code>、<code>IMGnW</code>、<code>IMGnH</code>、<code>IMGnPage</code></td><td>起動時に画像メモリ n に読むファイルと、生データの場合のサイズ・ページ数</td><td>W/H 0、Page 1</td></tr>
+<tr><td><code>[FILE_LOG]</code></td><td><code>LOG0</code>〜<code>LOG9</code></td><td>最近使ったファイル（重複は追加しない）</td><td>—</td></tr>
+<tr><td><code>[CALCLATION]</code></td><td><code>value_history0</code>〜<code>9</code> など</td><td>数式ウィンドウの入力履歴</td><td>—</td></tr>
+</table>
+
+<h2 id="customini">custom_func.ini</h2>
+<p>exe と同じフォルダに置き、1 行 1 件で登録するカスタムファンクションを書く（最大 10 行）。CloneUserDlg が Debug／Release 両方のファイルに追記する。</p>
+<pre><code>プロジェクト名=キャプション
+
+（例）
+MyFunc1=穴検出
+MyFunc2=寸法計測</code></pre>
+<p>左辺 + <code>.dll</code> を読み込み、右辺を「カスタムファンクション」メニューに表示する。</p>
+
+<h2 id="others">その他のファイル</h2>
+<table class="fit">
+<tr><th>ファイル</th><th>場所</th><th>用途</th></tr>
+<tr><td><code>script_backup.txt</code></td><td>exe フォルダ</td><td>スクリプトウィンドウの自動バックアップ</td></tr>
+<tr><td><code>bitmapfonts.dat</code></td><td>exe フォルダ</td><td>直接描画用フォント（既存資料による）</td></tr>
+<tr><td><code>images\bk%03d.pim</code></td><td>exe フォルダ</td><td>画像メモリ一括保存</td></tr>
+<tr><td><code>vercheck.py</code>、<code>spl.py</code></td><td>exe フォルダ</td><td>Python 環境チェック、Python サンプル</td></tr>
+<tr><td><code>Doc\macro_description.txt</code>、<code>Doc\macro_help.txt</code></td><td>リポジトリ</td><td>スクリプトウィンドウ・数式ウィンドウが表示するマクロ説明</td></tr>
+</table>
+
+<footer class="pager"><a href="api.html">← 9. API リファレンス概要</a><a href="appendix.html">11. 付録（ソース一覧・資料との差異） →</a></footer>
+</main>
+</div>
+</body>
+</html>
