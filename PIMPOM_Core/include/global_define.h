@@ -140,6 +140,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //文字定数の設定////////////////////////////////////////////////////////////////
 
+//表示倍率(DPI)に合わせて 96dpi 基準のピクセル値を換算する
+//（PIMPOM はシステム DPI 認識で動くので、起動時に取得した値を使い続けてよい）
+inline int PimpomScreenDpi()
+{
+	static int dpi = 0;
+	if (dpi == 0) {
+		HDC hdc = ::GetDC(NULL);
+		dpi = (hdc != NULL) ? ::GetDeviceCaps(hdc, LOGPIXELSY) : 96;
+		if (hdc != NULL) ::ReleaseDC(NULL, hdc);
+		if (dpi <= 0) dpi = 96;
+	}
+	return dpi;
+}
+inline int ScaleByDpi(int px) { return ::MulDiv(px, PimpomScreenDpi(), 96); }
+
+//配色
+#define		PIMPOM_PANEL_BG_COLOR	(::GetSysColor(COLOR_BTNFACE))	//ウィンドウの地の色（OS のダイアログ背景に合わせる）
+#define		PIMPOM_VIEW_BG_COLOR	(RGB(128,128,128))				//画像表示領域で画像の外側を塗る色
+
 
 #define		MAIN_W		(640)					//メインイメージの幅のデフォルト値
 #define		MAIN_H		(480)					//メインイメージの高さのデフォルト値
@@ -148,14 +167,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //メインウィンドウ(MainDlg)
 #define		MAIN_WIN_LEFT_MARGIN	(0)		//メインイメージ表示領域からメインウィンドウ左端までのマージン
 #define		MAIN_WIN_TOP_MARGIN		(0)		//メインイメージ表示領域からメインウィンドウ上端までのマージン
-#define		MAIN_WIN_RIGHT_MARGIN	(50)	//メインイメージ表示領域からメインウィンドウ右端までのマージン
-#define		MAIN_WIN_BOTTOM_MARGIN	(160)	//メインイメージ表示領域からメインウィンドウ下端までのマージン
+#define		MAIN_WIN_RIGHT_MARGIN	(ScaleByDpi(50))	//メインイメージ表示領域からメインウィンドウ右端までのマージン
+#define		MAIN_WIN_BOTTOM_MARGIN	(ScaleByDpi(160))	//メインイメージ表示領域からメインウィンドウ下端までのマージン
 
 #define		DATA_SELECT_FIELD_Y		(0)		//データの表示タイプを決めるボタンを配置する領域の左上のｙ座標
 #define		DATA_SELECT_FIELD_W		(25)		//データの表示タイプを決めるボタンを配置する領域の幅
 #define		DATA_SELECT_FIELD_H		(100)		//データの表示タイプを決めるボタンを配置する領域の高さ
 
-#define		LAYER_SELECT_FIELD_Y		(130)		//レイヤーの表示タイプを決めるボタンを配置する領域の左上のｙ座標
+#define		LAYER_SELECT_FIELD_Y		(ScaleByDpi(130))		//レイヤーの表示タイプを決めるボタンを配置する領域の左上のｙ座標
 #define		LAYER_SELECT_FIELD_W		(25)		//レイヤーの表示タイプを決めるボタンを配置する領域の幅
 #define		LAYER_SELECT_FIELD_H		(125)		//レイヤーの表示タイプを決めるボタンを配置する領域の高さ
 
@@ -163,8 +182,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define		DATA_VALUE_DISP_FIELD_W		(400)		//データの値を表示する領域の幅
 #define		DATA_VALUE_DISP_FIELD_H		(80)		//データの値を表示する領域の高さ
 
-#define		MESSAGE_DISP_FIELD_X		(270)		//メッセージを表示する領域の左上のｘ座標
-#define		MESSAGE_DISP_FIELD_H		(150)		//メッセージを表示する領域の高さ
+#define		MESSAGE_DISP_FIELD_X		(ScaleByDpi(270))		//メッセージを表示する領域の左上のｘ座標
+#define		MESSAGE_DISP_FIELD_H		(ScaleByDpi(150))		//メッセージを表示する領域の高さ
 
 #define		DATA_NUMBER_DEFAULT		(100)	//画像メモリ数のデフォルト値
 #define		DATA_NUMBER_MAX			(1000)	//画像メモリ数の最大値

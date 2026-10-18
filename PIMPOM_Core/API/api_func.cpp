@@ -136,9 +136,9 @@ CPimpomAPI::CPimpomAPI()
 	default_font.lfClipPrecision = CLIP_DEFAULT_PRECIS;//クリッピング精度	
 	default_font.lfQuality = DEFAULT_QUALITY;//出力品質	
 	default_font.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;//ピッチ・ファミリ	
-	sprintf( default_font.lfFaceName, "ＭＳゴシック");//書体名	
+	sprintf( default_font.lfFaceName, "Meiryo UI");//書体名	
 	
-	default_bg_color = RGB(190,190,190);//標準の背景色
+	default_bg_color = PIMPOM_PANEL_BG_COLOR;//標準の背景色
 	default_fg_color = RGB(0,255,0);//標準のグラフィック色
 	//Y←0.299×R+0.587×G+0.114×B
 	rgb_gain[0] = 299;//299;//Rゲイン
@@ -350,13 +350,18 @@ void	CPimpomAPI::InitSettingFromProfile()
 	main_image_size.cx = _ttoi( GetProfile("SETTING", "MAIN_IMG_W"));
 	if (main_image_size.cx < 1) 
 	{
-		main_image_size.cx = MAIN_W;
+		main_image_size.cx = ScaleByDpi(MAIN_W);
 	}
 
 	main_image_size.cy = _ttoi( GetProfile("SETTING", "MAIN_IMG_H"));
 	if (main_image_size.cy < 1)
 	{
-		main_image_size.cy = MAIN_H;
+		main_image_size.cy = ScaleByDpi(MAIN_H);
+	}
+	//画面右端のボタン列（表示倍率に合わせて大きくなる）が収まる高さは確保する
+	if (main_image_size.cy < ScaleByDpi(460))
+	{
+		main_image_size.cy = ScaleByDpi(460);
 	}
 
 

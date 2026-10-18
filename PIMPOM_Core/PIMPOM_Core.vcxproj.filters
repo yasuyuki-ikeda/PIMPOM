@@ -660,6 +660,96 @@
     <Image Include="res\button_redo.bmp">
       <Filter>リソース ファイル</Filter>
     </Image>
+    <Image Include="res\icons\play.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\next.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\prev.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\stop.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\re.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\im.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\abs.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\arg.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\x.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\y.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\z.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\cloud.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\r.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\g.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\b.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\rgb.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\pen.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\fx.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\mark.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\workarea.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\mask.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\histogram.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\ruler.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\profile.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\fit.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\one.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\camera.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\camera_run.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\zoomin.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="res\icons\zoomout.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PIMPOM.rc">
