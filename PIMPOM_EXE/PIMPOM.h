@@ -40,10 +40,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // このクラスの実装については、PIMPOM_EXE.cpp を参照してください。
 //
 
-class CPIMPOM_EXEApp : public CWinApp
+class CPIMPOM_EXEApp : public CWinAppEx
 {
 public:
 	CPIMPOM_EXEApp();
+
+	//ドッキングパネルの配置やウィンドウ位置をレジストリに読み書きしない（設定は pimpom.ini だけを使う）
+	virtual BOOL LoadState(LPCTSTR lpszSectionName = NULL, CFrameImpl* pFrameImpl = NULL) { return FALSE; }
+	virtual BOOL SaveState(LPCTSTR lpszSectionName = NULL, CFrameImpl* pFrameImpl = NULL) { return TRUE; }
+	virtual void OnClosingMainFrame(CFrameImpl* pFrameImpl) {}
+	virtual BOOL LoadWindowPlacement(CRect& rectNormalPosition, int& nFflags, int& nShowCmd) { return FALSE; }
+	virtual BOOL StoreWindowPlacement(const CRect& rectNormalPosition, int nFflags, int nShowCmd) { return TRUE; }
 	
 
 // オーバーライド

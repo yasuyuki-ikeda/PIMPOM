@@ -81,6 +81,9 @@
     <ClCompile Include="WindowCtrlFiles\HistgramDlg.cpp">
       <Filter>ソース ファイル\WindowCtrlFiles</Filter>
     </ClCompile>
+    <ClCompile Include="WindowCtrlFiles\MainFrm.cpp">
+      <Filter>ソース ファイル\WindowCtrlFiles</Filter>
+    </ClCompile>
     <ClCompile Include="WindowCtrlFiles\IO3DDlg.cpp">
       <Filter>ソース ファイル\WindowCtrlFiles</Filter>
     </ClCompile>
@@ -389,6 +392,9 @@
       <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
     </ClInclude>
     <ClInclude Include="include\HistgramDlg.h">
+      <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MainFrm.h">
       <Filter>ヘッダー ファイル\include\WindowCtrlHeaders</Filter>
     </ClInclude>
     <ClInclude Include="include\IO3DDlg.h">

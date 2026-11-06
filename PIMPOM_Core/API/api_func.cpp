@@ -110,6 +110,8 @@ CPimpomAPI::CPimpomAPI()
 	pChartDlg=NULL;//グラフ表示
 	pCmdPrptDlg=NULL;//コマンドプロンプト
 	pPythonBatchDlg = NULL;//Pythonバッチ処理
+	pMainFrame = NULL;//メインフレーム
+	pTransformDlg = NULL;//幾何変換
 
 
 	//ユーザダイアログ
@@ -203,6 +205,7 @@ CPimpomAPI::~CPimpomAPI(void)
 	DialogDelete(IDD_FILTER_CTRL_DLG);
 	DialogDelete(IDD_CALC_DLG);
 	DialogDelete(IDD_BINALIZE_DLG);
+	DialogDelete(IDD_TRANSFORM_DLG);
 	DialogDelete(IDD_BATCH_DLG);
 	DialogDelete(IDD_MULTI_IMAGE_DISP_DLG); 
 	DialogDelete(IDD_3D_IMAGE_DISP_DLG);
@@ -357,11 +360,6 @@ void	CPimpomAPI::InitSettingFromProfile()
 	if (main_image_size.cy < 1)
 	{
 		main_image_size.cy = ScaleByDpi(MAIN_H);
-	}
-	//画面右端のボタン列（表示倍率に合わせて大きくなる）が収まる高さは確保する
-	if (main_image_size.cy < ScaleByDpi(460))
-	{
-		main_image_size.cy = ScaleByDpi(460);
 	}
 
 

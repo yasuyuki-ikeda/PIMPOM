@@ -28,7 +28,7 @@
 <main>
 <!-- title: API リファレンス概要 -->
 <h1>9. API リファレンス概要</h1>
-<p class="lead"><code>CPimpomAPI</code>（<code>include/PIMPOM_API.h</code>）の関数を分類ごとにまとめる。公開メンバ関数の宣言は 286（オーバーロード込み）、関数名は 233 種類。個々の引数の詳細は <code>PIMPOM_API.h</code> と <code>Doc/PIMPOM_APIリファレンス.docx</code> を参照（同資料は改訂 1.5 時点で、現行と差異がある。<a href="appendix.html#diff">付録</a>）。</p>
+<p class="lead"><code>CPimpomAPI</code>（<code>include/PIMPOM_API.h</code>）の関数を分類ごとにまとめる。公開メンバ関数の宣言は 287（オーバーロード込み）、関数名は 234 種類（1.7.0.0 で <code>GetMainViewWnd</code> を追加）。個々の引数の詳細は <code>PIMPOM_API.h</code> と <code>Doc/PIMPOM_APIリファレンス.docx</code> を参照（同資料は改訂 1.5 の内容に、1.7（2026-11-05）で画面変更に関わる箇所だけを直したもの。それ以外は現行と差異がある。<a href="appendix.html#diff">付録</a>）。</p>
 
 <h2 id="usage">使い方と規約</h2>
 <ul>
@@ -37,6 +37,7 @@
 <li>多くの関数は bool を返し、失敗理由は返さない（<code>CalcDataValue</code>／<code>CalcMaskValue</code> のみエラー文字列を返す）。数値を返す関数（大津閾値、ハフ、ラベリング）は失敗時 0。</li>
 <li>一部の関数は確認ダイアログやメッセージボックスを出す（<code>show</code> 引数など）。無人実行では止まる原因になる。</li>
 <li>処理後に画面を更新するには <code>API.DrawImage(n)</code> を呼ぶ。</li>
+<li>1.7.0.0 で <code>CPimpomAPI</code> の末尾に公開メンバ <code>pMainFrame</code>（メインフレーム <code>CMainFrame*</code>。メイン画面 <code>pPIMMOMDlg</code> はこの中央の子ウィンドウ）、<code>GetMainViewWnd()</code>（中央のメイン画面のウィンドウハンドル）、<code>pTransformDlg</code>（幾何変換ウィンドウ。モードレスになった）を追加した。クラスの配置が変わったので、カスタムファンクション DLL は再ビルドが必要（ソースの変更は不要）。</li>
 </ul>
 <pre><code>// 例: 画像 0 にガウシアンをかけて 1 に出力し、大津法で 2 値化して 2 に出力
 API.FilterGauss(0, 1, 5, 0, 1, false);
@@ -108,10 +109,10 @@ API.ShowMessage(true, 1, false, "threshold = %f", th);</code></pre>
 <table>
 <tr><th>関数</th><th>概要</th></tr>
 <tr><td><code>GetEditValue</code> / <code>SetEditValue</code> / <code>GetCheck</code> / <code>SetCheck</code> / <code>Get/SetDialogItemRect</code></td><td>ダイアログ部品とのデータのやり取り（カスタムファンクション用）</td></tr>
-<tr><td><code>ShowMessage(clear, tab, force, format, …)</code> / <code>MessageBox(format, …)</code></td><td>メッセージタブ出力、メッセージボックス（printf 形式、5000 B）</td></tr>
+<tr><td><code>ShowMessage(clear, tab, force, format, …)</code> / <code>MessageBox(format, …)</code></td><td>出力パネルのメッセージ欄（tab = 0/1）への出力、メッセージボックス（printf 形式、5000 B）</td></tr>
 <tr><td><code>CopyToClipbord</code> / <code>PasteFromClipbord</code></td><td>クリップボード</td></tr>
-<tr><td><code>DialogOpen(IDD, show)</code> / <code>DialogDelete</code></td><td>モードレスダイアログの表示・破棄（15 種）</td></tr>
-<tr><td><code>Get/SetMarkEditMode</code>、<code>Get/SetWorkAreaEditMode</code>、<code>Get/SetRulerToolMode</code>、<code>Get/SetDataPickEditType</code>、<code>Get/SetCalcToolMode</code>、<code>Get/SetHistgramToolMode</code>、<code>Get/SetVideoCaptureThroughMode</code></td><td>メイン画面の各モード（相互に排他制御）</td></tr>
+<tr><td><code>DialogOpen(IDD, show)</code> / <code>DialogDelete</code></td><td>モードレスダイアログの表示・破棄（16 種。1.7.0.0 で幾何変換 <code>IDD_TRANSFORM_DLG</code> を追加）。ヒストグラム・マーク・作業領域・データは、表示するとフレームのパネルに収まる</td></tr>
+<tr><td><code>Get/SetMarkEditMode</code>、<code>Get/SetWorkAreaEditMode</code>、<code>Get/SetRulerToolMode</code>、<code>Get/SetDataPickEditType</code>、<code>Get/SetCalcToolMode</code>、<code>Get/SetHistgramToolMode</code>、<code>Get/SetVideoCaptureThroughMode</code></td><td>メイン画面の各モード（相互に排他制御）。ツールバーのボタンの ON/OFF もこれに追従する</td></tr>
 <tr><td><code>UserDialogOpen</code>、<code>UserDialog*</code>（イベント転送）、<code>BatchExecute</code></td><td>カスタムファンクションとバッチ（<a href="integration.html">8 章</a>）</td></tr>
 </table>
 

@@ -88,6 +88,8 @@ typedef struct
 ///*************************************
 
 
+class CMainFrame;
+
 class PIMPOM_EXT CPimpomAPI
 {
 public:
@@ -521,6 +523,11 @@ public:
 	void			StopBGProc();//ﾊﾞｯｸｸﾞﾗｳﾝﾄﾞ処理終了
 
 	unsigned long	Tick();
+
+	//段階2で追加（既存メンバの並びを変えないよう末尾に置く）
+	CMainFrame		*pMainFrame;//メインフレーム（ドッキングパネルを持つ。メイン画面 pPIMMOMDlg はこの中央の子ウィンドウ）
+	HWND			GetMainViewWnd();//中央のメイン画面（画像表示部）のウィンドウハンドル
+	CTransformDlg	*pTransformDlg;//幾何変換ウィンドウのポインタ（モードレス）
 
 
 private:

@@ -329,6 +329,7 @@ Copy $(ProjectDir)*.py ..\bin\$(Platform)\$(Configuration)\</Command>
     <ClCompile Include="WindowCtrlFiles\DataPickDlg.cpp" />
     <ClCompile Include="WindowCtrlFiles\FilterCtrlDlg.cpp" />
     <ClCompile Include="WindowCtrlFiles\HistgramDlg.cpp" />
+    <ClCompile Include="WindowCtrlFiles\MainFrm.cpp" />
     <ClCompile Include="WindowCtrlFiles\IO3DDlg.cpp" />
     <ClCompile Include="WindowCtrlFiles\MainManuProc.cpp" />
     <ClCompile Include="WindowCtrlFiles\MarkDlg.cpp" />
@@ -383,6 +384,7 @@ Copy $(ProjectDir)*.py ..\bin\$(Platform)\$(Configuration)\</Command>
     <ClInclude Include="include\global_define.h" />
     <ClInclude Include="include\global_typedef.h" />
     <ClInclude Include="include\HistgramDlg.h" />
+    <ClInclude Include="include\MainFrm.h" />
     <ClInclude Include="include\ImageField.h" />
     <ClInclude Include="include\IO3DDlg.h" />
     <ClInclude Include="include\MarkDlg.h" />

@@ -49,7 +49,7 @@
 <div>
 <p><code>CFilterCtrlDlg</code>（モードレス）。フィルタの種類を選び、サイズ・方向・円形マスク・パディング・パラメータ 0〜6（フィルタごとにラベルが変わる）を設定して実行する。格納先は「現在の画像に上書き」または「原画像 → 結果画像」。実行後、使ったカーネルの形状（61×61 と中心線プロファイル）を表示する。</p>
 </div>
-<figure><img src="img/filter.png" alt="汎用フィルタ"><figcaption>汎用フィルタウィンドウ（旧版の画面）</figcaption></figure>
+<figure><img src="img/filter.png" alt="汎用フィルタ"><figcaption>汎用フィルタウィンドウ</figcaption></figure>
 </div>
 <table>
 <tr><th>#</th><th>フィルタ</th><th>API</th><th>アルゴリズム</th><th>サイズ・主なパラメータ</th><th>実装</th></tr>
@@ -120,7 +120,7 @@
 <tr><td>上下限超過時</td><td>飽和（初期 ON）／折り返し</td></tr>
 </table>
 </div>
-<figure><img src="img/convert.png" alt="型変換ダイアログ"><figcaption>型変換ダイアログ（旧版のボタン方式）</figcaption></figure>
+<figure><img src="img/convert.png" alt="型変換ダイアログ"><figcaption>型変換ダイアログ</figcaption></figure>
 </div>
 <ul>
 <li>変換元は表示中のページ・チャネルで、RGB カラー表示中は輝度に変換してから移す。</li>
@@ -150,7 +150,7 @@
 <h2 id="transform">幾何変換（射影変換）</h2>
 <div class="fig-side">
 <div>
-<p><code>CTransformDlg</code>（モーダル）。<code>PerspectiveTransDataUnit</code>（撮像条件版）を呼ぶ。XYZ 空間の XY 面に元画像が 1 pix = 1 mm で貼られていると想定し、仮想カメラで撮影したときの見え方に変換する。仮想カメラは視野が元画像の高さになり、光軸上に原点が来る位置に置く。</p>
+<p><code>CTransformDlg</code>（モードレス。開いたまま何度も実行でき、「キャンセル」・閉じるボタン・<kbd>Esc</kbd> では隠すだけでパラメータを保つ。開くたびに原画像＝選択中の番号、結果＝その次の番号に戻す）。<code>PerspectiveTransDataUnit</code>（撮像条件版）を呼ぶ。XYZ 空間の XY 面に元画像が 1 pix = 1 mm で貼られていると想定し、仮想カメラで撮影したときの見え方に変換する。仮想カメラは視野が元画像の高さになり、光軸上に原点が来る位置に置く。</p>
 <table class="fit">
 <tr><th>パラメータ</th><th>初期値</th><th>効果</th></tr>
 <tr><td>焦点距離 f [mm]</td><td>16</td><td>大きいほど傾けたときの台形歪みが小さい</td></tr>

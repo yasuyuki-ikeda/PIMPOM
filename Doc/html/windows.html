@@ -28,13 +28,13 @@
 <main>
 <!-- title: 各ウィンドウ -->
 <h1>5. 各ウィンドウ</h1>
-<p class="lead">メインウィンドウ以外の各ダイアログの目的・操作・連携を示す。画像処理系のダイアログ（汎用フィルタ、2 値化、型変換、サイズ変換、幾何変換、数式）は処理内容を<a href="processing.html">6 章</a>で詳しく扱う。</p>
+<p class="lead">メインウィンドウ以外の各ダイアログの目的・操作・連携を示す。データ・ヒストグラム・マーク・作業領域はメインウィンドウのパネルに収まり（<a href="main_window.html#panes">4 章</a>）、それ以外（グラフ・バッチ・スクリプト・Python を含む）は別ウィンドウで開く。画像処理系のダイアログ（汎用フィルタ、2 値化、型変換、サイズ変換、幾何変換、数式）は処理内容を<a href="processing.html">6 章</a>で詳しく扱う。</p>
 
 <h2 id="common">共通の仕組み</h2>
 <h3>生成と管理</h3>
 <table class="fit">
 <tr><th>区分</th><th>生成方法</th></tr>
-<tr><td><span class="tag modeless">モードレス</span></td><td><code>CPimpomAPI::DialogOpen(IDD, show)</code> が初回だけ <code>new</code>＋<code>Create</code> し、以後は表示／非表示を切り替える。ポインタは <code>API.pDataDlg</code> などのメンバに保持</td></tr>
+<tr><td><span class="tag modeless">モードレス</span></td><td><code>CPimpomAPI::DialogOpen(IDD, show)</code> が初回だけ <code>new</code>＋<code>Create</code> し、以後は表示／非表示を切り替える。ポインタは <code>API.pDataDlg</code> などのメンバに保持。パネルに収めるダイアログは、生成直後に <code>CMainFrame::OnDialogCreated</code> が枠を外して子ウィンドウにし、パネルに埋め込む。表示すると <code>OnDialogShown</code> がパネルを開く。グラフ・スクリプト・Python・バッチは、初めて開くときに <code>place_window</code> がメインウィンドウの右隣へ置く</td></tr>
 <tr><td><span class="tag modal">モーダル</span></td><td>呼び出し元がローカル変数で生成し <code>DoModal()</code></td></tr>
 </table>
 <p>データ・ヒストグラム・作業領域・マークの 4 ウィンドウは起動時に生成され、常に存在する前提で <code>API.DrawImage()</code> から呼ばれる。</p>
@@ -47,8 +47,8 @@
 </ul>
 
 <h2 id="data">データウィンドウ <span class="tag modeless">モードレス</span></h2>
-<figure><img src="img/data.png" alt="データウィンドウ"><figcaption>データウィンドウ</figcaption></figure>
-<p><code>CDataDlg</code>（<code>IDD_DATA_DLG</code>）。全画像メモリのサムネイル（既定 40×30）を一覧表示し、選択・コピー・削除・変換の入口になる。コントロールは無く、すべて自前描画。各サムネイルに番号（右上）、データ名（下）、型ラベル（左上、型ごとに色分け）を描き、選択中は黒枠で囲む。メインウィンドウの下に追従する。</p>
+<figure><img src="img/data.png" alt="データウィンドウ" style="width:760px"><figcaption>データ（下の段のパネル）。Python から 9 種類の型の画像を送った状態</figcaption></figure>
+<p><code>CDataDlg</code>（<code>IDD_DATA_DLG</code>）。全画像メモリのサムネイル（既定 40×30）を一覧表示し、選択・コピー・削除・変換の入口になる。コントロールは無く、すべて自前描画。各サムネイルに番号（右上）、データ名（下）、型ラベル（左上、型ごとに色分け）を描き、選択中は黒枠で囲む。下の段のパネルに収まり、サムネイルはパネルの幅で折り返す。起動時にパネルの高さを、いまの幅で全部の行が入るところまで広げる（フレームの高さの 4 割まで）。それでも入らない行や、フレームを縮めて行が増えたときは縦スクロールバーが出て、マウスホイール 1 目盛りで 1 行ずつ動く。このパネルは閉じられない。</p>
 <table>
 <tr><th>操作</th><th>動作</th></tr>
 <tr><td>左クリック</td><td>その画像メモリを選択</td></tr>
@@ -62,7 +62,7 @@
 <h2 id="histogram">ヒストグラムウィンドウ <span class="tag modeless">モードレス</span></h2>
 <div class="fig-side">
 <div>
-<p><code>CHistgramDlg</code>（<code>IDD_HISTGRAM_DLG</code>「濃度ヒストグラム」）。表示画像のヒストグラム（<code>BrightLevel[256]</code>）を 256×150 で表示し、表示濃度レンジ（コントラスト）を調整する。下にカラーバー（現在のパレット）を描く。RGB カラー表示時は輝度、作業領域使用時は領域内、マスク使用時は非マスク画素で集計する。</p>
+<p><code>CHistgramDlg</code>（<code>IDD_HISTGRAM_DLG</code>「濃度ヒストグラム」）。右の列のパネルに収まる。表示画像のヒストグラム（<code>BrightLevel[256]</code>）を 256×150 で表示し、表示濃度レンジ（コントラスト）を調整する。下にカラーバー（現在のパレット）を描く。RGB カラー表示時は輝度、作業領域使用時は領域内、マスク使用時は非マスク画素で集計する。</p>
 <table class="fit">
 <tr><th>コントロール</th><th>動作</th></tr>
 <tr><td>度数上限</td><td>縦軸の最大（初期 3000）。▲▼・×2・÷2</td></tr>
@@ -73,13 +73,13 @@
 <tr><td>右ドラッグ</td><td>範囲を反転表示し、確認後にその範囲を表示レンジにする</td></tr>
 </table>
 </div>
-<figure><img src="img/hist.png" alt="ヒストグラムウィンドウ"><figcaption>ヒストグラムウィンドウ</figcaption></figure>
+<figure><img src="img/hist.png" alt="ヒストグラムウィンドウ"><figcaption>ヒストグラム（右の列のパネル）</figcaption></figure>
 </div>
 
 <h2 id="mark">マークウィンドウ <span class="tag modeless">モードレス</span></h2>
 <div class="fig-side">
 <div>
-<p><code>CMarkDlg</code>（<code>IDD_MARK_DLG</code>）。選択中画像のマーク一覧を表示・編集する。リストの列は ID、Type（P=点／L=線）、x、y、x2、y2、pt.val（点の画素値）、attrib0〜2。</p>
+<p><code>CMarkDlg</code>（<code>IDD_MARK_DLG</code>）。右の列のパネルに収まる。選択中画像のマーク一覧を表示・編集する。リストの列は ID、Type（P=点／L=線）、x、y、x2、y2、pt.val（点の画素値）、attrib0〜2。</p>
 <table class="fit">
 <tr><th>操作</th><th>動作</th></tr>
 <tr><td>点追加モードでクリック</td><td><code>AddMark</code>（サブピクセル座標）し、最寄りのマークを選択</td></tr>
@@ -90,13 +90,13 @@
 <tr><td>削除／全削除／番号表示</td><td>選択マークの削除、全削除、メイン画面へのマーク番号表示</td></tr>
 </table>
 </div>
-<figure><img src="img/mark.png" alt="マークウィンドウ"><figcaption>マークウィンドウ</figcaption></figure>
+<figure><img src="img/mark.png" alt="マークウィンドウ"><figcaption>マーク（右の列のパネル）。点マークを 5 個置いた状態</figcaption></figure>
 </div>
 
 <h2 id="workarea">作業領域ウィンドウ <span class="tag modeless">モードレス</span></h2>
 <div class="fig-side">
 <div>
-<p><code>CWorkAreaDlg</code>（<code>IDD_WORKAREA_DLG</code>）。作業領域の図形（最大 10）を編集する。図形の仕様は <a href="data.html#workarea">3 章</a>。</p>
+<p><code>CWorkAreaDlg</code>（<code>IDD_WORKAREA_DLG</code>）。右の列のパネルに収まる。作業領域の図形（最大 10）を編集する。図形の仕様は <a href="data.html#workarea">3 章</a>。</p>
 <table class="fit">
 <tr><th>コントロール／操作</th><th>動作</th></tr>
 <tr><td>編集（チェック）</td><td>ON でメイン画面のドラッグにより図形を作成・編集。未初期化の図形は 2 点から生成、既存図形は端点から 10px 以内で変形、それ以外で全体移動</td></tr>
@@ -107,14 +107,14 @@
 <tr><td>自動マスク生成</td><td>ON で編集後に作業領域外を自動でマスク</td></tr>
 <tr><td>マスククリア／クリッピング／拡大表示</td><td>全マスク解除／全図形の外接矩形で画像を切り抜き／選択図形の外接矩形に合わせて表示倍率を設定</td></tr>
 </table>
-<p>OR 図形は緑、NOT 図形は赤で描き、メッセージ 1 に寸法を表示する。</p>
+<p>OR 図形は緑、NOT 図形は赤で描き、出力パネルのメッセージ 1 に寸法を表示する。</p>
 </div>
-<figure><img src="img/workarea.png" alt="作業領域ウィンドウ"><figcaption>作業領域ウィンドウ</figcaption></figure>
+<figure><img src="img/workarea.png" alt="作業領域ウィンドウ"><figcaption>作業領域（右の列のパネル）。矩形を 1 つ指定した状態</figcaption></figure>
 </div>
 
 <h2 id="chart">チャート（グラフ）ウィンドウ <span class="tag modeless">モードレス</span></h2>
-<figure><img src="img/chart.png" alt="チャートウィンドウ" style="width:640px"><figcaption>チャートウィンドウ（1 次元表示）</figcaption></figure>
-<p><code>CChartDlg</code>（<code>IDD_CHART_DLG</code>）。数値データ系列を 1D 折れ線または 2D 散布図で表示する。グラフは 10 本（タブ 0〜9）で、それぞれ最大 10000 点。2D は x, y を交互に格納し、異なる次元のデータを追加すると既存データはクリアされる。</p>
+<figure><img src="img/chart.png" alt="チャートウィンドウ" style="width:640px"><figcaption>グラフウィンドウ。ルーラーとラインプロファイルで画像上に引いた線の画素値（グラフ 9）</figcaption></figure>
+<p><code>CChartDlg</code>（<code>IDD_CHART_DLG</code>）。別ウィンドウで、データが来ると自動で開く。数値データ系列を 1D 折れ線または 2D 散布図で表示する。グラフは 10 本（タブ 0〜9）で、それぞれ最大 10000 点。2D は x, y を交互に格納し、異なる次元のデータを追加すると既存データはクリアされる。</p>
 <table class="fit">
 <tr><th>コントロール</th><th>動作</th></tr>
 <tr><td>タブ</td><td>表示するグラフ番号（0〜9）</td></tr>
@@ -127,8 +127,8 @@
 </table>
 <p>データの供給元: API の <code>AddDataToChart</code>／<code>PlotDataToChart</code> 系、スクリプトマクロ、外部プログラム（共有メモリ）、メイン画面のルーラー＋濃度グラフ（グラフ 9 に線上の画素値を送る）。</p>
 <div class="fig-row">
-<figure><img src="img/chart_hist.png" alt="ヒストグラム表示" style="width:360px"><figcaption>ヒストグラム表示</figcaption></figure>
-<figure><img src="img/chart2d.png" alt="2D 散布図" style="width:360px"><figcaption>2 次元分布</figcaption></figure>
+<figure><img src="img/chart_hist.png" alt="ヒストグラム表示" style="width:420px"><figcaption>ヒストグラム表示（上のグラフの種類を切り替えたもの）</figcaption></figure>
+<figure><img src="img/chart2d.png" alt="2D 散布図" style="width:420px"><figcaption>2 次元分布（サンプルスクリプト「2次元散布図に円形プロット」）</figcaption></figure>
 </div>
 
 <h2 id="batch">バッチ実行ウィンドウ <span class="tag modeless">モードレス</span></h2>
@@ -185,7 +185,7 @@
 </div>
 
 <h2 id="multi">複数画像同時表示ウィンドウ <span class="tag modeless">モードレス</span></h2>
-<figure><img src="img/multi.png" alt="複数画像同時表示" style="width:640px"><figcaption>複数画像同時表示ウィンドウ</figcaption></figure>
+<figure><img src="img/multi.png" alt="複数画像同時表示" style="width:760px"><figcaption>複数画像同時表示ウィンドウ（2 画像）</figcaption></figure>
 <p><code>CMultiImageDispDlg</code>。2／4／6 枚の画像を並べて比較する。初期状態では画面 i に画像メモリ i を表示する。</p>
 <ul>
 <li>「表示画像変更」ON の間は、選択中の画面にメイン画面で選んだ画像メモリが割り当てられる。</li>
@@ -202,12 +202,12 @@
 <div>
 <p><code>CPointCloudDlg</code>（<code>IDD_POINT_CLOUD_DLG</code>）。XYZ 型の画像を 3 次元点群として表示する。メイン画面の表示データ選択ボタン 4（XYZ 型のとき）で開く。</p>
 <ul>
-<li>X/Y/Z・輝度・マスクをコピーし、1000×740 の画面に、非マスクの点を Z バッファ付きの正投影で描く。右下に縮尺（mm）を表示。</li>
+<li>点の明るさは、開いたときにメイン画面で表示していた成分（X・Y・Z のいずれか）。X/Y/Z・輝度・マスクをコピーし、1000×740 の画面に、非マスクの点を Z バッファ付きの正投影で描く。右下に縮尺（mm）を表示。</li>
 <li>左ドラッグの動作をボタンで切り替える: 回転／拡大縮小（上で拡大・下で縮小）／平行移動。中ドラッグで平行移動、ホイールで 10% 拡大縮小。</li>
 <li>ドラッグ中は 6 点おきに間引いて描く。</li>
 </ul>
 </div>
-<figure><img src="img/pointcloud.png" alt="3D 点群表示"><figcaption>3D 点群表示ダイアログ</figcaption></figure>
+<figure><img src="img/pointcloud.png" alt="3D 点群表示"><figcaption>3D 点群表示ダイアログ（高さの地図を XYZ 型に変換し、Z 成分を表示して開いたもの）</figcaption></figure>
 </div>
 
 <h2 id="io3d">動画ファイル入出力ダイアログ <span class="tag modal">モーダル</span></h2>
@@ -238,7 +238,7 @@ if (dlg.DoModal() == IDOK) { /* 値が書き戻される */ }</code></pre>
 <tr><td>数式（画像生成）ウィンドウ</td><td>数式で画像やマスクを生成</td><td><a href="processing.html#calc">6 章</a></td></tr>
 <tr><td>2 値化ウィンドウ</td><td>2 値化とラベリング</td><td><a href="processing.html#binalize">6 章</a></td></tr>
 <tr><td>汎用フィルタウィンドウ</td><td>25 種のフィルタ</td><td><a href="processing.html#filter">6 章</a></td></tr>
-<tr><td>型変換／サイズ変換／幾何変換ダイアログ</td><td>データ型・サイズ・射影変換</td><td><a href="processing.html#convert">6 章</a></td></tr>
+<tr><td>型変換／サイズ変換ダイアログ、幾何変換ウィンドウ</td><td>データ型・サイズ・射影変換（幾何変換はモードレス）</td><td><a href="processing.html#convert">6 章</a></td></tr>
 <tr><td>スクリプトウィンドウ</td><td>スクリプトの編集・実行</td><td><a href="script.html#window">7 章</a></td></tr>
 <tr><td>Python スクリプトウィンドウ</td><td>Python プログラムの実行</td><td><a href="integration.html#python">8 章</a></td></tr>
 <tr><td>カスタムファンクション追加ダイアログ</td><td>CloneUserDlg.exe</td><td><a href="integration.html#clone">8 章</a></td></tr>

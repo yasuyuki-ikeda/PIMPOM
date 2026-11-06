@@ -47,6 +47,7 @@
 <li>読み込めたものを「カスタムファンクション」メニュー（メインメニューの 6 番目）に <code>"番号 キャプション"</code>、ID 9999+i で追加する。選ぶと <code>UserDialogOpen(i)</code>。</li>
 <li>pimpom.ini の <code>[SETTING] DEFEULT_USER_DLG</code> がキャプションの先頭と一致すれば、起動時に自動で開く。</li>
 <li>追加・変更後は PIMPOM の再起動が必要。</li>
+<li>1.7.0.0 で <code>CPimpomAPI</code> に公開メンバを追加したので、それ以前にビルドした DLL は再ビルドが必要（ソースの変更は不要）。DLL のダイアログはパネルに収めず、従来どおり別ウィンドウで開く。</li>
 </ul>
 <h3>エクスポート関数</h3>
 <p>PIMPOM は次の関数を名前で <code>GetProcAddress</code> して呼ぶ（呼ぶたびに解決）。見つからない関数は無視されるので、必須なのは <code>OpenUserDlg</code> だけ。雛形は <code>extern "C" __declspec(dllexport)</code> で公開し、ダイアログの表示中だけ <code>CUserDlgEx</code> に転送する。</p>
@@ -107,7 +108,7 @@ struct BATCH_OUTPUT { char result[15][1024]; int state; };   // state: 0 通常,
 <defs><marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#888"/></marker></defs>
 <rect class="box" x="20" y="50" width="200" height="100" rx="8"/><text x="120" y="80" text-anchor="middle" font-weight="700">外部プログラム</text><text x="120" y="102" text-anchor="middle" font-size="12">pimpom_plot.h</text><text x="120" y="120" text-anchor="middle" font-size="12">Pimpom.py / Pimpom.pyd</text>
 <rect class="box hl" x="320" y="60" width="220" height="80" rx="8"/><text x="430" y="92" text-anchor="middle" font-weight="700">共有メモリ</text><text x="430" y="114" text-anchor="middle" font-size="12">"PIMPOM_SHAREDMEM"</text>
-<rect class="box" x="640" y="50" width="200" height="100" rx="8"/><text x="740" y="80" text-anchor="middle" font-weight="700">PIMPOM.exe</text><text x="740" y="102" text-anchor="middle" font-size="12">CPIMPOMDlg</text><text x="740" y="120" text-anchor="middle" font-size="12">OnMessageExt*</text>
+<rect class="box" x="640" y="50" width="200" height="100" rx="8"/><text x="740" y="80" text-anchor="middle" font-weight="700">PIMPOM.exe</text><text x="740" y="102" text-anchor="middle" font-size="12">受け口 → CPIMPOMDlg</text><text x="740" y="120" text-anchor="middle" font-size="12">OnMessageExt*</text>
 <path class="arr" d="M220 90 H318" marker-end="url(#ah3)"/><text x="270" y="82" text-anchor="middle" font-size="11" class="muted">①作成・書込</text>
 <path class="arr" d="M220 30 C 400 0, 500 0, 700 48" marker-end="url(#ah3)"/><text x="450" y="18" text-anchor="middle" font-size="11" class="muted">②SendMessage(WM_USER+100/101/102)</text>
 <path class="arr" d="M638 100 H542" marker-end="url(#ah3)"/><text x="590" y="92" text-anchor="middle" font-size="11" class="muted">③読込／書戻し</text>
@@ -116,7 +117,8 @@ struct BATCH_OUTPUT { char result[15][1024]; int state; };   // state: 0 通常,
 </div>
 <ul>
 <li>送信側が名前付き共有メモリ <code>PIMPOM_SHAREDMEM</code> を <code>CreateFileMapping</code> で作ってデータを書き、PIMPOM のウィンドウに <code>SendMessage</code>（同期）してから解放する。</li>
-<li>送り先は、タイトルに <code>" - PIMPOM  "</code>（ID 0）または <code>" - PIMPOM n"</code>（ID n）を含むダイアログ。PIMPOM は起動時に 0〜9 の空き ID を取り、タイトル末尾に付ける。<code>setTargetID</code> で複数起動中の PIMPOM を選べる。</li>
+<li>送り先は、タイトルに <code>" - PIMPOM  "</code>（ID 0）または <code>" - PIMPOM n"</code>（ID n）を含むウィンドウ。PIMPOM は起動時に 0〜9 の空き ID を取り、タイトル末尾に付ける。<code>setTargetID</code> で複数起動中の PIMPOM を選べる。</li>
+<li>1.7.0.0 でメイン画面はフレームの子ウィンドウになったため、<code>pimpom_plot.h</code>（ダイアログクラス <code>#32770</code> のトップレベルウィンドウを探す）向けに、タイトル <code>"PIMPOM receiver - PIMPOM n"</code> の非表示の受け口を置いている。<code>Pimpom.py</code> はタイトルだけで探すので、フレーム（タイトルはメイン画面と同じ）に届く。どちらもメッセージを <code>CPIMPOMDlg</code> へ中継するので、送る側は変更不要。</li>
 </ul>
 <table class="fit">
 <tr><th>メッセージ</th><th>ハンドラ</th><th>内容</th></tr>
@@ -174,7 +176,7 @@ Pimpom.ShowMessage("done")</code></pre>
 <li>表示中はバッチ実行の各件で実行される（スクリプトの後）。バッチの入出力パラメータは Python に渡さない。</li>
 </ul>
 </div>
-<figure><img src="img/python.png" alt="Python スクリプトウィンドウ"><figcaption>Python スクリプトウィンドウ</figcaption></figure>
+<figure><img src="img/python.png" alt="Python スクリプトウィンドウ"><figcaption>Python スクリプトウィンドウ。<code>python\test.py</code> を実行したあと</figcaption></figure>
 </div>
 <div class="warn"><code>python</code> が PATH にあることが前提。パスを引用符で囲まないため、空白を含むパスの .py は起動に失敗する。</div>
 

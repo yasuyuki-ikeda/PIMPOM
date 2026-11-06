@@ -93,7 +93,7 @@ void CPIMPOMDlg::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
 	//「最近使ったファイルを開く」メニューの更新
 	if(nItemID<FILE_IO_LOG_MENU_ID || nItemID>=FILE_IO_LOG_MENU_ID + FILE_IO_LOG_MAX )
 	{
-		CMenu *menu = this->GetMenu();
+		CMenu *menu = AfxGetMainWnd() ? AfxGetMainWnd()->GetMenu() : NULL;//メニューはメインフレームが持つ
 		if(!menu)	return;
 
 		CMenu *pSub =menu->GetSubMenu(0);
@@ -932,10 +932,9 @@ void CPIMPOMDlg::OnCalcImage()
 ********************************************************************/
 void CPIMPOMDlg::OnImageTransform()
 {
-	CTransformDlg  trn;
+	if(!API.GetDataUnit(CURRENT_IMAGE))	return;
 
-		if(!API.GetDataUnit(CURRENT_IMAGE))	return;
-	trn.DoModal();
+	API.DialogOpen(IDD_TRANSFORM_DLG,true);//モードレス（開いたまま何度も実行できる）
 }
 
 /********************************************************************

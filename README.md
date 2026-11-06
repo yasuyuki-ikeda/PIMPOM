@@ -1,22 +1,39 @@
 ## PIMPOM
-This program is rapid prototyping tool for image processing.  
+PIMPOM is a rapid prototyping tool for image processing (version 1.7.0.0).
 
-![main](https://user-images.githubusercontent.com/61925130/103189487-32789600-4910-11eb-82a0-2136a6ef8d6a.jpg)  
+![main](Doc/readme_main.png)
 
+**features**
 
-**developping environment**  
-- All source codes are written with C++  
-- VisualStudio2022 is used for building.  
-- MFC is used for building HMI.  
-- OpenCV and Boost are used internally.  
-- HMI, Documents and comments in source codes are witten in Japanese only.  
- 
+- Main window with a toolbar and dockable panes (data, histogram, mark, work area, pixel loupe, output).
+- Displays and edits many kinds of image data: 8/16/32-bit integer, float, complex, RGB, 3D (multi-page) and XYZ (3D shape), each with a mask.
+- Marks, work areas, rulers and line profiles on the image, with graphs and histograms.
+- Image processing such as filters, resizing, geometric transform, binarization and image generation from expressions.
+- Script and batch execution, Python scripts, TCP/IP communication and video capture.
+- Custom functions (your own C++ DLLs) and data exchange with external programs and Python.
 
-**requirements**  
-  - inatall python3.8 or later in your compulter for using "python script" function  
-    - *https://www.python.org/downloads/*  
-  - the debug build extracts the following file automatically on its first run (needs Windows 10 1803 or later for tar.exe)  
-    - *OpenCV\x64\vc14bin\Debug.zip*  
+**developing environment**
+
+- All source code is written in C++.
+- Visual Studio 2022 is used for building (`PIMPOM2022.sln`, x64). The build output goes to `bin\x64\Release` or `bin\x64\Debug`.
+- MFC is used for the HMI.
+- OpenCV 4.4.0 is used internally. Boost.Python is used only for the Python extension module `Pimpom.pyd` (`Tool\PimpomPlotPy`).
+- The HMI, documents and comments in the source code are written in Japanese only.
+
+**requirements**
+
+- Windows 10 or later (64-bit).
+- Install Python 3.8 or later on your computer to use the "Python script" function.
+  - *https://www.python.org/downloads/*
+  - `python\Pimpom.py` also needs pywin32 and numpy.
+- The debug build extracts the following file automatically on its first build (needs Windows 10 1803 or later for tar.exe).
+  - *OpenCV\x64\vc14bin\Debug.zip*
+
+**documents**
+
+- Software specification (HTML): *Doc\html\index.html*
+- Manuals (Word): API reference for custom functions, script manual, data exchange with external programs and with Python, in *Doc*
+- These can also be opened from the Help menu of PIMPOM.
 
 
 ------------------------------------------------------------

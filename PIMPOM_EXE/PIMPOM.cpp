@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "resource_core.h"
 #include "PIMPOM_API.h"
 #include "PIMPOMDlg.h"
+#include "MainFrm.h"
 
 
 
@@ -48,7 +49,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // CPIMPOM_EXEApp
 
-BEGIN_MESSAGE_MAP(CPIMPOM_EXEApp, CWinApp)
+BEGIN_MESSAGE_MAP(CPIMPOM_EXEApp, CWinAppEx)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
@@ -71,7 +72,7 @@ CPIMPOM_EXEApp theApp;
 
 BOOL CPIMPOM_EXEApp::InitInstance()
 {
-	CWinApp::InitInstance();
+	CWinAppEx::InitInstance();
 
 	// 標準初期化
 	// これらの機能を使わずに最終的な実行可能ファイルの
@@ -103,16 +104,20 @@ BOOL CPIMPOM_EXEApp::InitInstance()
 	}
 
 
-	//メインウィンドウの起動
-	CPIMPOMDlg	dlg;
-	m_pMainWnd = &dlg;
-	dlg.cmdLine = m_lpCmdLine;
-	dlg.DoModal();
+	//メインウィンドウの起動（メニュー・ツールバー・ドッキングパネルを持つフレームの中央にメイン画面を置く）
+	EnableLoadWindowPlacement(FALSE);
+	CMainFrame	*p_frame = new CMainFrame();
+	p_frame->cmdLine = m_lpCmdLine;
+	m_pMainWnd = p_frame;
+	if (!p_frame->LoadFrame(IDR_MAIN_MENU, WS_OVERLAPPEDWINDOW))	return FALSE;
+	p_frame->SetIcon(LoadIcon(IDR_MAINFRAME), TRUE);
+	p_frame->SetIcon(LoadIcon(IDR_MAINFRAME), FALSE);
 
-
-	// ダイアログは閉じられました。アプリケーションのメッセージ ポンプを開始しないで
-	//  アプリケーションを終了するために FALSE を返してください。
-	return FALSE;
+	if (!p_frame->IsInvisibleMode()) {
+		p_frame->ShowWindow(m_nCmdShow);
+		p_frame->UpdateWindow();
+	}
+	return TRUE;
 }
 
 
@@ -123,6 +128,6 @@ int CPIMPOM_EXEApp::ExitInstance()
 		m_pszProfileName = NULL; 
 	}
 
-	return CWinApp::ExitInstance();
+	return CWinAppEx::ExitInstance();
 }
 

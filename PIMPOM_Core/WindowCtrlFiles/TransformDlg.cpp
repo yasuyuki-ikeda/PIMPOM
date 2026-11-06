@@ -109,6 +109,7 @@ BEGIN_MESSAGE_MAP(CTransformDlg, CDialog)
 	ON_BN_CLICKED(IDC_RADIO_TRANSFORM_OVERWITE, &CTransformDlg::OnBnClickedRadioTransformOverwite)
 	ON_BN_CLICKED(IDC_RADIO_TRANSFORM_TO_IMAGE, &CTransformDlg::OnBnClickedRadioTransformToImage)
 	ON_BN_CLICKED(IDC_BUTTON_TRASFORM_SET_ORG_IMG, &CTransformDlg::OnBnClickedButtonTrasformSetOrgImg)
+	ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
 /********************************************************************
@@ -221,11 +222,19 @@ void CTransformDlg::OnPaint()
 	//解説用のビットマップを貼り付け
 	CBitmap bmp;
 	bmp.LoadBitmap(IDB_TRANSFORM);
+	BITMAP bm;
+	bmp.GetBitmap(&bm);
 	CDC* pDC=GetDC();
 	CDC bmpDC;
 	bmpDC.CreateCompatibleDC(pDC);
 	CBitmap* oldbmp=bmpDC.SelectObject(&bmp);
-	pDC->BitBlt(rgn.left, rgn.top, rgn.Width(), rgn.Height(),&bmpDC,0,0,SRCCOPY);
+	//ビットマップは高めの解像度で描いてあるので、縦横比を保って領域いっぱいに縮めて中央に貼る
+	double scale = min((double)rgn.Width() / bm.bmWidth, (double)rgn.Height() / bm.bmHeight);
+	int w = (int)(bm.bmWidth * scale), h = (int)(bm.bmHeight * scale);
+	int x = rgn.left + (rgn.Width() - w) / 2, y = rgn.top + (rgn.Height() - h) / 2;
+	pDC->SetStretchBltMode(HALFTONE);
+	pDC->SetBrushOrg(0, 0);
+	pDC->StretchBlt(x, y, w, h, &bmpDC, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
 	bmpDC.SelectObject(oldbmp);
 	bmp.DeleteObject();
 	ReleaseDC(pDC);
@@ -285,4 +294,32 @@ void CTransformDlg::OnBnClickedButtonTrasformSetOrgImg()
 		API.SetEditValue(m_hWnd, IDC_EDIT_TRANSFORM_FROM_IMAGE_NO, orgNo);
 		API.SetEditValue(m_hWnd, IDC_EDIT_TRANSFORM_TO_IMAGE_NO, orgNo+1);
 	}
+}
+
+/********************************************************************
+機  能  名  称 : ウィンドウの表示
+関    数    名 : OnShowWindow
+引          数 : BOOL	bShow	(in)表示するかどうか
+				 UINT	nStatus	(in)
+戻    り    値 :
+機          能 : モードレスなので開き直しても OnInitDialog は呼ばれない。モーダルだったときと同じく、
+				 開くたびに原画像＝選択中の番号、結果＝その次の番号にする（パラメタは前回の値を残す）
+********************************************************************/
+void CTransformDlg::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	CDialog::OnShowWindow(bShow, nStatus);
+
+	if (bShow)	OnBnClickedButtonTrasformSetOrgImg();
+}
+
+/********************************************************************
+機  能  名  称 : 「キャンセル」ボタン・閉じるボタン・Esc
+関    数    名 : OnCancel
+引          数 :
+戻    り    値 :
+機          能 : モードレスなので EndDialog は呼ばずに隠すだけにする
+********************************************************************/
+void CTransformDlg::OnCancel()
+{
+	ShowWindow(SW_HIDE);
 }

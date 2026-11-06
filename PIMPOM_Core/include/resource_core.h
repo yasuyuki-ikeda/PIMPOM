@@ -160,6 +160,14 @@
 #define IDI_BTN_CAMERA_RUN              300
 #define IDI_BTN_ZOOMIN                  301
 #define IDI_BTN_ZOOMOUT                 302
+#define IDI_BTN_OPEN                    303
+#define IDI_BTN_SAVE                    304
+#define IDI_BTN_UNDO                    305
+#define IDI_BTN_FILTER                  306
+#define IDI_BTN_BINARIZE                307
+#define IDI_BTN_TRANSFORM               308
+#define IDD_PIXEL_INFO_PANE             310
+#define IDD_OUTPUT_PANE                 311
 #define IDC_SCROLL_PIMPOM_DLG_MAIN_IMAGE_H 1000
 #define IDC_SCROLL_PIMPOM_DLG_MAIN_IMAGE_V 1001
 #define IDC_BUTTON_PIMPON_DLG_PAINT     1011
@@ -551,6 +559,7 @@
 #define IDC_EDIT_CHART_DLG_HIST_SPLIT_NUM 1259
 #define IDC_SPINT_CHART_DLG_HIST_SPLIT_NUM 1260
 #define IDC_TAB_PIMPOM_DLG_MESSAGE      1261
+#define IDC_BUTTON_PIMPOM_DLG_MESSAGE_CLEAR 1384
 #define IDC_EDIT_CHART_DLG_WID_VAL_Y    1261
 #define IDC_LIST_MARK                   1262
 #define IDC_EDIT_CHART_DLG_WID_VAL_X    1262
@@ -789,9 +798,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        303
-#define _APS_NEXT_COMMAND_VALUE         32949
-#define _APS_NEXT_CONTROL_VALUE         1384
+#define _APS_NEXT_RESOURCE_VALUE        312
+#define _APS_NEXT_COMMAND_VALUE         32952
+#define _APS_NEXT_CONTROL_VALUE         1385
 #define _APS_NEXT_SYMED_VALUE           105
 #endif
 #endif

@@ -66,6 +66,7 @@ public:
 	void			ShowMessage(bool do_clear, int num, bool force, CString str);//メッセージを表示する
 	void			SetClickedCoordinate(CPoint point);//クリック座標を設定する
 	void			BackGroundProc();
+	CString			GetButtonTip(UINT id);//ボタンのツールチップ文字列（ツールバーが使う）
 
 	CImageField		*p_image_disp_main;//メイン画像
 	CString			cmdLine;//コマンドライン
@@ -188,6 +189,7 @@ public:
 	afx_msg LRESULT OnMessageExtOutput(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnMessageExtProcess(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnTcnSelchangeTabPimpomDlgMessage(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnBnClickedButtonPimpomDlgMessageClear();//出力をクリアする
 	afx_msg void OnBnClickedButtonPimponDlgHistgram();
 	afx_msg void OnEditRename();
 	afx_msg void OnEditPasteClipbord();
