@@ -167,8 +167,8 @@ inline int ScaleByDpi(int px) { return ::MulDiv(px, PimpomScreenDpi(), 96); }
 //メインウィンドウ(MainDlg)
 #define		MAIN_WIN_LEFT_MARGIN	(0)		//メインイメージ表示領域からメインウィンドウ左端までのマージン
 #define		MAIN_WIN_TOP_MARGIN		(0)		//メインイメージ表示領域からメインウィンドウ上端までのマージン
-#define		MAIN_WIN_RIGHT_MARGIN	(ScaleByDpi(50))	//メインイメージ表示領域からメインウィンドウ右端までのマージン
-#define		MAIN_WIN_BOTTOM_MARGIN	(ScaleByDpi(160))	//メインイメージ表示領域からメインウィンドウ下端までのマージン
+#define		MAIN_WIN_RIGHT_MARGIN	(ScaleByDpi(10))	//メインイメージ表示領域からメインウィンドウ右端までのマージン
+#define		MAIN_WIN_BOTTOM_MARGIN	(ScaleByDpi(10))	//メインイメージ表示領域からメインウィンドウ下端までのマージン
 
 #define		DATA_SELECT_FIELD_Y		(0)		//データの表示タイプを決めるボタンを配置する領域の左上のｙ座標
 #define		DATA_SELECT_FIELD_W		(25)		//データの表示タイプを決めるボタンを配置する領域の幅

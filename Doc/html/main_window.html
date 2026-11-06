@@ -15,7 +15,7 @@
 <li><a href="index.html">1. 概要</a></li>
 <li><a href="architecture.html">2. システム構成</a></li>
 <li><a href="data.html">3. データ構造</a></li>
-<li><a href="main_window.html" class="current">4. メイン画面とメニュー</a><ul class="toc"><li><a href="#layout">画面構成</a></li><li><a href="#operation">マウス・キー操作</a></li><li><a href="#menu">メインメニュー</a></li></ul></li>
+<li><a href="main_window.html" class="current">4. メイン画面とメニュー</a><ul class="toc"><li><a href="#layout">画面構成</a></li><li><a href="#panes">パネル</a></li><li><a href="#toolbar">ツールバー</a></li><li><a href="#statusbar">ステータスバー</a></li><li><a href="#operation">マウス・キー操作</a></li><li><a href="#menu">メインメニュー</a></li></ul></li>
 <li><a href="windows.html">5. 各ウィンドウ</a></li>
 <li><a href="processing.html">6. 画像処理機能</a></li>
 <li><a href="script.html">7. スクリプト</a></li>
@@ -28,29 +28,68 @@
 <main>
 <!-- title: メイン画面とメニュー -->
 <h1>4. メイン画面とメニュー</h1>
-<p class="lead">メインウィンドウ（<code>CPIMPOMDlg</code>、リソース <code>IDD_PIMPOM_DLG</code>）の構成、メインメニュー全項目、マウス・キー操作を示す。ハンドラは <code>WindowCtrlFiles/MainManuProc.cpp</code>、メッセージマップは <code>PIMPOMDlg.cpp</code>。</p>
+<p class="lead">メインウィンドウの構成、メインメニュー全項目、マウス・キー操作を示す。メインウィンドウは MFC Feature Pack のフレーム（<code>CMainFrame</code>、<code>WindowCtrlFiles/MainFrm.cpp</code>）で、中央に画像を表示するメイン画面（<code>CPIMPOMDlg</code>、リソース <code>IDD_PIMPOM_DLG</code>）を子ウィンドウとして置く。メニューのハンドラは <code>WindowCtrlFiles/MainManuProc.cpp</code>、メッセージマップは <code>PIMPOMDlg.cpp</code>。</p>
 
 <h2 id="layout">画面構成</h2>
-<div class="fig-side">
-<div>
-<p>クライアント領域は「画像表示領域＋右 50px＋下 160px」。既定（画像 640×480）で 690×640。ウィンドウの右端・下端をドラッグしてリサイズすると画像表示領域が追従する（ini には保存しない）。</p>
-<table class="fit">
+<figure><img src="img/main.png" alt="メインウィンドウ" style="width:860px"><figcaption>メインウィンドウ（右の列にヒストグラム・画素ルーペ・出力、下の段にデータ）</figcaption></figure>
+<p>起動時は作業領域の 92%（上限 1400×940、96dpi 基準）の大きさで画面中央に開く。上から順にメニュー、ツールバー、中央のメイン画面と周りのパネル、ステータスバーが並ぶ。</p>
+<table>
 <tr><th>部位</th><th>内容</th></tr>
-<tr><td>タイトルバー</td><td><code>データ名[型名 ページ/ページ数](幅×高さ) - PIMPOM</code></td></tr>
-<tr><td>画像表示領域</td><td>選択中の画像メモリの表示画像。作業領域（緑＝OR、赤＝NOT）、マーク（緑十字、選択中は赤）、ルーラー（反転色の線）を重ねて描く。表示サイズが領域を超えると右と下にスクロールバー（幅 10）が出る</td></tr>
-<tr><td>表示データ選択ボタン（右上 4 個）</td><td>型によって意味が変わる（下表）</td></tr>
-<tr><td>機能ボタン（右列）</td><td>マーク、作業領域、マスク、ヒストグラム、ルーラー、ルーラー＋濃度グラフ、フリーハンド編集、数式</td></tr>
-<tr><td>倍率表示と拡大縮小ボタン</td><td>現在の倍率、×2、÷2、領域に合わせる、等倍</td></tr>
-<tr><td>ライブ表示／ライブ実行</td><td>ビデオキャプチャ起動中のみ表示</td></tr>
-<tr><td>周辺拡大（左下 60×60）</td><td>カーソル周辺 5×5 画素の拡大表示</td></tr>
-<tr><td>画素値表示</td><td>座標 (x,y) とその周辺 3×3 の値。「クリック座標に固定」で更新をクリック時に限る。「サブピクセル座標」で倍率 &gt;1 のときサブピクセル座標を表示</td></tr>
-<tr><td>メッセージタブ</td><td>メッセージ 0: 本体（作業領域サイズ、ルーラーなど。再描画のたびに消える）／メッセージ 1: カスタムファンクション・スクリプトの出力</td></tr>
+<tr><td>タイトルバー</td><td><code>データ名[型名 ページ/ページ数](幅×高さ) - PIMPOM</code>（メイン画面のタイトルを写す）</td></tr>
+<tr><td>メニュー</td><td>ファイル、編集、表示、画像処理、ツール、カスタムファンクション、ヘルプ（<a href="#menu">メインメニュー</a>）</td></tr>
+<tr><td>ツールバー</td><td>よく使う操作と、メイン画面のモード切替（<a href="#toolbar">ツールバー</a>）</td></tr>
+<tr><td>メイン画面（中央）</td><td>選択中の画像メモリの表示画像。作業領域（緑＝OR、赤＝NOT）、マーク（十字、選択中は赤）、ルーラー（反転色の線）を重ねて描く。表示サイズが領域を超えると右と下にスクロールバー（幅 10）が出る。フレームの大きさに合わせて表示領域が変わる（ini には保存しない）</td></tr>
+<tr><td>右の列のパネル</td><td>上からヒストグラム、マーク、作業領域、画素ルーペ、出力を縦に並べる。ヒストグラム・マーク・作業領域は開いたときだけ表示される</td></tr>
+<tr><td>下の段のパネル</td><td>データ（常にある）</td></tr>
+<tr><td>ステータスバー</td><td>座標と画素値、表示倍率、画像番号とタイトル、表示レンジ、作業領域とマスクの ON/OFF、使用中の画像メモリ数（<a href="#statusbar">ステータスバー</a>）</td></tr>
 </table>
-</div>
-<figure><img src="img/main.png" alt="メインウィンドウ"><figcaption>メインウィンドウ</figcaption></figure>
-</div>
 
-<h3>表示データ選択ボタン</h3>
+<h3 id="panes">パネル</h3>
+<p>従来は別ウィンドウだった付属ウィンドウを、フレームの中のドッキングパネル（<code>CDockablePane</code>）に収めている。中身は従来のダイアログで、枠を外して子ウィンドウにしたもの。</p>
+<table class="fit">
+<tr><th>パネル</th><th>置き場所</th><th>閉じる</th><th>中身</th></tr>
+<tr><td>ヒストグラム</td><td>右の列</td><td>可</td><td><a href="windows.html#histogram">ヒストグラムウィンドウ</a></td></tr>
+<tr><td>マーク</td><td>右の列</td><td>可</td><td><a href="windows.html#mark">マークウィンドウ</a></td></tr>
+<tr><td>作業領域</td><td>右の列</td><td>可</td><td><a href="windows.html#workarea">作業領域ウィンドウ</a></td></tr>
+<tr><td>画素ルーペ</td><td>右の列</td><td>不可</td><td>カーソル周辺 5×5 画素の拡大（周辺拡大）と、座標 (x,y)・周辺 3×3 の値。「クリック座標に固定」で更新をクリック時に限る。「サブピクセル座標」で倍率 &gt;1 のときサブピクセル座標を表示</td></tr>
+<tr><td>出力</td><td>右の列（画素ルーペの下）</td><td>不可</td><td>メッセージ 0: 本体（マーク・作業領域・ルーラーのモードの案内、ルーラーの計測値、通信の状態、読み込みの進み具合など）／メッセージ 1: 作業領域の図形の寸法、外部プログラム・カスタムファンクション・スクリプトの出力。タブの右端の「クリア」ボタンで、メッセージ 0・1 の両方の文字列を消す</td></tr>
+<tr><td>データ</td><td>下の段</td><td>不可</td><td><a href="windows.html#data">データウィンドウ</a>（サムネイルはパネルの幅で折り返す。起動時にパネルの高さを全部の行が入るところまで広げ（フレームの高さの 4 割まで）、それでも入らない行は縦スクロールバーとマウスホイールで見る）</td></tr>
+</table>
+<ul>
+<li>パネルの表示・非表示は中のダイアログの表示状態に追従する。メニューやツールバーで開くとパネルが現れる。パネルの × は、従来のウィンドウの閉じるボタンと同じくダイアログに <code>WM_CLOSE</code> を送る。</li>
+<li>パネルの境をドラッグすると大きさが変わる。見出しをドラッグすると切り離して浮かせたり、別の場所へ付け直したりできる。</li>
+<li>配置は保存しない。起動するたびに上の既定の配置に戻る。</li>
+<li>グラフ、スクリプト、Python スクリプト、バッチ実行は大きく、ほかの画面と並べて使うことが多いので、パネルにせず別ウィンドウ（フローティング）で開く。初めて開くときはメインウィンドウの右隣（入らなければ画面の右端）に、少しずつ下へずらして置く。以後は利用者が動かした位置を保つ。</li>
+<li>汎用フィルタ、2 値化、幾何変換、数式、フリーハンド編集、TCP/IP 通信、複数画像同時表示、3D 画像一覧なども、従来どおり別ウィンドウで開く。</li>
+</ul>
+
+<h3 id="toolbar">ツールバー</h3>
+<p>メイン画面のモード切替ボタンは、従来メイン画面の右端に並んでいたものをツールバーへ移した。ツールバーのボタンを押すと、従来のボタンを押したのと同じ処理が行われ、ON/OFF の状態も従来のボタンから写す。</p>
+<table class="fit">
+<tr><th>グループ</th><th>ボタン</th><th>動作</th></tr>
+<tr><td rowspan="3">ファイル</td><td>開く</td><td>画像ファイルを開く（ファイルメニューと同じ）</td></tr>
+<tr><td>保存</td><td>画像データをバイナリファイルとして保存</td></tr>
+<tr><td>元に戻す</td><td>画像データ復元（バックアップの展開）</td></tr>
+<tr><td rowspan="2">表示倍率</td><td>縮小／拡大</td><td>倍率を 1/2・2 倍にする</td></tr>
+<tr><td>合わせる／等倍</td><td>倍率を表示領域に内接させる・1 にする</td></tr>
+<tr><td>表示データ</td><td>4 個</td><td>型によって意味と絵柄が変わり、使わない型では隠れる（<a href="#datasel">下表</a>）</td></tr>
+<tr><td rowspan="8">解析・編集</td><td>マーク</td><td>ON でマークパネルを表示、OFF で非表示（マーク編集モード 1/0）</td></tr>
+<tr><td>作業領域</td><td>選択中画像の <code>DoUseWorkArea</code> と連動。ON で作業領域パネルを表示</td></tr>
+<tr><td>マスク</td><td>選択中画像の <code>DoUseMask</code> と連動</td></tr>
+<tr><td>ヒストグラム</td><td>ヒストグラムパネルの表示／非表示</td></tr>
+<tr><td>ルーラー</td><td>ON で画像上をドラッグすると、始点・終点の座標と値、差、距離を出力パネルのメッセージ 0 に表示</td></tr>
+<tr><td>ルーラーとラインプロファイル</td><td>ルーラーも ON にし、ドラッグした線上の画素値（最大 10000 点）をグラフ 9 に表示</td></tr>
+<tr><td>フリーハンド</td><td>フリーハンド編集ウィンドウを開く</td></tr>
+<tr><td>数式</td><td>数式（画像生成）ウィンドウを開く</td></tr>
+<tr><td rowspan="3">画像処理</td><td>汎用フィルタ</td><td>汎用フィルタウィンドウ</td></tr>
+<tr><td>2 値化</td><td>2 値化ウィンドウ</td></tr>
+<tr><td>幾何変換</td><td>幾何変換ウィンドウ（スクリプトはツールメニューから開く）</td></tr>
+<tr><td rowspan="2">ライブ</td><td>ライブ表示</td><td>キャプチャ → 表示を繰り返す。ビデオキャプチャ起動中のみ表示</td></tr>
+<tr><td>ライブ実行</td><td>キャプチャ → 表示 → バッチ実行（カスタムファンクション／スクリプト）を繰り返す。同上</td></tr>
+</table>
+<p>マーク編集・作業領域編集・ルーラーは互いに排他で、1 つを ON にすると他は OFF になる（<code>api_manage_dialog.cpp</code> の <code>Set*Mode</code>）。各ボタンにはツールチップがある。</p>
+
+<h3 id="datasel">表示データ選択ボタン</h3>
 <table class="fit">
 <tr><th>型</th><th>ボタン 1</th><th>ボタン 2</th><th>ボタン 3</th><th>ボタン 4</th></tr>
 <tr><td>BYTE / WORD / DWORD / SHORT / LONG / FLOAT</td><td colspan="4">非表示</td></tr>
@@ -61,22 +100,17 @@
 <tr><td>3D / FLOAT3D / RGB3D</td><td>連続再生（末尾で先頭へ）</td><td>次ページ</td><td>前ページ</td><td>停止</td></tr>
 </table>
 
-<h3>機能ボタン</h3>
+<h3 id="statusbar">ステータスバー</h3>
 <table class="fit">
-<tr><th>ボタン</th><th>種類</th><th>動作</th></tr>
-<tr><td>マーク表示</td><td>チェック</td><td>押すとマークウィンドウを表示、戻すと非表示（マーク編集モード 1/0）</td></tr>
-<tr><td>作業領域使用</td><td>チェック</td><td>選択中画像の <code>DoUseWorkArea</code> と連動。押すと作業領域ウィンドウを表示</td></tr>
-<tr><td>マスク使用</td><td>チェック</td><td>選択中画像の <code>DoUseMask</code> と連動</td></tr>
-<tr><td>ヒストグラム</td><td>チェック</td><td>ヒストグラムウィンドウの表示／非表示</td></tr>
-<tr><td>ルーラー</td><td>チェック</td><td>ON で画像上をドラッグすると、始点・終点の座標と値、差、距離をメッセージ 0 に表示</td></tr>
-<tr><td>ルーラー＋濃度グラフ</td><td>チェック</td><td>ルーラーも ON にし、ドラッグした線上の画素値（最大 10000 点）をチャートのグラフ 9 に表示</td></tr>
-<tr><td>フリーハンド編集</td><td>チェック</td><td>フリーハンド編集ウィンドウを開く</td></tr>
-<tr><td>数式</td><td>チェック</td><td>数式（画像生成）ウィンドウを開く</td></tr>
-<tr><td>×2 / ÷2 / 合わせる / 等倍</td><td>ボタン</td><td>倍率を 2 倍・1/2・領域に内接・1 にする</td></tr>
-<tr><td>ライブ表示</td><td>チェック</td><td>キャプチャ → 表示を繰り返す</td></tr>
-<tr><td>ライブ実行</td><td>チェック</td><td>キャプチャ → 表示 → バッチ実行（カスタムファンクション／スクリプト）を繰り返す</td></tr>
+<tr><th>欄</th><th>表示</th></tr>
+<tr><td>1</td><td>カーソル（またはクリック）位置の座標と画素値（画素ルーペと同じ値）</td></tr>
+<tr><td>2</td><td><code>倍率 n%</code></td></tr>
+<tr><td>3</td><td><code>[画像番号] データ名[型名](幅×高さ)</code></td></tr>
+<tr><td>4</td><td><code>表示レンジ min 〜 max</code></td></tr>
+<tr><td>5</td><td><code>作業領域 ON/OFF ／ マスク ON/OFF</code></td></tr>
+<tr><td>6</td><td><code>メモリ 使用中 / 画像メモリ数</code></td></tr>
 </table>
-<p>マーク編集・作業領域編集・ルーラーは互いに排他で、1 つを ON にすると他は OFF になる（<code>api_manage_dialog.cpp</code> の <code>Set*Mode</code>）。</p>
+<p>150 ms ごとにメイン画面の状態を読んで更新する（ツールバーのボタンの表示・ON/OFF とパネルの開閉も同じ周期で合わせる）。</p>
 
 <h2 id="operation">マウス・キー操作</h2>
 <table>
@@ -92,7 +126,7 @@
 <tr><td>右クリック</td><td>カスタムファンクションへ通知（<code>OnMouseRDown_UserDlg</code>）</td><td>—</td></tr>
 <tr><td>中ボタンドラッグ</td><td>表示位置の移動（パン）</td><td>画像が領域より大きい</td></tr>
 <tr><td>ホイール</td><td>倍率を ×1.1／×0.9</td><td>—</td></tr>
-<tr><td>マウス移動</td><td>カーソル位置の画素値表示</td><td>「クリック座標に固定」OFF</td></tr>
+<tr><td>マウス移動</td><td>カーソル位置の画素値を画素ルーペとステータスバーに表示</td><td>「クリック座標に固定」OFF</td></tr>
 <tr><td>ファイルのドラッグ＆ドロップ</td><td>先頭 1 ファイルを選択中の画像メモリに読み込む（既存データは確認後バックアップ）</td><td>読込可能な形式</td></tr>
 <tr><td><kbd>Delete</kbd></td><td>確認 → バックアップ → 選択中の画像メモリを空にする</td><td>—</td></tr>
 <tr><td><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></td><td>マウスカーソルを 1px 動かす</td><td>—</td></tr>
@@ -101,7 +135,7 @@
 <tr><td><kbd>Enter</kbd> / <kbd>Esc</kbd></td><td>無効（ダイアログが閉じないよう握りつぶす）</td><td>—</td></tr>
 <tr><td>スクロールバー</td><td>矢印・ページ領域とも ±10</td><td>—</td></tr>
 </table>
-<p>メインウィンドウを移動・リサイズすると、データ（下）、ヒストグラム（右）、マーク（右上 +20）、作業領域（右上 +350）の各ウィンドウが隣接位置に追従する。</p>
+<p>メイン画面をクリックするとフレームにフォーカスが移り、キー操作はフレームからメイン画面へ渡される。</p>
 
 <h2 id="menu">メインメニュー</h2>
 <h3>ファイル</h3>
@@ -112,7 +146,7 @@
 <tr><td>最近使ったファイル</td><td>9900〜9909</td><td><code>OnMenuLoadIOLog</code></td><td>pimpom.ini の <code>[FILE_LOG]</code> から最大 10 件を表示し、選ぶと読み込む</td></tr>
 <tr><td>画像メモリ一括読み込み</td><td>32938</td><td>—</td><td class="">ハンドラ未接続（<code>OnFileLoadAllimage</code> は実装されているがメッセージマップに登録されていない）</td></tr>
 <tr><td>画像データをバイナリファイルとして保存</td><td>32772</td><td><code>OnFileSaveData</code></td><td>型に応じた形式で保存</td></tr>
-<tr><td>画像データをアーカイブファイルとして保存</td><td>32774</td><td><code>OnFileSaveImage</code></td><td>画像メモリ一式を <code>*.pim</code> で保存</td></tr>
+<tr><td>画像データをアーカイブファイル(*.PIM)として保存</td><td>32774</td><td><code>OnFileSaveImage</code></td><td>画像メモリ一式を <code>*.pim</code> で保存</td></tr>
 <tr><td>表示画像をビットマップとして保存</td><td>32773</td><td><code>OnFileSaveView</code></td><td>RGB 系は 24bit、それ以外は 8bit の BMP</td></tr>
 <tr><td>3D/F3D データを複数の画像ファイルとして保存</td><td>32777</td><td><code>OnFileSaveSerial</code></td><td>2 ページ以上のとき動画ファイル入出力ダイアログ（保存）</td></tr>
 <tr><td>画像メモリ一括保存</td><td>32902</td><td><code>OnFileSaveAllimage</code></td><td>全画像を <code>images\bk%03d.pim</code> に保存。「次回起動時に反映」を選ぶと <code>[DEFAULT_IMAGE] IMGn</code> と <code>DEFAULT_CURRENT_IMAGE</code> を書き、次回起動時に復元する</td></tr>
@@ -122,24 +156,24 @@
 <h3>編集</h3>
 <table>
 <tr><th>項目</th><th>ID</th><th>ハンドラ</th><th>動作</th></tr>
-<tr><td>画像データの名前変更</td><td>32883</td><td><code>OnEditRename</code></td><td>名前入力ダイアログ</td></tr>
+<tr><td>画像データの名前変換</td><td>32883</td><td><code>OnEditRename</code></td><td>名前入力ダイアログ</td></tr>
 <tr><td>画像データの型変換</td><td>32771</td><td><code>OnEditConvertType</code></td><td>型変換ダイアログ（モーダル）</td></tr>
 <tr><td>画像データ削除</td><td>32783</td><td><code>OnEditDelete</code></td><td>バックアップしてから削除</td></tr>
-<tr><td>全画像データ削除</td><td>32889</td><td><code>OnEditDeleteAll</code></td><td>全画像メモリを削除（バックアップなし）</td></tr>
+<tr><td>画像データ全削除</td><td>32889</td><td><code>OnEditDeleteAll</code></td><td>全画像メモリを削除（バックアップなし）</td></tr>
 <tr><td>画像データ復元</td><td><code>ID_EDIT_UNDO</code></td><td><code>OnEditUndo</code></td><td>バックアップメモリの内容を選択中の画像メモリに展開</td></tr>
 <tr><td>マーク編集</td><td>32930</td><td>—</td><td><code>SetMarkEditMode(2)</code></td></tr>
 <tr><td>作業領域編集</td><td>32931</td><td>—</td><td><code>SetWorkAreaEditMode(true)</code></td></tr>
 <tr><td>表示画像をクリップボードへコピー</td><td>32785</td><td><code>OnEditCopyClipbord</code></td><td>重ね描きを含めてコピー</td></tr>
 <tr><td>画像をクリップボードからペースト</td><td>32885</td><td><code>OnEditPasteClipbord</code></td><td>RGB 型で展開（<kbd>Ctrl</kbd>+<kbd>V</kbd> と異なりバックアップしない）</td></tr>
-<tr><td>画像データをフリーハンドで編集</td><td>32786</td><td>—</td><td><code>SetDataPickEditType(1)</code></td></tr>
+<tr><td>フリーハンドで画像を編集</td><td>32786</td><td>—</td><td><code>SetDataPickEditType(1)</code></td></tr>
 </table>
 <h3>表示</h3>
 <table>
 <tr><th>項目</th><th>ID</th><th>動作</th></tr>
 <tr><td>カラーパレット（8 種）</td><td>32818〜32824、32904</td><td>パレット切替（<a href="data.html#display">3 章</a>）</td></tr>
-<tr><td>直接描画用フォント作成</td><td>32849</td><td>画像上に文字を描くフォントを作り <code>FONT_SIZE</code> を保存</td></tr>
-<tr><td>マーク表示</td><td>32925</td><td>マーク編集モード 1</td></tr>
-<tr><td>作業領域表示</td><td>32927</td><td>作業領域編集を ON</td></tr>
+<tr><td>画像上に文字描画するフォント設定</td><td>32849</td><td>画像上に文字を描くフォントを作り <code>FONT_SIZE</code> を保存</td></tr>
+<tr><td>マーク</td><td>32925</td><td>マーク編集モード 1（マークのパネルを表示）</td></tr>
+<tr><td>作業領域</td><td>32927</td><td>作業領域編集を ON（作業領域のパネルを表示）</td></tr>
 <tr><td>複数画像同時表示</td><td>32900</td><td>複数画像同時表示ウィンドウ</td></tr>
 <tr><td>3D 画像一覧表示</td><td>32937</td><td>3D 画像一覧ウィンドウ</td></tr>
 <tr><td>環境設定</td><td>32935</td><td>画像メモリ数・表示サイズなど（再起動後に有効）</td></tr>
@@ -149,8 +183,8 @@
 <tr><th>項目</th><th>ID</th><th>ハンドラ</th><th>開くもの</th></tr>
 <tr><td>サイズ変換</td><td>32948</td><td><code>OnEditResize</code></td><td>画像サイズ変換ダイアログ（モーダル）</td></tr>
 <tr><td>汎用フィルタ</td><td>32827</td><td><code>OnFilter</code></td><td>汎用フィルタウィンドウ（モードレス）</td></tr>
-<tr><td>幾何変換</td><td>32847</td><td><code>OnImageTransform</code></td><td>幾何変換ダイアログ（モーダル）</td></tr>
-<tr><td>任意の数式で画像を生成</td><td>32791</td><td><code>OnCalcImage</code></td><td>数式ウィンドウ</td></tr>
+<tr><td>幾何変換</td><td>32847</td><td><code>OnImageTransform</code></td><td>幾何変換ウィンドウ（モードレス）</td></tr>
+<tr><td>数式で画像を生成</td><td>32791</td><td><code>OnCalcImage</code></td><td>数式ウィンドウ</td></tr>
 <tr><td>2 値化</td><td>32947</td><td><code>OnBinalize</code></td><td>2 値化ウィンドウ</td></tr>
 </table>
 <h3>ツール</h3>
@@ -160,9 +194,9 @@
 <tr><td>TCP/IP 通信</td><td>32850</td><td>TCP/IP 通信ウィンドウ</td></tr>
 <tr><td>バッチ実行</td><td>32945</td><td>バッチ実行ウィンドウ</td></tr>
 <tr><td>ルーラー</td><td>32870</td><td>ルーラーを ON</td></tr>
-<tr><td>ヒストグラム</td><td>32933</td><td>ヒストグラムウィンドウ</td></tr>
+<tr><td>ヒストグラム</td><td>32933</td><td>ヒストグラムのパネル</td></tr>
 <tr><td>スクリプト</td><td>32906</td><td>スクリプトウィンドウ</td></tr>
-<tr><td>Python スクリプト</td><td>32946</td><td>Python バッチウィンドウ</td></tr>
+<tr><td>Python スクリプト</td><td>32946</td><td>Python スクリプトウィンドウ</td></tr>
 </table>
 <h3>カスタムファンクション</h3>
 <table>
@@ -173,10 +207,10 @@
 <h3>ヘルプ</h3>
 <table>
 <tr><th>項目</th><th>ID</th><th>動作</th></tr>
-<tr><td>バージョン情報</td><td>32840</td><td>CAboutDlg（EXE のバージョンリソースは 1.5.0.6）</td></tr>
-<tr><td>仕様書／API リファレンス／外部プログラム連携マニュアル／Python マニュアル</td><td>32891 / 32893 / 32896 / 32943</td><td><code>bin\..\..\..\Doc\</code> の該当資料を関連付けで開く</td></tr>
+<tr><td>PIMPOMのバージョン情報</td><td>32840</td><td>CAboutDlg（バージョンはバージョンリソースから読む。現在 1.7.0.0）</td></tr>
+<tr><td>仕様書／API リファレンス／外部プログラム連携マニュアル／Python マニュアル</td><td>32891 / 32893 / 32896 / 32943</td><td><code>bin\..\..\..\Doc\</code> の該当資料を関連付けで開く（仕様書はこの HTML 版の <code>Doc\html\index.html</code>）</td></tr>
 </table>
-<p>このほか、データウィンドウの右クリック用 <code>IDR_DATA_MENU</code> と、スクリプトウィンドウ用 <code>IDR_COMMAND_PROMPT_MENU</code> がある。アクセラレータリソースは無く、ショートカットは <code>PreTranslateMessage</code> で処理している。</p>
+<p>このほか、データウィンドウの右クリック用 <code>IDR_DATA_MENU</code> と、スクリプトウィンドウ自身のメニュー <code>IDR_COMMAND_PROMPT_MENU</code>（ファイル・実行・ヘルプ）がある。アクセラレータリソースは無く、ショートカットは <code>PreTranslateMessage</code> で処理している。</p>
 
 <footer class="pager"><a href="data.html">← 3. データ構造</a><a href="windows.html">5. 各ウィンドウ →</a></footer>
 </main>

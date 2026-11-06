@@ -38,6 +38,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vfw.h>
 #include "PIMPOMDlg.h"
 #include "pimpom_plot.h"
+#include "MainFrm.h"
+
+static HWND item_owner(HWND self, UINT id);//パネルに移した部品を持つウィンドウ（定義は後方）
+static CWnd* moved_item(CWnd *self, UINT id);
 #include <map>
 // *************************************
 //         マ  ク  ロ   定   義         
@@ -167,6 +171,7 @@ BEGIN_MESSAGE_MAP(CPIMPOMDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_PIMPON_DLG_CALC_DISTANCE2, &CPIMPOMDlg::OnBnClickedButtonPimponDlgCalcDistance2)
 	ON_BN_CLICKED(IDC_BUTTON_PIMPON_DLG_HISTGRAM, &CPIMPOMDlg::OnBnClickedButtonPimponDlgHistgram)
 	ON_NOTIFY(TCN_SELCHANGE, IDC_TAB_PIMPOM_DLG_MESSAGE, &CPIMPOMDlg::OnTcnSelchangeTabPimpomDlgMessage)
+	ON_BN_CLICKED(IDC_BUTTON_PIMPOM_DLG_MESSAGE_CLEAR, &CPIMPOMDlg::OnBnClickedButtonPimpomDlgMessageClear)
 	ON_MESSAGE(WM_EXTERNAL_INPUT, OnMessageExtInput)
 	ON_MESSAGE(WM_EXTERNAL_OUTPUT, OnMessageExtOutput)
 	ON_MESSAGE(WM_EXTERNAL_PROCESS, OnMessageExtProcess)
@@ -276,7 +281,14 @@ BOOL CPIMPOMDlg::OnInitDialog()
 	//表示画像の確保
 	/////////////////////////////////////////////////////////
 	p_image_disp_main = new CImageField( m_hWnd, API.main_image_size, CPoint(MAIN_WIN_LEFT_MARGIN, MAIN_WIN_TOP_MARGIN)  );//メイン画面を表すImageFiledのインスタンス化
-	p_image_disp_piece = new CImageField( m_hWnd, CSize(ScaleByDpi(60), ScaleByDpi(60)), CPoint(DATA_VALUE_DISP_FIELD_X, API.main_window_size.cy-ScaleByDpi(140))  );//指定した座標の周辺画素を表示するImageFieldのインスタンス化
+	{//指定した座標の周辺画素を表示するImageField（画素ルーペのパネル内のピクチャーボックスの位置に置く）
+		CWnd	*p_pict = moved_item(this, IDC_PICT_PIMPON_DLG_DISP_PIECE);
+		CRect	pict_rect;
+		p_pict->GetWindowRect(&pict_rect);
+		::ScreenToClient(item_owner(m_hWnd, IDC_PICT_PIMPON_DLG_DISP_PIECE), (LPPOINT)&pict_rect);
+		::ScreenToClient(item_owner(m_hWnd, IDC_PICT_PIMPON_DLG_DISP_PIECE), ((LPPOINT)&pict_rect) + 1);
+		p_image_disp_piece = new CImageField( item_owner(m_hWnd, IDC_PICT_PIMPON_DLG_DISP_PIECE), pict_rect.Size(), pict_rect.TopLeft() );
+	}//指定した座標の周辺画素を表示するImageFieldのインスタンス化
 
 	API.pPIMMOMDlg = this;
 	API.DialogOpen(IDD_DATA_DLG,true);
@@ -289,11 +301,17 @@ BOOL CPIMPOMDlg::OnInitDialog()
 	//ウインドウの表示設定
 	/////////////////////////////////////////////////////////
 
-	CTabCtrl	*p_wnd_tab = (CTabCtrl*)GetDlgItem(IDC_TAB_PIMPOM_DLG_MESSAGE);
+	CTabCtrl	*p_wnd_tab = (CTabCtrl*)moved_item(this, IDC_TAB_PIMPOM_DLG_MESSAGE);
 	p_wnd_tab->InsertItem(0, _T("メッセージ0"));
 	p_wnd_tab->InsertItem(1, _T("メッセージ1"));
 
 	load_bitmaps();//ボタンに貼り付けるためのビットマップリソースのロード
+	if (API.pMainFrame != NULL)
+	{//ボタンは画面の外に置くので、Tab キーや Space キーで操作されないようにする
+		for (CWnd *p_child = GetWindow(GW_CHILD); p_child != NULL; p_child = p_child->GetWindow(GW_HWNDNEXT)) {
+			p_child->ModifyStyle(WS_TABSTOP, 0);
+		}
+	}
 	arrange_buttons();//レイヤー選択ボタン，データ選択ボタンの配置
 	set_bitmap_for_layer_button();//レイヤー選択ボタンにビットマップを関連づける
 	arrange_data_value_disp_field();//指定した座標のデータ値を表示する領域の配置
@@ -332,7 +350,7 @@ BOOL CPIMPOMDlg::OnInitDialog()
 	//カスタムファンクションをメニューに追加
 	CString capts[CUSTOM_FUNC_MAX];
 	int custon_func_cnt = API.GetUserDlgCaptions(capts);
-	CMenu *menu = this->GetMenu();
+	CMenu *menu = AfxGetMainWnd()->GetMenu();//メニューはメインフレームが持つ
 	CMenu *pSub =menu->GetSubMenu(5);
 	for(int i=0 ; i<custon_func_cnt ; i++){
 		CString strcnt;
@@ -391,10 +409,8 @@ BOOL CPIMPOMDlg::OnInitDialog()
 	}
 
 	if (API.invisible)
-	{//ウィンドウ非表示モード
-		API.pPIMMOMDlg->ShowWindow(SW_HIDE);
-		API.pDataDlg->ShowWindow(SW_HIDE);
-		API.pHistgramDlg->ShowWindow(SW_HIDE);
+	{//ウィンドウ非表示モード（付属ウィンドウはフレームのパネルにあるので、フレームごと隠す）
+		AfxGetMainWnd()->ShowWindow(SW_HIDE);
 	}
 
 
@@ -477,16 +493,14 @@ void CPIMPOMDlg::OnPaint()
 	}
 	else
 	{
+		//子ウィンドウでは背景の消去が BeginPaint まで遅れるので、先に BeginPaint（背景消去）を済ませてから描く
+		CPaintDC dc(this);
 		DrawImage(true);//メイン画面を描画
-
-		CDialog::OnPaint();
 	}
 
 	if (API.invisible)//ウィンドウ非表示モード
 	{
-		ShowWindow(SW_HIDE);
-		API.pDataDlg->ShowWindow(SW_HIDE);
-		API.pHistgramDlg->ShowWindow(SW_HIDE);
+		AfxGetMainWnd()->ShowWindow(SW_HIDE);
 	}
 }
 
@@ -639,7 +653,7 @@ void CPIMPOMDlg::OnSize(UINT nType, int cx, int cy)
 		CDataUnit *p_du = API.GetDataUnit(CURRENT_IMAGE);
 		p_image_disp_main->Resize(API.main_image_size);
 		p_image_disp_main->DrawImage(p_du, true);//描画;
-		p_image_disp_piece->Move(CPoint(DATA_VALUE_DISP_FIELD_X, API.main_window_size.cy - ScaleByDpi(140)));
+		if (API.pMainFrame == NULL)	p_image_disp_piece->Move(CPoint(DATA_VALUE_DISP_FIELD_X, API.main_window_size.cy - ScaleByDpi(140)));
 
 		//メイン画像外部再描画
 		CRect rightToolRegn(API.main_image_size.cx, 0, API.main_window_size.cx, API.main_window_size.cy);
@@ -668,6 +682,8 @@ void CPIMPOMDlg::OnMove(int x, int y)
 	static bool	init_flg=true;
 
 	CDialog::OnMove(x, y);
+
+	if (GetStyle() & WS_CHILD)	return;//付属ウィンドウはメインフレームのパネルにあるので、追従させる必要はない
 	
 	if(API.pDataDlg != NULL)
 	{
@@ -744,6 +760,8 @@ void CPIMPOMDlg::OnMove(int x, int y)
 void CPIMPOMDlg::OnLButtonDown(UINT nFlags, CPoint point) 
 {
 
+	if (GetParentFrame() != NULL)	GetParentFrame()->SetFocus();//キー操作（Delete・矢印・Ctrl+C/V）をフレーム経由でこの画面に届ける
+
 	GetCapture();//マウスをキャプチャーする
 	is_draging = true;//ドラッグ中を表すフラグを立てる
 	
@@ -759,7 +777,7 @@ void CPIMPOMDlg::OnLButtonDown(UINT nFlags, CPoint point)
 			src_coor.x = (int)(src_coor_subpix_x+0.5);
 			src_coor.y = (int)(src_coor_subpix_y+0.5);
 
-			if(!API.GetCheck(m_hWnd,IDC_CHECK_PIMPON_DLG_SUBPIX) )//サブピクセル表示しない
+			if(!API.GetCheck(item_owner(m_hWnd, IDC_CHECK_PIMPON_DLG_SUBPIX), IDC_CHECK_PIMPON_DLG_SUBPIX) )//サブピクセル表示しない
 			{
 				src_coor_subpix_x = src_coor.x;
 				src_coor_subpix_y = src_coor.y;
@@ -777,7 +795,7 @@ void CPIMPOMDlg::OnLButtonDown(UINT nFlags, CPoint point)
 			}
 
 			//ポイント位置のデータ値を表示
-			if( API.GetCheck( m_hWnd, IDC_CHECK_PIMPON_DLG_FIX_COOR ) )
+			if( API.GetCheck(item_owner(m_hWnd, IDC_CHECK_PIMPON_DLG_FIX_COOR), IDC_CHECK_PIMPON_DLG_FIX_COOR ) )
 				DispDataValue( src_coor_subpix_x, src_coor_subpix_y);//現在マウスでクリックした座標(画像転送前)のデータを表示
 
 			//マークのマウスクリックイベント
@@ -835,7 +853,7 @@ void CPIMPOMDlg::OnLButtonUp(UINT nFlags, CPoint point)
 					src_coor.x = (int)(src_coor_subpix_x+0.5);
 					src_coor.y = (int)(src_coor_subpix_y+0.5);
 
-					if(!API.GetCheck(m_hWnd,IDC_CHECK_PIMPON_DLG_SUBPIX) )//サブピクセル表示しない
+					if(!API.GetCheck(item_owner(m_hWnd, IDC_CHECK_PIMPON_DLG_SUBPIX), IDC_CHECK_PIMPON_DLG_SUBPIX) )//サブピクセル表示しない
 					{
 						src_coor_subpix_x = src_coor.x;
 						src_coor_subpix_y = src_coor.y;
@@ -981,14 +999,14 @@ void CPIMPOMDlg::OnMouseMove(UINT nFlags, CPoint point)
 				src_coor.x = (int)(src_coor_subpix_x+0.5);
 				src_coor.y = (int)(src_coor_subpix_y+0.5);
 
-				if(!API.GetCheck(m_hWnd,IDC_CHECK_PIMPON_DLG_SUBPIX) )//サブピクセル表示しない
+				if(!API.GetCheck(item_owner(m_hWnd, IDC_CHECK_PIMPON_DLG_SUBPIX), IDC_CHECK_PIMPON_DLG_SUBPIX) )//サブピクセル表示しない
 				{
 					src_coor_subpix_x = src_coor.x;
 					src_coor_subpix_y = src_coor.y;
 				}
 
 				//ポイント位置のデータ値を表示
-				if( ! API.GetCheck( m_hWnd, IDC_CHECK_PIMPON_DLG_FIX_COOR ) ){
+				if( ! API.GetCheck(item_owner(m_hWnd, IDC_CHECK_PIMPON_DLG_FIX_COOR), IDC_CHECK_PIMPON_DLG_FIX_COOR ) ){
 					DispDataValue( src_coor_subpix_x, src_coor_subpix_y);//現在マウスでポイント中の画像データを表示
 				}
 
@@ -1119,7 +1137,7 @@ void CPIMPOMDlg::DrawImage(bool redraw_all)
 					API.SetCheck( m_hWnd , IDC_BUTTON_PIMPON_DLG_MASK , p_du->DoUseMask );//マスクの状態を表示する
 					API.SetEditValue( m_hWnd , IDC_EDIT_PIMPON_DLG_SCALE , p_du->DispScale );//縮尺を表示する
 
-						if( API.GetCheck( m_hWnd, IDC_CHECK_PIMPON_DLG_FIX_COOR ) )//クリック座標を表示する場合
+						if( API.GetCheck(item_owner(m_hWnd, IDC_CHECK_PIMPON_DLG_FIX_COOR), IDC_CHECK_PIMPON_DLG_FIX_COOR ) )//クリック座標を表示する場合
 							DispDataValue( latest_clicked_coordinate_x, latest_clicked_coordinate_y );
 				}
 					
@@ -1364,13 +1382,30 @@ void CPIMPOMDlg::disp_information_titlebar()
 		idstr.Format(" %d", API.pimpom_id);
 	}
 
-	SetWindowText(info + idstr);//タイトルバーに表示する
+	SetWindowText(info + idstr);
+	if (GetParentFrame() != NULL)	GetParentFrame()->SetWindowText(info + idstr);//タイトルバーはメインフレームのもの
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //画面右端のボタンに関する処理
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//画素情報（周辺拡大・画素値・座標）とメッセージの部品はメインフレームのパネルに移したので、
+//それらの部品を持つウィンドウを返す（パネルが無ければこの画面自身）
+static HWND item_owner(HWND self, UINT id)
+{
+	if (API.pMainFrame != NULL) {
+		HWND owner = API.pMainFrame->GetMovedItemOwner(id);
+		if (owner != NULL)	return owner;
+	}
+	return self;
+}
+
+static CWnd* moved_item(CWnd *self, UINT id)
+{
+	return CWnd::FromHandle(::GetDlgItem(item_owner(self->m_hWnd, id), id));
+}
 
 //ボタンのビットマップの代わりに表示するアイコン（透過付き。表示倍率に合わせた大きさで読み込む）
 static std::map<HBITMAP, HICON>	button_icons;
@@ -1481,16 +1516,20 @@ void CPIMPOMDlg::load_bitmaps()
 ********************************************************************/
 void CPIMPOMDlg::arrange_buttons()
 {
+	//メインフレームではツールバーがこれらのボタンを操作するので、画面の外に置く
+	//（ボタンの表示・非表示やチェックの状態は従来どおり使い、ツールバーがそれを映す）
+	const int bx = (API.pMainFrame != NULL) ? -ScaleByDpi(1000) : API.main_window_size.cx-ScaleByDpi(35);
+
 	//表示データの種類選択ボタン（マルチチャネル画像および動画のときに使う）
 	CButton	*p_button_d0 = (CButton*)GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT0);
 	CButton	*p_button_d1 = (CButton*)GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT1);
 	CButton	*p_button_d2 = (CButton*)GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT2);
 	CButton	*p_button_d3 = (CButton*)GetDlgItem(IDC_CHECK_PIMPON_DLG_DATA_SELECT3);
 
-	p_button_d0->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , DATA_SELECT_FIELD_Y      , ScaleByDpi(30) , ScaleByDpi(30));
-	p_button_d1->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , DATA_SELECT_FIELD_Y + ScaleByDpi(30) , ScaleByDpi(30) , ScaleByDpi(30));
-	p_button_d2->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , DATA_SELECT_FIELD_Y + ScaleByDpi(60) , ScaleByDpi(30) , ScaleByDpi(30));
-	p_button_d3->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , DATA_SELECT_FIELD_Y + ScaleByDpi(90) , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_d0->MoveWindow( bx , DATA_SELECT_FIELD_Y      , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_d1->MoveWindow( bx , DATA_SELECT_FIELD_Y + ScaleByDpi(30) , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_d2->MoveWindow( bx , DATA_SELECT_FIELD_Y + ScaleByDpi(60) , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_d3->MoveWindow( bx , DATA_SELECT_FIELD_Y + ScaleByDpi(90) , ScaleByDpi(30) , ScaleByDpi(30));
 
 	//各種機能の表示・編集ボタン
 	CButton	*p_button_p0 = (CButton*)GetDlgItem(IDC_BUTTON_PIMPON_DLG_MARK);//マーク表示
@@ -1505,15 +1544,15 @@ void CPIMPOMDlg::arrange_buttons()
 
 
 
-	p_button_p0->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + 0  , ScaleByDpi(30) , ScaleByDpi(30));
-	p_button_p1->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(30)  , ScaleByDpi(30) , ScaleByDpi(30));
-	p_button_p2->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(60)  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_p0->MoveWindow( bx , LAYER_SELECT_FIELD_Y + 0  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_p1->MoveWindow( bx , LAYER_SELECT_FIELD_Y + ScaleByDpi(30)  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_p2->MoveWindow( bx , LAYER_SELECT_FIELD_Y + ScaleByDpi(60)  , ScaleByDpi(30) , ScaleByDpi(30));
 
-	p_button_t0->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(100) , ScaleByDpi(30) , ScaleByDpi(30));
-	p_button_t1->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(130)  , ScaleByDpi(30) , ScaleByDpi(30));
-	p_button_t2->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(160)  , ScaleByDpi(30) , ScaleByDpi(30));
-	p_button_t3->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(190)  , ScaleByDpi(30) , ScaleByDpi(30));
-	p_button_t4->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(220)  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_t0->MoveWindow( bx , LAYER_SELECT_FIELD_Y + ScaleByDpi(100) , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_t1->MoveWindow( bx , LAYER_SELECT_FIELD_Y + ScaleByDpi(130)  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_t2->MoveWindow( bx , LAYER_SELECT_FIELD_Y + ScaleByDpi(160)  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_t3->MoveWindow( bx , LAYER_SELECT_FIELD_Y + ScaleByDpi(190)  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_button_t4->MoveWindow( bx , LAYER_SELECT_FIELD_Y + ScaleByDpi(220)  , ScaleByDpi(30) , ScaleByDpi(30));
 
 	//表示画像のスケール変更機能
 	CEdit	*p_edit_scale = (CEdit*)GetDlgItem(IDC_EDIT_PIMPON_DLG_SCALE);
@@ -1522,19 +1561,19 @@ void CPIMPOMDlg::arrange_buttons()
 	CButton	*p_button_scale_adjust_filed = (CButton*)GetDlgItem(IDC_BUTTON_PIMPON_DLG_SCALE_ADJUST_FILED);
 	CButton	*p_button_no_scale = (CButton*)GetDlgItem(IDC_BUTTON_PIMPON_DLG_NO_SCALE);
 
-	p_edit_scale->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(340)  , ScaleByDpi(30) , ScaleByDpi(20));
-	p_button_scale_dbl->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(360)  , ScaleByDpi(15) , ScaleByDpi(15));
-	p_button_scale_hlf->MoveWindow( API.main_window_size.cx-ScaleByDpi(35)+ScaleByDpi(15) , LAYER_SELECT_FIELD_Y + ScaleByDpi(360)  , ScaleByDpi(15) , ScaleByDpi(15));
-	p_button_scale_adjust_filed->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(375)  , ScaleByDpi(30) , ScaleByDpi(20));
-	p_button_no_scale->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(395)  , ScaleByDpi(30) , ScaleByDpi(20));
+	p_edit_scale->MoveWindow( bx , LAYER_SELECT_FIELD_Y + ScaleByDpi(340)  , ScaleByDpi(30) , ScaleByDpi(20));
+	p_button_scale_dbl->MoveWindow( bx , LAYER_SELECT_FIELD_Y + ScaleByDpi(360)  , ScaleByDpi(15) , ScaleByDpi(15));
+	p_button_scale_hlf->MoveWindow( bx+ScaleByDpi(15) , LAYER_SELECT_FIELD_Y + ScaleByDpi(360)  , ScaleByDpi(15) , ScaleByDpi(15));
+	p_button_scale_adjust_filed->MoveWindow( bx , LAYER_SELECT_FIELD_Y + ScaleByDpi(375)  , ScaleByDpi(30) , ScaleByDpi(20));
+	p_button_no_scale->MoveWindow( bx , LAYER_SELECT_FIELD_Y + ScaleByDpi(395)  , ScaleByDpi(30) , ScaleByDpi(20));
 
 	//ビデオキャプチャ
 	CButton	*p_chk_video = (CButton*)GetDlgItem(IDC_CHECK_PIMPON_DLG_VIDEO_CAPTURE);
-	p_chk_video->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(430)  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_chk_video->MoveWindow( bx , LAYER_SELECT_FIELD_Y + ScaleByDpi(430)  , ScaleByDpi(30) , ScaleByDpi(30));
 	
 
 	CButton	*p_chk_video2 = (CButton*)GetDlgItem(IDC_CHECK_PIMPON_DLG_VIDEO_CAPTURE2);
-	p_chk_video2->MoveWindow( API.main_window_size.cx-ScaleByDpi(35) , LAYER_SELECT_FIELD_Y + ScaleByDpi(460)  , ScaleByDpi(30) , ScaleByDpi(30));
+	p_chk_video2->MoveWindow( bx , LAYER_SELECT_FIELD_Y + ScaleByDpi(460)  , ScaleByDpi(30) , ScaleByDpi(30));
 
 	if (API.IsCaptureOpened() )
 	{
@@ -1558,6 +1597,14 @@ void CPIMPOMDlg::arrange_buttons()
 ------------ --------------- --------------------------------------- 
              Y.Ikeda         新規作成
 ********************************************************************/
+CString CPIMPOMDlg::GetButtonTip(UINT id)
+{
+	CString str;
+	CWnd *p_button = GetDlgItem(id);
+	if (p_button != NULL && ::IsWindow(m_toolTip.m_hWnd))	m_toolTip.GetText(str, p_button);
+	return str;
+}
+
 HBITMAP CPIMPOMDlg::set_bitmap_button(HBITMAP h_bmp, UINT id)
 {
 	CButton	*p_button = (CButton*)GetDlgItem(id);
@@ -2164,22 +2211,24 @@ void CPIMPOMDlg::OnBnClickedPimponDlgCheckVideoCapture2()
 ********************************************************************/
 void CPIMPOMDlg::arrange_data_value_disp_field()
 {
+	if (API.pMainFrame != NULL)	return;//メインフレームのパネルに移したので、ここでは配置しない
+
 	CSize	picture(ScaleByDpi(60),ScaleByDpi(60)) , value_disp(ScaleByDpi(60),ScaleByDpi(15)) , coor_disp(ScaleByDpi(200), ScaleByDpi(15)); 
 
 	//1点周辺の画像を表示するためのピクチャーボックスを配置する
-	CWnd	*p_wnd_picture = GetDlgItem( IDC_PICT_PIMPON_DLG_DISP_PIECE );
+	CWnd	*p_wnd_picture = moved_item(this, IDC_PICT_PIMPON_DLG_DISP_PIECE);
 	p_wnd_picture->MoveWindow( DATA_VALUE_DISP_FIELD_X, API.main_window_size.cy-ScaleByDpi(140), picture.cx, picture.cy );
 
 	//1点の画素のデータ値を表示するためのエディットボックスを配置する
-	CWnd	*p_wnd_value_1_1 = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_VALUE_1_1 );
-	CWnd	*p_wnd_value0_1 = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_VALUE0_1 );
-	CWnd	*p_wnd_value1_1 = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_VALUE1_1 );
-	CWnd	*p_wnd_value_10 = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_VALUE_10 );
-	CWnd	*p_wnd_value00 = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_VALUE00 );
-	CWnd	*p_wnd_value10 = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_VALUE10 );
-	CWnd	*p_wnd_value_11 = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_VALUE_11 );
-	CWnd	*p_wnd_value01 = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_VALUE01 );
-	CWnd	*p_wnd_value11 = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_VALUE11 );
+	CWnd	*p_wnd_value_1_1 = (CWnd*)moved_item(this, IDC_EDIT_PIMPON_DLG_VALUE_1_1);
+	CWnd	*p_wnd_value0_1 = (CWnd*)moved_item(this, IDC_EDIT_PIMPON_DLG_VALUE0_1);
+	CWnd	*p_wnd_value1_1 = (CWnd*)moved_item(this, IDC_EDIT_PIMPON_DLG_VALUE1_1);
+	CWnd	*p_wnd_value_10 = (CWnd*)moved_item(this, IDC_EDIT_PIMPON_DLG_VALUE_10);
+	CWnd	*p_wnd_value00 = (CWnd*)moved_item(this, IDC_EDIT_PIMPON_DLG_VALUE00);
+	CWnd	*p_wnd_value10 = (CWnd*)moved_item(this, IDC_EDIT_PIMPON_DLG_VALUE10);
+	CWnd	*p_wnd_value_11 = (CWnd*)moved_item(this, IDC_EDIT_PIMPON_DLG_VALUE_11);
+	CWnd	*p_wnd_value01 = (CWnd*)moved_item(this, IDC_EDIT_PIMPON_DLG_VALUE01);
+	CWnd	*p_wnd_value11 = (CWnd*)moved_item(this, IDC_EDIT_PIMPON_DLG_VALUE11);
 
 	p_wnd_value_1_1->MoveWindow(DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10)						, API.main_window_size.cy-ScaleByDpi(140) + value_disp.cy	, value_disp.cx , value_disp.cy);
 	p_wnd_value0_1->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10) + (value_disp.cx+ScaleByDpi(5))	, API.main_window_size.cy-ScaleByDpi(140) + value_disp.cy	, value_disp.cx , value_disp.cy);
@@ -2192,17 +2241,17 @@ void CPIMPOMDlg::arrange_data_value_disp_field()
 	p_wnd_value11->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10) + (value_disp.cx+ScaleByDpi(5))*2	, API.main_window_size.cy-ScaleByDpi(140) + value_disp.cy*3	, value_disp.cx , value_disp.cy);
 
 	//1点の座標を表示するためのエディットボックスを配置する
-	CWnd	*p_wnd_coor_ij = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_COOR_IJ );
-	CWnd	*p_wnd_coor_xy = (CWnd*)GetDlgItem( IDC_EDIT_PIMPON_DLG_COOR_XY );
+	CWnd	*p_wnd_coor_ij = (CWnd*)moved_item(this, IDC_EDIT_PIMPON_DLG_COOR_IJ);
+	CWnd	*p_wnd_coor_xy = (CWnd*)moved_item(this, IDC_EDIT_PIMPON_DLG_COOR_XY);
 	p_wnd_coor_ij->MoveWindow(	DATA_VALUE_DISP_FIELD_X + picture.cx + ScaleByDpi(10) , API.main_window_size.cy-ScaleByDpi(140)	, coor_disp.cx , coor_disp.cy);
 
 	//クリック座標固定ボタン
-	CWnd	*p_wnd_filx_coor = (CWnd*)GetDlgItem( IDC_CHECK_PIMPON_DLG_FIX_COOR );
+	CWnd	*p_wnd_filx_coor = (CWnd*)moved_item(this, IDC_CHECK_PIMPON_DLG_FIX_COOR);
 	p_wnd_filx_coor->MoveWindow( DATA_VALUE_DISP_FIELD_X, API.main_window_size.cy-ScaleByDpi(140) + picture.cy + ScaleByDpi(5), ScaleByDpi(150), ScaleByDpi(15) );
 	
 	
 	//サブピクセル座標表示ボタン
-	CWnd	*p_wnd_subpix_coor = (CWnd*)GetDlgItem( IDC_CHECK_PIMPON_DLG_SUBPIX );
+	CWnd	*p_wnd_subpix_coor = (CWnd*)moved_item(this, IDC_CHECK_PIMPON_DLG_SUBPIX);
 	p_wnd_subpix_coor->MoveWindow( DATA_VALUE_DISP_FIELD_X + ScaleByDpi(150), API.main_window_size.cy-ScaleByDpi(140) + picture.cy + ScaleByDpi(5), ScaleByDpi(120), ScaleByDpi(15) );
 }
 
@@ -2218,8 +2267,10 @@ void CPIMPOMDlg::arrange_data_value_disp_field()
 ********************************************************************/
 void CPIMPOMDlg::arrange_message_disp_field()
 {
-	CTabCtrl	*p_wnd_tab = (CTabCtrl*)GetDlgItem( IDC_TAB_PIMPOM_DLG_MESSAGE );
-	CWnd	*p_wnd_message = (CWnd*)GetDlgItem( IDC_EDIT_PIMPOM_DLG_MESSAGE );
+	if (API.pMainFrame != NULL)	return;//メインフレームのパネルに移したので、ここでは配置しない
+
+	CTabCtrl	*p_wnd_tab = (CTabCtrl*)moved_item(this, IDC_TAB_PIMPOM_DLG_MESSAGE);
+	CWnd	*p_wnd_message = (CWnd*)moved_item(this, IDC_EDIT_PIMPOM_DLG_MESSAGE);
 
 	p_wnd_tab->MoveWindow(MESSAGE_DISP_FIELD_X , API.main_window_size.cy-ScaleByDpi(150), API.main_window_size.cx - ScaleByDpi(340) , MESSAGE_DISP_FIELD_H);
 	p_wnd_message->MoveWindow(MESSAGE_DISP_FIELD_X+ScaleByDpi(5) , API.main_window_size.cy-ScaleByDpi(150)+ScaleByDpi(23), API.main_window_size.cx - ScaleByDpi(340) -ScaleByDpi(10) , MESSAGE_DISP_FIELD_H-ScaleByDpi(25));
@@ -2251,7 +2302,7 @@ void CPIMPOMDlg::DispDataValue(double point_x, double point_y )
 		{//データが無いときは全てに-を表示する
 			for (j = 0; j < 3; j++){
 				for (i = 0; i < 3; i++){
-					API.SetEditValue(m_hWnd, dlgid[j][i], _T("-"));
+					API.SetEditValue(item_owner(m_hWnd, dlgid[j][i]), dlgid[j][i], _T("-"));
 				}
 			}
 
@@ -2267,11 +2318,11 @@ void CPIMPOMDlg::DispDataValue(double point_x, double point_y )
 						CPoint point = src_coor + CPoint(i - 1, j - 1);
 
 						if (point.x < 0 || point.x >= p_du->DataSize.cx || point.y < 0 || point.y >= p_du->DataSize.cy){
-							API.SetEditValue(m_hWnd, dlgid[j][i], _T("-"));
+							API.SetEditValue(item_owner(m_hWnd, dlgid[j][i]), dlgid[j][i], _T("-"));
 						}
 						else{
 							float val = (float)p_du->GetDataValue(point, -1, -1);
-							API.SetEditValue(m_hWnd, dlgid[j][i], val);
+							API.SetEditValue(item_owner(m_hWnd, dlgid[j][i]), dlgid[j][i], val);
 						}
 					}
 				}
@@ -2281,14 +2332,14 @@ void CPIMPOMDlg::DispDataValue(double point_x, double point_y )
 					, CSize(disp_piece_width, disp_piece_width) , true , false , false);
 
 				//指定した座標（画像転送元）の座標を表示する
-				if(API.GetCheck(m_hWnd,IDC_CHECK_PIMPON_DLG_SUBPIX) )//サブピクセル表示
+				if(API.GetCheck(item_owner(m_hWnd, IDC_CHECK_PIMPON_DLG_SUBPIX), IDC_CHECK_PIMPON_DLG_SUBPIX) )//サブピクセル表示
 				{
 					coor_ij.Format("(x,y)=(%0.3lf, %0.3lf)", point_x, point_y );//画像データの左上を原点とした場合の座標（i,j）
 				}else{
 					coor_ij.Format("(x,y)=(%d, %d)", (int)point_x, (int)point_y );//画像データの左上を原点とした場合の座標（i,j）
 				}
-				API.SetEditValue( m_hWnd, IDC_EDIT_PIMPON_DLG_COOR_IJ , coor_ij );
-				API.SetEditValue( m_hWnd, IDC_EDIT_PIMPON_DLG_COOR_XY , coor_xy );
+				API.SetEditValue(item_owner(m_hWnd, IDC_EDIT_PIMPON_DLG_COOR_IJ), IDC_EDIT_PIMPON_DLG_COOR_IJ , coor_ij );
+				API.SetEditValue(item_owner(m_hWnd, IDC_EDIT_PIMPON_DLG_COOR_XY), IDC_EDIT_PIMPON_DLG_COOR_XY , coor_xy );
 		}
 
 }
@@ -2470,7 +2521,7 @@ void CPIMPOMDlg::ShowMessage(bool do_clear, int num, bool force, CString str)
 	message[num] += str + ret;
 
 
-	CTabCtrl	*p_wnd_tab = (CTabCtrl*)GetDlgItem( IDC_TAB_PIMPOM_DLG_MESSAGE );//選択タブ変更
+	CTabCtrl	*p_wnd_tab = (CTabCtrl*)moved_item(this, IDC_TAB_PIMPOM_DLG_MESSAGE);//選択タブ変更
 
 	bool dispflg = false;
 	if(force)
@@ -2488,10 +2539,10 @@ void CPIMPOMDlg::ShowMessage(bool do_clear, int num, bool force, CString str)
 
 	if (dispflg)
 	{
-		API.SetEditValue(m_hWnd, IDC_EDIT_PIMPOM_DLG_MESSAGE, message[num]);
+		API.SetEditValue(item_owner(m_hWnd, IDC_EDIT_PIMPOM_DLG_MESSAGE), IDC_EDIT_PIMPOM_DLG_MESSAGE, message[num]);
 
 		//最後の文字選択(スクロールさせるため)
-		CEdit	*p_wnd_edit = (CEdit*)GetDlgItem(IDC_EDIT_PIMPOM_DLG_MESSAGE);
+		CEdit	*p_wnd_edit = (CEdit*)moved_item(this, IDC_EDIT_PIMPOM_DLG_MESSAGE);
 		int lastidx = message[num].GetLength() - 1;
 		p_wnd_edit->SetSel(lastidx, lastidx);
 	}
@@ -2508,21 +2559,34 @@ void CPIMPOMDlg::ShowMessage(bool do_clear, int num, bool force, CString str)
 ********************************************************************/
 void CPIMPOMDlg::OnTcnSelchangeTabPimpomDlgMessage(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	CTabCtrl	*p_wnd_tab = (CTabCtrl*)GetDlgItem( IDC_TAB_PIMPOM_DLG_MESSAGE );
+	CTabCtrl	*p_wnd_tab = (CTabCtrl*)moved_item(this, IDC_TAB_PIMPOM_DLG_MESSAGE);
 
 	switch(p_wnd_tab->GetCurSel())
 	{
 	case 0:
-		API.SetEditValue( m_hWnd , IDC_EDIT_PIMPOM_DLG_MESSAGE , message[0] );
+		API.SetEditValue(item_owner(m_hWnd, IDC_EDIT_PIMPOM_DLG_MESSAGE), IDC_EDIT_PIMPOM_DLG_MESSAGE , message[0] );
 		break;
 	case 1:
-		API.SetEditValue( m_hWnd , IDC_EDIT_PIMPOM_DLG_MESSAGE , message[1] );
+		API.SetEditValue(item_owner(m_hWnd, IDC_EDIT_PIMPOM_DLG_MESSAGE), IDC_EDIT_PIMPOM_DLG_MESSAGE , message[1] );
 		break;
 	default:
 		break;
 	}
 	
 	*pResult = 0;
+}
+
+/********************************************************************
+機  能  名  称 : 出力のクリア
+関    数    名 : OnBnClickedButtonPimpomDlgMessageClear
+戻    り    値 : 
+機          能 : 出力パネルのクリアボタン。メッセージ0・1 のどちらのタブの文字列も消す
+********************************************************************/
+void CPIMPOMDlg::OnBnClickedButtonPimpomDlgMessageClear()
+{
+	message[0] = _T("");
+	message[1] = _T("");
+	API.SetEditValue(item_owner(m_hWnd, IDC_EDIT_PIMPOM_DLG_MESSAGE), IDC_EDIT_PIMPOM_DLG_MESSAGE, _T(""));
 }
 
 /********************************************************************

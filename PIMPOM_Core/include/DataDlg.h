@@ -60,6 +60,9 @@ protected:
 	HBRUSH			bg_brush;//背景色のブラシ
 	CImageField		**pp_image_disp_small;//小イメージのポインタ配列
 	CPoint			mouse_point;//マウス座標
+	int				scroll_y;//縦スクロール量（パネルに収めているとき）
+	int				content_height;//サムネイル全体の高さ（パネルに収めているとき）
+	int				size_nest;//OnSize の入れ子の深さ（スクロールバーの出し入れで幅が変わると OnSize が入れ子で来る）
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
 	void draw_image_info(long number = CURRENT_IMAGE);//表示画像の情報を描画する（番号とデータの形式）（データ番号指定なしの場合は現在選択中のデータ）
@@ -67,7 +70,8 @@ protected:
 	void draw_current_rect(long number, COLORREF color);//表示中の画像を示す矩形を描画する
 	int get_image_number_from_coordinate(CPoint coor);//指定した座標（クライアント領域）に表示されている画像の番号を返す
 	void draw_background_rect(CRect rct);//背景色で矩形描画
-	CString clip_string(CDC *pdc, CString str, int max_width);//文字列を表示長さでクリップする
+	CString clip_string(CDC *pdc, CString str, int max_width);
+	void arrange_thumbnails(int width);//サムネイルを指定した幅で折り返して並べ直す//文字列を表示長さでクリップする
 
 
 
@@ -90,5 +94,12 @@ public:
 	afx_msg void OnDatamenuSavebitmap();
 	afx_msg void OnDatamenuUndo();
 	afx_msg void OnDatamenuDisp3d();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+	static int	GetContentHeight(int width, int rows_limit);//幅 width で折り返したときのサムネイル全体の高さ（rows_limit 行まで。0 なら制限なし）
+protected:
+	void		update_scroll(int cy);//スクロールバーをサムネイル全体の高さとクライアントの高さに合わせる
+	void		scroll_to(int y);//縦にスクロールする
 };
 

@@ -121,7 +121,7 @@
 <h3>CImageField（表示領域）</h3>
 <ul>
 <li>保持するのはウィンドウハンドル、表示領域のサイズと位置だけ。倍率とオフセットは <code>CDataUnit</code> 側にあるため、画像メモリごとに表示状態が保存される。</li>
-<li>描画は <code>StretchDIBits</code>（HALFTONE）。画像外の余白は RGB(190,190,190)、データが無いときは黒で塗る。</li>
+<li>描画は <code>StretchDIBits</code>（HALFTONE）。画像外の余白は中間灰 RGB(128,128,128)（<code>PIMPOM_VIEW_BG_COLOR</code>）、データが無いときは黒で塗る。</li>
 <li>倍率は 0.01〜100 に制限（<code>API.ScaleImage</code>）。<code>ScaleImage</code> は表示中心を保って倍率を変え、<code>DrawAdjustedImage</code> は縦横比を保って領域に内接させる。</li>
 <li>座標変換: <code>画像座標 = (画面座標 − 領域位置) / scale + offset − 0.5</code>、逆は <code>画面座標 = (画像座標 + 0.5 − offset) × scale + 領域位置</code>。</li>
 </ul>
@@ -192,8 +192,8 @@
 <tr><td><code>FILE_IO_LOG_MAX</code> / <code>FILE_IO_LOG_MENU_ID</code></td><td>10 / 9900</td><td>最近使ったファイル数／メニュー ID の先頭</td></tr>
 <tr><td><code>FILE_PATH_LEN_MAX</code> / <code>MULTI_FILE_PATH_BUFFER</code></td><td>2048 / 500000</td><td>パス長／複数ファイル選択のバッファ</td></tr>
 <tr><td><code>MAIN_W</code>×<code>MAIN_H</code></td><td>640×480</td><td>メイン画像表示領域の既定サイズ</td></tr>
-<tr><td><code>SMALL_W</code>×<code>SMALL_H</code> / <code>SMALL_COLUM</code></td><td>40×30 / 20</td><td>サムネイルのサイズ／列数</td></tr>
-<tr><td>データ／ヒストグラム／マーク／作業領域ウィンドウ</td><td>1150×200 / 340×320 / 330×280 / 330×280</td><td>各ウィンドウの既定サイズ</td></tr>
+<tr><td><code>SMALL_W</code>×<code>SMALL_H</code> / <code>SMALL_COLUM</code></td><td>40×30 / 20</td><td>サムネイルのサイズ／列数（列数はフレームのパネルでは使わず、パネルの幅で折り返す）</td></tr>
+<tr><td>データ／ヒストグラム／マーク／作業領域ウィンドウ</td><td>1150×200 / 340×320 / 330×280 / 330×280</td><td>各ウィンドウの既定サイズ（96dpi 基準）。フレームのパネルでは、右の列の幅がヒストグラムの幅 340、各パネルの高さがこの高さになる。データのパネルは 800×150 で作り、起動時にサムネイルの行数に合わせて高さを広げる</td></tr>
 <tr><td><code>CHART_NUM</code> / <code>CHART_DATA_NUM</code></td><td>10 / 10000</td><td>グラフ数／1 グラフのデータ数上限</td></tr>
 <tr><td>BATCH 入力／出力パラメータ数</td><td>5 / 15</td><td><code>BATCH_INPUT.param</code>／<code>BATCH_OUTPUT.result</code></td></tr>
 <tr><td>畳み込み／順位フィルタの最大サイズ</td><td>61 / 21</td><td>フィルタサイズ上限</td></tr>

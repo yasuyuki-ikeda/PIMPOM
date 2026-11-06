@@ -74,6 +74,10 @@ extern	CPimpomAPI	API;
 CDataDlg::CDataDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CDataDlg::IDD, pParent)
 {
+	pp_image_disp_small = NULL;//OnInitDialog より前に OnSize が来るので初期化しておく
+	scroll_y = 0;
+	content_height = 0;
+	size_nest = 0;
 	//{{AFX_DATA_INIT(CDataDlg)
 		// メモ - ClassWizard はこの位置にマッピング用のマクロを追加または削除します。
 	//}}AFX_DATA_INIT
@@ -477,6 +481,9 @@ BEGIN_MESSAGE_MAP(CDataDlg, CDialog)
 	ON_WM_DESTROY()
 	ON_WM_DROPFILES()
 	//}}AFX_MSG_MAP
+	ON_WM_SIZE()
+	ON_WM_VSCROLL()
+	ON_WM_MOUSEWHEEL()
 	ON_COMMAND(ID_DATAMENU_RENAME, &CDataDlg::OnDatamenuRename)
 	ON_COMMAND(ID_DATAMENU_CONVERT_TYPE, &CDataDlg::OnDatamenuConvertType)
 	ON_COMMAND(ID_DATAMENU_RESIZE, &CDataDlg::OnDatamenuResize)
@@ -1001,4 +1008,150 @@ Y.Ikeda         新規作成
 void CDataDlg::OnDatamenuDisp3d()
 {
 	API.DialogOpen(IDD_3D_IMAGE_DISP_DLG, true);
+}
+
+/********************************************************************
+機  能  名  称 : ウィンドウの大きさが変わった
+関    数    名 : OnSize
+引          数 :
+戻    り    値 :
+機          能 : メインフレームのパネルに収めているときは、パネルの幅でサムネイルを折り返す
+				 下の行がパネルに収まらないときは縦スクロールバーを出す
+********************************************************************/
+void CDataDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialog::OnSize(nType, cx, cy);
+
+	if (API.pMainFrame != NULL && pp_image_disp_small != NULL && cx > 0 && size_nest < 3)
+	{
+		size_nest++;
+		arrange_thumbnails(cx);
+		update_scroll(cy);//スクロールバーが出入りすると幅が変わり、ここへ入れ子で戻ってくる
+		size_nest--;
+		Invalidate();
+	}
+}
+
+/********************************************************************
+機  能  名  称 : スクロールバーを合わせる
+関    数    名 : update_scroll
+引          数 : int	cy	(in)クライアントの高さ
+戻    り    値 :
+機          能 : サムネイル全体が収まるときはスクロールバーを消し、スクロール量を 0 に戻す
+********************************************************************/
+void CDataDlg::update_scroll(int cy)
+{
+	int max_y = max(0, content_height - cy);
+	if (scroll_y > max_y) {
+		scroll_y = max_y;
+		CRect rect;
+		GetClientRect(&rect);
+		arrange_thumbnails(rect.Width());
+	}
+
+	SCROLLINFO si = { sizeof(si) };
+	si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+	si.nMin = 0;
+	si.nMax = max(0, content_height - 1);
+	si.nPage = (UINT)max(0, cy);
+	si.nPos = scroll_y;
+	SetScrollInfo(SB_VERT, &si, TRUE);//収まるときはスクロールバーが消える
+}
+
+/********************************************************************
+機  能  名  称 : 縦にスクロールする
+関    数    名 : scroll_to
+引          数 : int	y	(in)スクロール量（上端からの画素数）
+戻    り    値 :
+機          能 :
+********************************************************************/
+void CDataDlg::scroll_to(int y)
+{
+	if (API.pMainFrame == NULL || pp_image_disp_small == NULL)	return;
+
+	CRect rect;
+	GetClientRect(&rect);
+	y = max(0, min(y, content_height - rect.Height()));
+	if (y == scroll_y)	return;
+
+	scroll_y = y;
+	arrange_thumbnails(rect.Width());
+	SetScrollPos(SB_VERT, scroll_y, TRUE);
+	Invalidate();
+}
+
+void CDataDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	CRect rect;
+	GetClientRect(&rect);
+	int row = API.small_image_size.cy + SMALL_MARGN_Y;
+	SCROLLINFO si = { sizeof(si) };
+	si.fMask = SIF_TRACKPOS;
+	GetScrollInfo(SB_VERT, &si);
+
+	switch (nSBCode) {
+	case SB_LINEUP:		scroll_to(scroll_y - row);				break;
+	case SB_LINEDOWN:		scroll_to(scroll_y + row);				break;
+	case SB_PAGEUP:		scroll_to(scroll_y - rect.Height());	break;
+	case SB_PAGEDOWN:		scroll_to(scroll_y + rect.Height());	break;
+	case SB_THUMBTRACK:
+	case SB_THUMBPOSITION:	scroll_to(si.nTrackPos);				break;
+	case SB_TOP:			scroll_to(0);							break;
+	case SB_BOTTOM:		scroll_to(content_height);				break;
+	default:				break;
+	}
+}
+
+//ホイール 1 目盛りで 1 行ずつスクロールする
+BOOL CDataDlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	int row = API.small_image_size.cy + SMALL_MARGN_Y;
+	scroll_to(scroll_y - zDelta * row / WHEEL_DELTA);
+	return TRUE;
+}
+
+/********************************************************************
+機  能  名  称 : サムネイル全体の高さ
+関    数    名 : GetContentHeight
+引          数 : int	width		(in)折り返す幅
+				 int	rows_limit	(in)数える行数の上限（0 なら制限なし）
+戻    り    値 : 高さ（画素）
+機          能 : arrange_thumbnails と同じ規則で折り返したときの行数から求める。データパネルの高さを決めるのに使う
+********************************************************************/
+int CDataDlg::GetContentHeight(int width, int rows_limit)
+{
+	const int origin = 5;
+	int step = API.small_image_size.cx + SMALL_MARGN_X;
+	int per_row = 1;
+	while (origin + per_row * step + API.small_image_size.cx < width)	per_row++;
+	int rows = (API.GetDataUnitNumber() + per_row - 1) / per_row;
+	if (rows_limit > 0 && rows > rows_limit)	rows = rows_limit;
+	return origin + rows * (API.small_image_size.cy + SMALL_MARGN_Y);
+}
+
+/********************************************************************
+機  能  名  称 : サムネイルを並べ直す
+関    数    名 : arrange_thumbnails
+引          数 : int	width	(in)折り返す幅
+戻    り    値 :
+機          能 : OnInitDialog と同じ規則で、幅だけを変えて各サムネイルの位置を決め直す
+				 スクロール量だけ上にずらして置き、サムネイル全体の高さを content_height に残す
+********************************************************************/
+void CDataDlg::arrange_thumbnails(int width)
+{
+	CPoint  origin_coor(5, 5 - scroll_y);//最初の画像領域の座標
+	CPoint	disp_small_coor = origin_coor;//画像領域の座標
+
+	for (int n = 0; n < API.GetDataUnitNumber(); n++)
+	{
+		if (pp_image_disp_small[n] == NULL)	continue;
+		pp_image_disp_small[n]->Move(disp_small_coor);
+
+		disp_small_coor.x += (API.small_image_size.cx + SMALL_MARGN_X);
+		if (disp_small_coor.x + API.small_image_size.cx >= width) {//収まらなくなるたびに折り返す
+			disp_small_coor.x = origin_coor.x;
+			disp_small_coor.y += (API.small_image_size.cy + SMALL_MARGN_Y);
+		}
+	}
+	content_height = GetContentHeight(width, 0);
 }

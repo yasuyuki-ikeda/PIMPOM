@@ -65,5 +65,7 @@ public:
 	afx_msg void OnBnClickedRadioTransformOverwite();
 	afx_msg void OnBnClickedRadioTransformToImage();
 	afx_msg void OnBnClickedButtonTrasformSetOrgImg();
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	virtual void OnCancel();
 };
 

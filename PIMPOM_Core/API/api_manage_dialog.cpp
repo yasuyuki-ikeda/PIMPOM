@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //**************************************
 #include "stdafx.h"
 #include "PIMPOM_API.h"
+#include "MainFrm.h"
 
 // *************************************
 //         マ  ク  ロ   定   義         
@@ -441,6 +442,14 @@ bool	CPimpomAPI::DialogOpen(int id, bool show)
 			pdlg = (CDialog*)pBinalizeDlg;
 			break;
 
+		case IDD_TRANSFORM_DLG:
+			if(!pTransformDlg){
+				pTransformDlg = new CTransformDlg();
+				if(pTransformDlg)	pTransformDlg->Create(IDD_TRANSFORM_DLG, NULL);
+			}
+			pdlg = (CDialog*)pTransformDlg;
+			break;
+
 		case IDD_BATCH_DLG:
 			if(!pBatchDlg){
 				pBatchDlg = new CBatchDlg();
@@ -523,10 +532,13 @@ bool	CPimpomAPI::DialogOpen(int id, bool show)
 	}
 
 	if(pdlg){
+		if (pMainFrame)	pMainFrame->OnDialogCreated(id, pdlg);//ドッキング対象ならパネルに収める
+
 		if (show) {
 			pdlg->SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 			
 			pdlg->ShowWindow(SW_SHOW);
+			if (pMainFrame)	pMainFrame->OnDialogShown(id, pdlg);//パネルを表示してタブを前に出す
 		}
 		else {
 			pdlg->ShowWindow(SW_HIDE);
@@ -586,6 +598,13 @@ void	CPimpomAPI::DialogDelete(int id)
 			if(pBinalizeDlg){
 				DestroyWindow(pBinalizeDlg->m_hWnd);
 				delete	pBinalizeDlg;	pBinalizeDlg=NULL;
+			}
+			break;
+
+		case IDD_TRANSFORM_DLG:
+			if(pTransformDlg){
+				DestroyWindow(pTransformDlg->m_hWnd);
+				delete	pTransformDlg;	pTransformDlg=NULL;
 			}
 			break;
 
@@ -1871,4 +1890,16 @@ void CPimpomAPI::ClearChart(int chart_id)
 {
 	if( !DialogOpen(IDD_CHART_DLG, true))	return ;
 	pChartDlg->ClearChart(chart_id);
+}
+
+/********************************************************************
+機  能  名  称 : 中央のメイン画面のウィンドウハンドル
+関    数    名 : GetMainViewWnd
+引          数 :
+戻    り    値 : 画像を表示しているメイン画面（CPIMPOMDlg）のウィンドウハンドル
+機          能 : カスタムファンクションが子ウィンドウの親や描画先に使う
+********************************************************************/
+HWND CPimpomAPI::GetMainViewWnd()
+{
+	return (pPIMMOMDlg != NULL) ? pPIMMOMDlg->m_hWnd : NULL;
 }

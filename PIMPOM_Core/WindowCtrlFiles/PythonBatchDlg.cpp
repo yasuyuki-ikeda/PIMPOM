@@ -203,7 +203,7 @@ bool CPythonBatchDlg::OnBatchExecute()
 {
 	bool ret = true;
 
-	if (::IsWindowVisible(m_hWnd) == false)	return false;
+	if ((GetStyle() & WS_VISIBLE) == 0)	return false;//開いていなければ実行しない（パネルのタブの裏にあるときは実行する）
 
 	//この関数の多重起動を防ぐフラグ
 	static bool flg = false;

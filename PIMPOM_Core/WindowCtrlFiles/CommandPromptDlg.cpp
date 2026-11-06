@@ -89,7 +89,7 @@ bool Is2ByteCode(CString str, int index)
 //バッチ実行用
 bool CCommandPromptDlg::OnBatchExecute(BATCH_INPUT *in_param, BATCH_OUTPUT *out_param)
 {
-	if( ::IsWindowVisible(m_hWnd) == false)	return false;
+	if( (GetStyle() & WS_VISIBLE) == 0 )	return false;//開いていなければ実行しない（パネルのタブの裏にあるときは実行する）
 
 	KillTimer(0);//一旦タイマーを切る
 
